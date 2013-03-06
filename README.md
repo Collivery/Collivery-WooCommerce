@@ -28,10 +28,10 @@ To Do
 
 Installation Instructions
 -------------------------
-Extract the zip into "wp-content/plugins".
-Activate the plugin under "Plugins" in the Wordpress Admin side.
-While testing, keep the settings on the demo account, as MDS ignores all the requests on that account. But once you are ready to go live and place it on your site, go to "WooCommerce->Settings->Shipping->MDS Collivery" and put in your own details there.
-I also strongly recommend the 10% markup (or higher) while the plugin is in beta, as to cover costs if there ever is a change in price...
+- Extract the zip into "wp-content/plugins".
+- Activate the plugin under "Plugins" in the Wordpress Admin side.
+- While testing, keep the settings on the demo account, as MDS ignores all the requests on that account. But once you are ready to go live and place it on your site, go to "WooCommerce->Settings->Shipping->MDS Collivery" and put in your own details there.
+- I also strongly recommend the 10% markup (or higher) while the plugin is in beta, as to cover costs if there ever is a change in price...
 
 License
 --------
