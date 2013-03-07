@@ -40,8 +40,9 @@ function mds_register_collivery() {
 
 	$mds = new WC_MDS_Collivery;
 	
-	if ($custom_fields['_mds_status'][0]==1)
-		echo "<h1 class=\"red\">Error. Shipping has already been registered with MDS.</h1>";
+	if (isset($custom_fields['_mds_status'])&&$custom_fields['_mds_status'][0]==1)
+		echo "<h1 class=\"red\">Error. Shipping has already been registered with MDS.</h1>
+		<p>The shipping has already been placed with MDS Collivery. You can track the shipping with the following waybill: ". $custom_fields['mds_waybill'][0];
 	
 	else if ($order->status!='processing'){
 		switch ($order->status) {
@@ -63,6 +64,7 @@ function mds_register_collivery() {
 		$new_col = $mds->register_shipping($data);
 		$order->update_status('completed', 'MDS Shipping registered successfully.');
 		update_post_meta( $order->id, '_mds_status', 1 );
+		update_post_meta( $order->id, 'mds_waybill', $new_col['results']['collivery_id'] );
 		echo "<a href=\"". home_url() ."/wp-admin/post.php?post=$_GET[post_id]&action=edit\">Shipping registered successfully. Return to Order.</a>";
 	} else {
 		
