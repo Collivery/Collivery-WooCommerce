@@ -46,6 +46,7 @@ function custom_override_checkout_fields( $fields ) {
 		'billing_building_details' => Array (
 			'label'			=> 'Building Details',
 			'placeholder'	=> 'Building Details',
+			'class'			=> Array ('form-row-wide')
 		),
 		'billing_address_1' => Array (
 			'name'			=> 'billing-streetno',
@@ -120,6 +121,7 @@ function custom_override_checkout_fields( $fields ) {
 		'shipping_building_details' => Array (
 			'label'			=> 'Building Details',
 			'placeholder'	=> 'Building Details',
+			'class'			=> Array ('form-row-wide')
 		),
 		'shipping_address_1' => Array (
 			'name'			=> 'billing-streetno',
