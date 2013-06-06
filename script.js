@@ -8,14 +8,14 @@ jQuery(document).ready(function($) {
 		if (mds_ajax_billing_suburb)
 			mds_ajax_billing_suburb.abort();
 		
-		if (jQuery('#billing_state').val()=='NA'){
+		if (jQuery('#billing_state').val()==''){
 			
 			jQuery('#billing_city').empty();
-			jQuery('#billing_city').append('<option value="NA">Select town first...</option>');
+			jQuery('#billing_city').append('<option value="">Select town first...</option>');
 		} else {
 			
 			jQuery('#billing_city').empty();
-			jQuery('#billing_city').append('<option value="NA">Loading...</option>');
+			jQuery('#billing_city').append('<option value="">Loading...</option>');
 			
 			var town = jQuery('#billing_state').val();
 	
@@ -41,14 +41,14 @@ jQuery(document).ready(function($) {
 		if (mds_ajax_shipping_suburb)
 			mds_ajax_shipping_suburb.abort();
 		
-		if (jQuery('#shipping_state').val()=='NA'){
+		if (jQuery('#shipping_state').val()==''){
 			
 			jQuery('#shipping_city').empty();
-			jQuery('#shipping_city').append('<option value="NA">Select town first...</option>');
+			jQuery('#shipping_city').append('<option value="">Select town first...</option>');
 		} else {
 			
 			jQuery('#shipping_city').empty();
-			jQuery('#shipping_city').append('<option value="NA">Loading...</option>');
+			jQuery('#shipping_city').append('<option value="">Loading...</option>');
 			
 			var town = jQuery('#shipping_state').val();
 	

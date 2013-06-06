@@ -11,9 +11,9 @@ function custom_override_checkout_fields( $fields ) {
 	$mds = new WC_MDS_Collivery();
 	$field = $mds->get_field_defaults();
 	
-	$towns = Array('NA' => 'Select Town') + $field['towns'];
+	$towns = Array('' => 'Select Town') + $field['towns'];
 	
-	$cptypes = Array('NA' => 'Select Premesis Type') + $field['cptypes'];
+	$cptypes = Array('' => 'Select Premesis Type') + $field['cptypes'];
 
 	$billing_data = Array (
 		'billing_state' => Array (
@@ -22,7 +22,7 @@ function custom_override_checkout_fields( $fields ) {
 			'required'		=> 1,
 			'class'			=> Array ('form-row-first', 'update_totals_on_change'),
 			'options'		=> $towns,
-			'selected'		=> 'NA'
+			'selected'		=> ''
 			),
 		'billing_city' => Array (
 			'type'			=> 'select',
@@ -97,7 +97,7 @@ function custom_override_checkout_fields( $fields ) {
 			'required'		=> 1,
 			'class'			=> Array ('form-row-first', 'update_totals_on_change'),
 			'options'		=> $towns,
-			'selected'		=> 'NA'
+			'selected'		=> ''
 			),
 		'shipping_city' => Array (
 			'type'			=> 'select',
@@ -175,7 +175,7 @@ function custom_override_checkout_fields( $fields ) {
 // Get the Suburbs on Town Change...
 function generate_suburbs(){
 	
-	if ((isset($_POST['town']))&&($_POST['town']!='NA')){
+	if ((isset($_POST['town']))&&($_POST['town']!='')){
 		$mds = new WC_MDS_Collivery();
 		$fields = $mds->get_subs($_POST['town']);
 		if (is_array($fields)){
@@ -184,14 +184,14 @@ function generate_suburbs(){
 					echo "<option value=\"$value\">$value</option>";
 				}
 			} else {
-				echo "<option value=\"NA\" selected=\"selected\">Select Suburb</option>";
+				echo "<option value=\"\" selected=\"selected\">Select Suburb</option>";
 				foreach ($fields as $value) {
 					echo "<option value=\"$value\">$value</option>";
 				}
 			}
-		} else echo '<option value="NA">Error retrieving data from server. Please try again later...</option>';
+		} else echo '<option value="">Error retrieving data from server. Please try again later...</option>';
 		
-	} else echo '<option value="NA">First Select Town...</option>';
+	} else echo '<option value="">First Select Town...</option>';
 	
 	die();
 }
