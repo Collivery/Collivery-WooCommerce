@@ -133,26 +133,26 @@ function init_mds_collivery() {
 		if (isset($_POST['post_data'])){
 			parse_str($_POST['post_data'], $post_data);
 			if ($post_data['shiptobilling']==TRUE){
-				if ($post_data['billing_state']!='NA')
+				if ($post_data['billing_state']!='')
 					$town_label = $post_data['billing_state'];
-				if ($post_data['billing_cptypes']!='NA')
+				if ($post_data['billing_cptypes']!='')
 					$cptypes_label = $post_data['billing_cptypes'];
 			} else {
-				if ($post_data['shipping_state']!='NA')
+				if ($post_data['shipping_state']!='')
 					$town_label = $post_data['shipping_state'];
-				if ($post_data['shipping_cptypes']!='NA')
+				if ($post_data['shipping_cptypes']!='')
 					$cptypes_label = $post_data['shipping_cptypes'];
 			}
 		} else if (isset($_POST['shiptobilling'])){
 			if ($_POST['shiptobilling']==TRUE){
-				if ($_POST['billing_state']!='NA')
+				if ($_POST['billing_state']!='')
 					$town_label = $_POST['billing_state'];
-				if ($_POST['billinging_cptypes']!='NA')
+				if ($_POST['billinging_cptypes']!='')
 					$cptypes_label = $post_data['shipping_cptypes'];
 			} else {
-				if ($_POST['shipping_state']!='NA')
+				if ($_POST['shipping_state']!='')
 					$town_label = $_POST['shipping_state'];
-				if ($_POST['shipping_cptypes']!='NA')
+				if ($_POST['shipping_cptypes']!='')
 					$cptypes_label = $post_data['shipping_cptypes'];
 			}
 		}
@@ -249,7 +249,7 @@ function init_mds_collivery() {
 				'weight' => $weight,
 			);
 		
-		if ((isset($town_type)) && ($town_type!="NA"))
+		if ((isset($town_type)) && ($town_type!=""))
 			$data['to_town_type'] = $town_type;
 		
 		if ((isset($collection_time)) && ($collection_time!=0))
