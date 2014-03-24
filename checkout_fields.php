@@ -7,12 +7,12 @@ add_action('wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs');
 
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields ) {
-	
+
 	$mds = new WC_MDS_Collivery();
 	$field = $mds->get_field_defaults();
-	
+
 	$towns = Array('' => 'Select Town') + $field['towns'];
-	
+
 	$cptypes = Array('' => 'Select Premesis Type') + $field['cptypes'];
 
 	$billing_data = Array (
@@ -89,7 +89,7 @@ function custom_override_checkout_fields( $fields ) {
 			'class'			=> Array ('form-row-last')
 		),
 	);
-	
+
 	$shipping_data = Array (
 		'shipping_state' => Array (
 			'type'			=> 'select',
@@ -164,17 +164,17 @@ function custom_override_checkout_fields( $fields ) {
 			'class'			=> Array ('form-row-last')
 		),
 	);
-	
+
 	$fields['billing'] = $billing_data;
-	
+
 	$fields['shipping'] = $shipping_data;
-	
+
 	return $fields;
 }
 
 // Get the Suburbs on Town Change...
 function generate_suburbs(){
-	
+
 	if ((isset($_POST['town']))&&($_POST['town']!='')){
 		$mds = new WC_MDS_Collivery();
 		$fields = $mds->get_subs($_POST['town']);
@@ -190,8 +190,8 @@ function generate_suburbs(){
 				}
 			}
 		} else echo '<option value="">Error retrieving data from server. Please try again later...</option>';
-		
+
 	} else echo '<option value="">First Select Town...</option>';
-	
+
 	die();
 }

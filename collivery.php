@@ -18,10 +18,10 @@ add_action('plugins_loaded', 'init_mds_collivery', 0);
 function init_mds_collivery() {
   // Check if 'WC_Shipping_Method' class is loaded, else exit.
   if ( ! class_exists( 'WC_Shipping_Method' ) ) return;
-  
+
   include_once( 'checkout_fields.php' ); //Seperate file with large arrays.
   require_once( 'mds-admin.php' ); //Admin Scripts
-  
+
   add_action('wp_enqueue_scripts', 'load_js');
 
   //Load JS file
@@ -40,31 +40,31 @@ function init_mds_collivery() {
 	{
 		$this -> id = 'mds_collivery';
 		$this -> method_title = __('MDS Collivery', 'woocommerce');
-		
+
 		$this->admin_page_heading 		= __( 'MDS Collivery', 'woocommerce' );
 		$this->admin_page_description 	= __( 'Seamlessly integrate your website with MDS Collivery', 'woocommerce' );
-		
+
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( &$this, 'process_admin_options' ) );
-		
+
 		$this->init();
 	}
-	
+
 	function init() {
 		// Load the form fields.
 		$this->init_form_fields();
-	
+
 		// Load the settings.
 		$this->init_settings();
-		
+
 		$this->enabled			= $this->settings['enabled'];
 		$this->title			= $this->settings['title'];
-		
+
 		// MDS Specific Values
 		$this->mds_user			= $this->settings['mds_user'];
 		$this->mds_pass			= $this->settings['mds_pass'];
 		$this->markup			= $this->settings['markup'];
 	}
-	
+
 	// Setup Soap Connection if not already active
 	private function soap_init(){
 		// Check if soap session exists
@@ -77,7 +77,7 @@ function init_mds_collivery() {
 			$authenticate = $this->soap->Authenticate($this->mds_user, $this->mds_pass, $_SESSION['token']);
 			// Save Authentication token in session to identify the user again later
 			$_SESSION['token'] = $authenticate['token'];
-		
+
 			if(!$authenticate['token']) {
 				exit("Authentication Error : ".$authenticate['access']);
 			}
@@ -85,7 +85,7 @@ function init_mds_collivery() {
 			$this->authenticate=$authenticate;
 		}
 	}
-	
+
 	/*
 	 * Plugin Settings
 	 */
@@ -124,11 +124,11 @@ function init_mds_collivery() {
 			),
 		);
 	}
-	
+
 	function calculate_shipping($package = array())
 	{
 		$this->soap_init();
-		
+
 		// Capture the correct Town and CPType
 		if (isset($_POST['post_data'])){
 			parse_str($_POST['post_data'], $post_data);
@@ -156,28 +156,26 @@ function init_mds_collivery() {
 					$cptypes_label = $post_data['shipping_cptypes'];
 			}
 		}
-		
+
 		if (isset($town_label)&&$this->get_code($this->get_towns(),$town_label)!=FALSE){
 			$town_brief = $this->get_code($this->get_towns(),$town_label);
 		} else {
 			$my_address = $this->my_address();
 			$town_brief=$my_address['results']['TownBrief'];
 		}
-		
+
 		if (isset($cptypes_label)&&$this->get_code($this->get_cptypes(),$cptypes_label)!=FALSE)
 			$town_type = $this->get_code($this->get_cptypes(),$cptypes_label);
-		
+
 		$services = $this->get_available_services();
-		
+
 		$cart = $this->get_cart_content($package);
-		
+
 		date_default_timezone_set('Africa/Johannesburg');
-		
+
 		$collection_time = 0;
 		$delivery_time = 0;
-		
-		$weight = $cart['max_weight'];
-		
+
 		// Get pricing for each service
 		foreach ($services as $id => $title) {
 			$rate = array(
@@ -187,7 +185,7 @@ function init_mds_collivery() {
 						$town_brief,
 						$town_type,
 						$id,
-						$weight,
+						$cart,
 						$collection_time,
 						$delivery_time
 					)*(1+($this->markup/100))),
@@ -195,7 +193,7 @@ function init_mds_collivery() {
 			if ($rate['cost']>0) $this->add_rate( $rate ); //Only add shipping if it has a value
 		}
 	}
-	
+
 	function get_cart_content($package){
 		if (sizeof($package['contents'])>0){
 			//Reset array to defaults
@@ -205,23 +203,23 @@ function init_mds_collivery() {
 					'max_weight' => 0,
 					'products' => Array()
 				);
-			
+
 			foreach ($package['contents'] as $item_id => $values){
-				
+
 				$_product = $values['data']; // = WC_Product class
 				$qty = $values['quantity'];
-				
+
 				$this->cart['count'] += $qty;
 				$this->cart['weight'] += $_product->get_weight() * $qty;
-				
+
 				// Work out Volumetric Weight based on MDS's calculations
 				$vol_weight = (($_product->length * $_product->width * $_product->height) / 4000);
-				
+
 				if ($vol_weight>$_product->get_weight())
 					$this->cart['max_weight'] += $vol_weight * $qty;
 				else
 					$this->cart['max_weight'] += $_product->get_weight() * $qty;
-				
+
 				for ($i=0; $i<$qty; $i++)
 					$this->cart['products'][] = array(
 							'length' => $_product->length,
@@ -231,14 +229,14 @@ function init_mds_collivery() {
 						);
 			}
 		}
-		
+
 		return $this->cart;
 	}
-	
+
 	/*
 	 * Get a shipping estimate from MDS based on current data.
 	 */
-	function get_shipping_estimate($town_brief, $town_type, $service_type, $weight, $collection_time, $delivery_time){
+	function get_shipping_estimate($town_brief, $town_type, $service_type, $cart, $collection_time, $delivery_time){
 		$my_address = $this->my_address();
 		$data = array (
 				'from_town_brief' => $my_address['results']['TownBrief'],
@@ -246,37 +244,37 @@ function init_mds_collivery() {
 				'to_town_brief' => $town_brief,
 				'service_type' => $service_type,
 				'mds_cover' => true,
-				'weight' => $weight,
+				'weight' => $cart['max_weight'],
 			);
-		
+
 		if ((isset($town_type)) && ($town_type!=""))
 			$data['to_town_type'] = $town_type;
-		
+
 		if ((isset($collection_time)) && ($collection_time!=0))
 			$data['collection_time'] = $collection_time;
 		if ((isset($delivery_time)) && ($delivery_time!=0))
 			$data['delivery_time'] = $delivery_time;
-		
+
 		$this->soap_init();
-		
+
 		$pricing = $this->soap->GetPricing($data,$_SESSION['token']);
-		
+
 		return $pricing['results']['Total'];
 	}
 	/*
 	 * Get available Services from MDS
 	 */
-	
+
 	function get_available_services(){
-		
+
 		/* Uncomment the following lines of code if you'd like to edit/remove any services.
-		 * 
+		 *
 		 * 1: Overnight Before 10:00
 		 * 2: Overnight Before 16:00
 		 * 5: Road Freight Express
 		 * 3: Road Freight
 		 */
-		
+
 		/*return array(
 				1 => "Overnight Before 10:00", // 1: Overnight Before 10:00
 				2 => "Overnight before 16:00", // 2: Overnight Before 16:00
@@ -284,12 +282,12 @@ function init_mds_collivery() {
 				3 => "Road Freight" //            3: Road Freight
 			);
 		*/
-		
+
 		$services = $this->soap->getServices($this->authenticate['token']);
-		
+
 		return $services['results'];
 	}
-	
+
 	/*
 	 * Get list of Towns from MDS
 	 */
@@ -301,13 +299,13 @@ function init_mds_collivery() {
 		}
 		return $this->towns['results'];
 	}
-	
+
 	/*
 	 * Get list of Suburbs from MDS
 	 */
 	public function get_subs($town){
 		$town_code = $this->get_code($this->get_towns(),$town);
-		
+
 		if (!isset($this->subs[$town_code]))
 		{
 			$this->soap_init();
@@ -315,7 +313,7 @@ function init_mds_collivery() {
 		}
 		return $this->subs[$town_code]['results'];
 	}
-	
+
 	/*
 	 * Get list of CPTypes from MDS
 	 */
@@ -327,12 +325,12 @@ function init_mds_collivery() {
 		}
 		return $this->cptypes['results'];
 	}
-	
+
 	/*
 	 * Get Town and CPTypes for Checkout Dropdown's from MDS
 	 */
 	public function get_field_defaults(){
-		
+
 		$towns = $this->get_towns();
 		foreach ($towns as $value) {
 			$my_towns[$value] = $value;
@@ -343,7 +341,7 @@ function init_mds_collivery() {
 		}
 		return Array('towns' => $my_towns, 'cptypes' => $my_cpTypes);
 	}
-	
+
 	/*
 	 * Get array key from label
 	 */
@@ -355,23 +353,23 @@ function init_mds_collivery() {
 		}
 		return false;
 	}
-	
+
 	/*
 	 * Bunch of MDS Functions
 	 */
-	
+
 	public function addAddress($address)
 	{
 		$this->soap_init();
 		return $this->soap->AddAddress($address,$this->authenticate['token']);
 	}
-	
+
 	public function addContact($contact)
 	{
 		$this->soap_init();
 		return $ctid = $this->soap->AddContact($contact,$this->authenticate['token']);
 	}
-	
+
 	public function validate($data)
 	{
 		$this->soap_init();
@@ -379,7 +377,7 @@ function init_mds_collivery() {
 		$validation['pricing'] = $this->soap->GetPricing($validation['results'],$this->authenticate['token']);
 		return $validation;
 	}
-	
+
 	public function register_shipping($data)
 	{
 		$this->soap_init();
@@ -391,7 +389,7 @@ function init_mds_collivery() {
 		}
 		return $new_collivery;
 	}
-	
+
 	public function my_address()
 	{
 		if (!isset($this->my_address)){
@@ -401,7 +399,7 @@ function init_mds_collivery() {
 		}
 		return $this->my_address;
 	}
-	
+
 	public function my_contact()
 	{
 		if (!isset($this->my_contact)){
@@ -412,7 +410,7 @@ function init_mds_collivery() {
 		}
 		return $this->my_contact;
 	}
-	
+
 	public function get_client_address($cpid)
 	{
 		if (!isset($this->client_address[$cpid])){
@@ -422,7 +420,7 @@ function init_mds_collivery() {
 		}
 		return $this->client_address[$cpid];
 	}
-	
+
 	public function get_client_contact($ctid)
 	{
 		if (!isset($this->client_contact[$ctid])){

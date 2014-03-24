@@ -7,22 +7,19 @@
 /**
  * Add a button to order page to register shipping with MDS
  */
-function mds_order_actions( $post_id ) {
-	?>
-	<li><input type="submit" class="button tips" name="mds_confirm_shipping" value="<?php _e('Confirm Shipping', 'woocommerce'); ?>" data-tip="<?php _e('Register Shipping with MDS Collivery.', 'woocommerce'); ?>" /></li>
-	<?php
+function mds_order_actions( $actions ) {
+	$actions['confirm_shipping'] = "Confirm MDS Shipping";
+	return $actions;
 }
 add_action('woocommerce_order_actions', 'mds_order_actions');
 
 /**
  * Redirect Admin to plugin page to register the Collivery
  */
-function mds_process_order_meta( $post_id, $post) {	
-	if ( isset( $_POST['mds_confirm_shipping'] ) && $_POST['mds_confirm_shipping'] ) {
-		wp_redirect(home_url() . '/wp-admin/edit.php?page=mds_register&post_id='. $post_id); die;
-	}
+function mds_process_order_meta( $order) {
+	wp_redirect(home_url() . '/wp-admin/edit.php?page=mds_register&post_id='. $order->id); die();
 }
-add_action('woocommerce_process_shop_order_meta', 'mds_process_order_meta', 20, 2);
+add_action('woocommerce_order_action_confirm_shipping', 'mds_process_order_meta', 20, 2);
 
 /**
  * WordPress Backend to Register Collivery
