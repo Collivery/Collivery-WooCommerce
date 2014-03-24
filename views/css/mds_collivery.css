@@ -1,0 +1,31 @@
+u#top_menu {list-style-type: none;}
+#top_menu li{display:inline-block;}
+
+#top_menu li a{
+    display: block;
+    float:left;
+    margin:0 7px 10px 0;
+    background-color:#f5f5f5;
+    border:1px solid #dedede;
+    border-top:1px solid #eee;
+    border-left:1px solid #eee;
+    font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size:14px;
+    line-height:130%;
+    text-decoration:none;
+    font-weight:bold;
+    color:#565656;
+    cursor:pointer;
+    padding:5px 10px 6px 7px; /* Links */
+}
+
+/* STANDARD */
+#top_menu li a:hover{
+    background-color:#E3FFDD;
+    border:1px solid #70de70;
+    color:#336699;
+}
+
+.mds_response{font-size: 15px;color:red;margin:15px 0 0 39px;}
+#mds_config{margin:10px}
+.error{color: red;}
