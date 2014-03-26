@@ -97,7 +97,4 @@ jQuery(document).ready(function($) {
 		clearTimeout(timer_update_shipping_subs);
 		update_shipping_subs();
 	});
-
-	update_billing_subs();
-	update_shipping_subs();
 });
