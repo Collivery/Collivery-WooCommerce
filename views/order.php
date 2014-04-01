@@ -4,7 +4,7 @@
 	<div class="parallel">
 		<table width="100%">
 			<tr>
-				<td style="width:33.33333333333333%;">
+				<td style="width:31%;">
 					<fieldset class="parallel_target">
 						<legend>Collection Details:</legend>
 						<label for="which_collection_address">Which Collection Address:</label>
@@ -72,7 +72,7 @@
 						</div>
 					</fieldset>
 				</td>
-				<td style="width:33.33333333333333%;">
+				<td style="width:38%;">
 					<fieldset class="parallel_target">
 						<legend>Parcel's / Instructions / Service:</legend>
 						<label for="service">Service</label>
@@ -145,7 +145,7 @@
 						<textarea cols="50" name="instructions" rows="7"></textarea>
 					</fieldset>
 				</td>
-				<td style="width:33.33333333333333%;">
+				<td style="width:31%;">
 					<fieldset class="parallel_target">
 						<legend>Destination Details:</legend>
 						<label for="which_destination_address">Which Address:</label>

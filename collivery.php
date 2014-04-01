@@ -12,8 +12,143 @@ global $wp_version;
 global $mds_db_version;
 $mds_db_version = "1.0";
 
-add_action('plugins_loaded', 'init_mds_collivery', 0);
+add_action('admin_menu', 'adminMenu'); // Add our Admin menu items
+register_activation_hook(__FILE__, 'mdsInstall'); // Install Hook
+register_deactivation_hook(__FILE__, 'mdsUninstall'); // Uninstall Hook
 
+// Function to register our functions as pages from our admin menu
+function adminMenu()
+{
+	$firt_page = add_submenu_page('woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex');
+	add_submenu_page($firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed');
+}
+
+// Function used to display index of all our deliveries already accepted and sent to MDS Collivery
+function mdsConfirmedIndex()
+{
+	global $wpdb;
+	wp_register_style( 'mds_collivery_css', plugins_url( 'Collivery-WooCommerce/views/css/mds_collivery.css' ) );
+	wp_enqueue_style( 'mds_collivery_css' );
+	
+	$post = $_POST;
+	$status = ( isset( $post['status'] ) && $post['status'] != "" ) ? $post['status'] : 1;
+	$waybill = ( isset( $post['waybill'] ) && $post['waybill'] != "" ) ? $post['waybill'] : false;	
+	
+	$table_name = $wpdb->prefix . 'mds_collivery_processed';
+	if(isset( $post['waybill'] ) && $post['waybill'] != "")
+	{
+		$colliveries = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE status=".$status." and waybill=".$waybill." ORDER BY id DESC;", OBJECT);
+	}
+	else
+	{
+		$colliveries = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE status=".$status." ORDER BY id DESC;", OBJECT);
+	}
+	
+	$mds = new WC_MDS_Collivery();
+	$collivery = $mds->getColliveryClass();
+	include 'views/index.php';
+}
+
+// View our Collivery once it has been accepted
+function mdsConfirmed()
+{
+	global $wpdb;
+	wp_register_script('mds_collivery_js', plugins_url('Collivery-WooCommerce/views/js/mds_collivery.js'));
+	wp_enqueue_script( 'mds_collivery_js' );
+	
+	$table_name = $wpdb->prefix . 'mds_collivery_processed';
+	$data_ = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE waybill=".$_GET['waybill'].";", OBJECT);
+	$data = $data_[0];
+	$mds = new WC_MDS_Collivery();
+	$collivery = $mds->getColliveryClass();
+	$directory = getcwd().'/cache/mds_collivery/waybills/' . $data->waybill;
+	
+	// Do we have images of the parcels
+	if ( $pod = $collivery->getPod( $data->waybill ) ) {
+		if ( ! is_dir( $directory ) ) {
+			mkdir( $directory, 0777, true );
+		}
+
+		file_put_contents( $directory . '/' . $pod['filename'], base64_decode( $pod['file'] ) );
+	}
+
+	// Do we have proof of delivery
+	if ( $parcels = $collivery->getParcelImageList( $data->waybill ) ) {
+		if ( !is_dir( $directory ) ) {
+			mkdir( $directory, 0777, true );
+		}
+
+		foreach ( $parcels as $parcel ) {
+			$size = $parcel['size'];
+			$mime = $parcel['mime'];
+			$filename = $parcel['filename'];
+			$parcel_id = $parcel['parcel_id'];
+
+			if ( $image = $collivery->getParcelImage( $parcel_id ) ) {
+				file_put_contents( $directory . '/' . $filename, base64_decode( $image['file'] ) );
+			}
+		}
+	}
+
+	// Get our tracking information
+	$tracking = $collivery->getStatus( $data->waybill );
+	$validation_results = json_decode( $data->validation_results );
+
+	$collection_address = $collivery->getAddress( $validation_results->collivery_from );
+	$destination_address = $collivery->getAddress( $validation_results->collivery_to );
+	$collection_contacts = $collivery->getContacts( $validation_results->collivery_from );
+	$destination_contacts = $collivery->getContacts( $validation_results->collivery_to );
+
+//	// Set our status
+//	if ( $tracking['status_id'] == 6 ) {
+//		// change our status
+//		$this->db->setQuery( "UPDATE `#__mds_collivery_processed` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";" );
+//		$this->db->query();
+//	}
+
+	$pod = glob( $directory . "/*.{pdf,PDF}", GLOB_BRACE );
+	$image_list = glob($directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE);
+	$view_waybill = 'https://quote.collivery.co.za/waybillpdf.php?wb='.base64_encode($data->waybill).'&output=I';
+	include 'views/view.php';
+
+}
+
+// Install
+function mdsInstall()
+{
+	global $wpdb;
+	global $mds_db_version;
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	mkdir(getcwd().'/cache'); // Make this directory for our cache class
+
+	// Creates our table to store our accepted deliveries
+	$sql = "CREATE TABLE IF NOT EXISTS `mds_collivery_processed` (
+		`id` int(11) NOT NULL AUTO_INCREMENT,
+		`waybill` int(11) NOT NULL,
+		`validation_results` TEXT NOT NULL,
+		`status` int(1) NOT NULL DEFAULT 1,
+		PRIMARY KEY (`id`)
+	);";
+	dbDelta($sql);
+
+	add_option("mds_db_version", $mds_db_version);
+}
+
+// Uninstall
+function mdsUninstall()
+{
+	global $wpdb;
+	delete_files(getcwd().'/cache', TRUE);
+	@rmdir(getcwd().'/cache'); // Remove our cache directory
+
+	// Removes the table we created on install
+	$table_name = $wpdb->prefix . 'mds_collivery_processed';
+	$wpdb->query("DROP TABLE IF EXISTS `$table_name`");
+
+	delete_option('mds_db_version');
+}
+
+add_action('plugins_loaded', 'init_mds_collivery', 0);
 function init_mds_collivery()
 {
 	// Check if 'WC_Shipping_Method' class is loaded, else exit.
@@ -55,7 +190,31 @@ function init_mds_collivery()
 			$this->admin_page_description = __('Seamlessly integrate your website with MDS Collivery', 'woocommerce');
 
 			add_action('woocommerce_update_options_shipping_' . $this->id, array(&$this, 'process_admin_options'));
+			
+			// Use the MDS API Files
+			require_once 'Mds/Cache.php';
+			require_once 'Mds/Collivery.php';
+			
+			// Class for converting lengths and weights
+			require_once 'UnitConvertor.php';
+			$this->converter = new UnitConvertor();
+			
+			$this->init();
+		}
 
+		function init()
+		{
+			// Load the settings.
+			$this->init_settings();
+
+			$this->enabled = $this->settings['enabled'];
+			$this->title = $this->settings['title'];
+
+			// MDS Specific Values
+			$this->mds_user = $this->settings['mds_user'];
+			$this->mds_pass = $this->settings['mds_pass'];
+			$this->markup = $this->settings['markup'];
+			
 			$config = array(
 				'app_name' => 'Shipping by MDS Collivery for WooCommerce', // Application Name
 				'app_version' => "2.0", // Application Version
@@ -64,10 +223,6 @@ function init_mds_collivery()
 				'user_email' => $this->mds_user,
 				'user_password' => $this->mds_pass
 			);
-
-			// Use the MDS API Files
-			require_once 'Mds/Cache.php';
-			require_once 'Mds/Collivery.php';
 			$this->collivery = new Mds\Collivery($config);
 			
 			// Get some information from the API
@@ -79,28 +234,8 @@ function init_mds_collivery()
 			$this->default_contacts = $this->collivery->getContacts($this->default_address_id);
 			$this->mds_services = $this->collivery->getServices();
 
-			// Class for converting lengths and weights
-			require_once 'UnitConvertor.php';
-			$this->converter = new UnitConvertor();
-			
-			$this->init();
-		}
-
-		function init()
-		{
 			// Load the form fields.
-			$this->init_form_fields();
-
-			// Load the settings.
-			$this->init_settings();
-
-			$this->enabled = $this->settings['enabled'];
-			$this->title = $this->settings['title'];
-
-			// MDS Specific Values
-			$this->mds_user = $this->settings['mds_user'];
-			$this->mds_pass = $this->settings['mds_pass'];
-			$this->markup = $this->settings['markup'];
+			$this->init_form_fields();			
 		}
 
 		public function getColliveryClass()
@@ -420,3 +555,49 @@ function mds_collivery_cart_shipping_packages($packages)
 }
 
 add_filter('woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages');
+
+// This function is here to delete our cache folder which we created during install
+function delete_files($path, $del_dir = false, $level = 0, $dst = false)
+{
+	// Trim the trailing slash
+	$path = rtrim($path, DIRECTORY_SEPARATOR);
+	if ($dst) {
+		$dst = rtrim($dst, DIRECTORY_SEPARATOR);
+	}
+
+	if (!$current_dir = @opendir($path)) {
+		return false;
+	}
+
+	while (false !== ( $filename = @readdir($current_dir) )) {
+		if ($filename != "." and $filename != "..") {
+			if (is_dir($path . DIRECTORY_SEPARATOR . $filename)) {
+				// Ignore empty folders
+				if (substr($filename, 0, 1) != '.') {
+					if ($dst) {
+						delete_files($path . DIRECTORY_SEPARATOR . $filename, $del_dir, $level + 1, $dst . DIRECTORY_SEPARATOR . $filename);
+					} else {
+						delete_files($path . DIRECTORY_SEPARATOR . $filename, $del_dir, $level + 1);
+					}
+				}
+			} else {
+				if ($dst) {
+					unlink($dst . DIRECTORY_SEPARATOR . $filename);
+				} else {
+					unlink($path . DIRECTORY_SEPARATOR . $filename);
+				}
+			}
+		}
+	}
+	@closedir($current_dir);
+
+	if ($del_dir == true and $level > 0) {
+		if ($dst) {
+			return @rmdir($dst);
+		} else {
+			return @rmdir($path);
+		}
+	}
+
+	return true;
+}
