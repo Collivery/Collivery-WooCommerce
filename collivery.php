@@ -6,7 +6,6 @@
  * Plugin Name: MDS Collivery
  * Description: Plugin to add support for MDS Collivery to WooCommerce
  */
-
 // Our versions
 global $wp_version;
 global $mds_db_version;
@@ -16,6 +15,7 @@ add_action ('admin_menu', 'adminMenu'); // Add our Admin menu items
 register_activation_hook (__FILE__, 'mdsInstall'); // Install Hook
 register_deactivation_hook (__FILE__, 'mdsUninstall'); // Uninstall Hook
 // Function to register our functions as pages from our admin menu
+
 function adminMenu () {
     $firt_page = add_submenu_page ('woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex');
     add_submenu_page ($firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed');
@@ -93,8 +93,8 @@ function mdsConfirmed () {
     $destination_contacts = $collivery->getContacts ($validation_results->collivery_to);
 
     // Set our status if the delivery is invoiced (closed)
-    if ( $tracking['status_id'] == 6 ) {
-	$wpdb->query("UPDATE `" . $table_name . "` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";");
+    if ($tracking['status_id'] == 6) {
+	$wpdb->query ("UPDATE `" . $table_name . "` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";");
     }
 
     $pod = glob ($directory . "/*.{pdf,PDF}", GLOB_BRACE);
@@ -109,7 +109,6 @@ function mdsInstall () {
     global $mds_db_version;
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     mkdir (getcwd () . '/cache'); // Make this directory for our cache class
-
     // Creates our table to store our accepted deliveries
     $table_name = $wpdb->prefix . $table;
     $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
@@ -176,6 +175,11 @@ function init_mds_collivery () {
 	    $this->admin_page_description = __ ('Seamlessly integrate your website with MDS Collivery', 'woocommerce');
 
 	    add_action ('woocommerce_update_options_shipping_' . $this->id, array (&$this, 'process_admin_options'));
+
+	    // We have to check what php version we have before anything is installed.
+	    if (version_compare (PHP_VERSION, '5.3.0') > 0) {
+		die ('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
+	    }
 
 	    // Use the MDS API Files
 	    require_once 'Mds/Cache.php';
@@ -258,6 +262,7 @@ function init_mds_collivery () {
 	/*
 	 * Plugin Settings
 	 */
+
 	public function init_form_fields () {
 	    global $woocommerce;
 	    $fields = array (
@@ -311,8 +316,7 @@ function init_mds_collivery () {
 	    $this->form_fields = $fields;
 	}
 
-	function calculate_shipping ($package = array ())
-	{
+	function calculate_shipping ($package = array ()) {
 	    // Get our default address
 	    $default_address = $this->collivery->getAddress ($this->default_address_id);
 	    $default_contacts = $this->collivery->getContacts ($this->default_address_id);
@@ -363,8 +367,7 @@ function init_mds_collivery () {
 
 		    // query the API for our prices
 		    $response = $this->collivery->getPrice ($data);
-		    if(isset($response['price']['inc_vat']))
-		    {
+		    if (isset ($response['price']['inc_vat'])) {
 			$price = ($response['price']['inc_vat'] * $markup);
 
 			$rate = array (
@@ -474,7 +477,7 @@ function init_mds_collivery () {
 	    }
 	    return $parcels;
 	}
-	
+
 	/*
 	 * Get Town and Location Types for Checkout Dropdown's from MDS
 	 */
@@ -505,10 +508,11 @@ add_filter ('woocommerce_shipping_methods', 'add_MDS_Collivery_method');
  * WooCommerce caches pricing information.
  * This adds location_type to the hash to update pricing cache when changed.
  */
+
 function mds_collivery_cart_shipping_packages ($packages) {
     $mds = new WC_MDS_Collivery;
     $collivery = $mds->getColliveryClass ();
-	    
+
     if (isset ($_POST['post_data'])) {
 	parse_str ($_POST['post_data'], $post_data);
 	$packages[0]['destination']['location_type'] = $post_data['billing_location_type'] . $post_data['shipping_location_type'];
