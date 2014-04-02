@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<title>MDS Collivery - Virtuemart Plugin :: Users Manual</title>
+	<link rel="stylesheet" type="text/css" media="screen" href="style.css">
+	<!--[if IE]>
+	<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+    </head>
+    <body>
+	<a name="top"></a>
+	<div class="wrapper">
+	    <header>
+		<h1>MDS Collivery - WooCommerce Plugin Guide</h1>
+		<p>
+		    <span style="color: #ff0000; float: right;">Rev 1 Created (2014-04-02)</span>
+		</p>
+	    </header>
+
+	    <p>
+		<b>Introduction:</b><br />
+		The installation of the MDS Collivery plugin does everything for you, once installed the plugin will only need you to enter your username and password but by default our demo account is used so that you may test your new plugin before going live. This plugin gives your WooCommerce the ability to get prices from MDS Collivery based on the dimensions and weight of the products added to your client’s cart. Once your client has checked out you will then have the ability to modify the particulars of the delivery before sending the delivery request to MD Collivery. Once you accept the delivery the plugin then sends the delivery to MDS Collivery and saves the delivery in your database where you can access the delivery in order to track, display parcel images and proof of delivery. Your clients too have the ability to track the delivery but not to display parcel images or proof of delivery.	    </p>
+	    <p>
+		<b>Prerequisites before installing Collivery Extension:</b><br />
+		• WordPress 3.8.1<br />
+		• WooCommerce Version: 2.1.5<br />
+		• Hosting service with 'SoapClient' - Enabled<br />
+		• MDS Collivery - WooCommerce Plugin <a href="#">Download</a>
+	    </p>
+	    <p style="color: red;"><b>Make sure before installing this plugin that you make a full SQL database backup and a full backup of all your files. If for some reason something goes wrong you will need this backup to get your website back to where it was before.</b></p>
+	    <section>
+		<header>
+		    <h2><a name="toc">Table of Contents</a></h2>
+		</header>
+		<ol>
+		    <li><a href="#instalation">Installation</a></li>
+		    <li><a href="#admin_config">Configuration</a></li>
+		    <li><a href="#client_usage">Front End Usage (Client Side)</a></li>
+		    <li><a href="#admin_usage">Back End Usage (Admin Side)</a></li>
+		</ol>
+	    </section>
+
+	    <section>
+		<header>
+		    <h2><a name="instalation" href="#instalation">Installation</a></h2>
+		</header>
+		<p>Installation is as simple as downloading the plugin to a destination on your computer and then browsing through to your admin section in WooCommerce and then clicking on Plugins, once you are there you click on the Add New button at the top of the page and then select the upload tab and then click on browse and select the plugin file you downloaded and then click on open. Once it has been installed click on Activate Plugin. That’s it, the plugin is installed and ready for action.</p>
+	    </section>
+	    <section>
+		<header>
+		    <h2><a name="admin_config" href="#admin_config">Configuration</a></h2>
+		</header>
+		<p>All our settings are located in WooCommerce ad min section -> settings page under Shipping tab.</p>
+		<img src="images/browse_to_settings.jpg"/><br />
+		<img src="images/shiiping_settings.jpg"/><br />
+		<p>Once you are in your shipping settings we have to select MDS Collivery under shipping methods.</p>
+		<img src="images/selecting_mds.jpg"/><br />
+		<p>Here we can enable or disable the plugin, change our username and password, include insurance, select which methods we want activated and how much mark-up per method. That’s all the configuring we need to do.</p>
+	    </section>
+	    <section>
+		<header>
+		    <h2><a name="client_usage" href="#client_usage">Front End Usage (Client Side)</a></h2>
+		</header>
+		<p>On the clients end there is only one change the plugin has made, this being the default fields in your clients billing and shipping address. These fields are required by the plugin in order to get prices from MDS Colliver. We have added towns, suburbs and location types to the fields.</p>
+		<img src="images/new_fields.jpg"/><br />
+	    </section>
+	    <section>
+		<header>
+		    <h2><a name="admin_usage" href="#admin_usage">Back End Usage (Admin Side)</a></h2>
+		</header>
+		<p>This section is the last and final part to the MDS Collivery plugin, in this section you the admin will be able to view orders that have not been confirmed as of yet and then either modify the delivery or accept the delivery. Once you have accepted the delivery it will be saved and you will have access to the delivery to track, view parcel images and view POD (proof of delivery).</p>
+		<p>Our first function is located in your WooCommerce edit order page. In the edit page on the top right under order actions in the drop down list, there is an option called Confirm MDS Shipping.</p>
+		<img src="images/order_action.jpg"/><br />
+		<p>If you select that option and click Save Order you will be taken a page where you can edit details of the order, get prices and accept the delivery which passes the delivery on to MDS COllivery.</p>
+		<img src="images/new_admin.jpg"/><br />
+		<p>Here you will be able to change collection address and destination address as well as the delivery service. You can even include some written instructions for the driver and add additional parcels.</p>
+		<p>Which Collection Address: for both collection and destination just gives you the option of adding a new address to your lists of addresses in you MDS Collivery account or pick from the addresses already in that list. We have added some validation just to help make sure that the required information gets passed on to the API.</p>
+		<p>Once you have accepted the delivery the delivery will be sent to MDS Collivery and the order status will be changed to processing and you will be redirected back to the edit order page in WooCommerce.</p>
+		<p>The delivery is now saved and you can gain access to it by clicking on MDS Confirmed link under the WooCommerce menu item.</p>
+		<img src="images/mds_confirmed.jpg"/><br />
+		<p>Here you can view all past deliveries. If you click on one of the deliveries you then have access to parcel images, proof of deliveries and tracking information for each delivery.</p>
+		<img src="images/mds_saved.jpg"/><br />
+	    </section>
+	</div>
+	<div class="top"><a href="#top">^ Top ^</a></div>
+    </body>
+</html>
