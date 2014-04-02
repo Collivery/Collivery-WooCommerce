@@ -257,7 +257,6 @@ function init_mds_collivery () {
 	/*
 	 * Plugin Settings
 	 */
-
 	public function init_form_fields () {
 	    global $woocommerce;
 	    $fields = array (
@@ -311,7 +310,8 @@ function init_mds_collivery () {
 	    $this->form_fields = $fields;
 	}
 
-	function calculate_shipping ($package = array ()) {
+	function calculate_shipping ($package = array ())
+	{
 	    // Get our default address
 	    $default_address = $this->collivery->getAddress ($this->default_address_id);
 	    $default_contacts = $this->collivery->getContacts ($this->default_address_id);
@@ -367,24 +367,11 @@ function init_mds_collivery () {
 			$price = ($response['price']['inc_vat'] * $markup);
 
 			$rate = array (
-			    'id' => 'mds_' . $id,
+			    'id' => 'mds_' . $id . '_' . rand(5, 15),
 			    'label' => $title,
 			    'cost' => number_format ($price, 2, '.', ''),
 			);
-			if ($rate['cost'] > 0) {
-			    $this->add_rate ($rate); //Only add shipping if it has a value
-			}			
-		    }
-		    else
-		    {
-			$rate = array (
-			    'id' => 'mds_' . $id,
-			    'label' => print_r($_POST, true),
-			    'cost' => rand (0, 999999999999999999),
-			);
-			if ($rate['cost'] > 0) {
-			    $this->add_rate ($rate); //Only add shipping if it has a value
-			}
+			$this->add_rate ($rate); //Only add shipping if it has a value
 		    }
 		}
 	    }
@@ -486,7 +473,7 @@ function init_mds_collivery () {
 	    }
 	    return $parcels;
 	}
-
+	
 	/*
 	 * Get Town and Location Types for Checkout Dropdown's from MDS
 	 */
@@ -517,11 +504,10 @@ add_filter ('woocommerce_shipping_methods', 'add_MDS_Collivery_method');
  * WooCommerce caches pricing information.
  * This adds location_type to the hash to update pricing cache when changed.
  */
-
 function mds_collivery_cart_shipping_packages ($packages) {
     $mds = new WC_MDS_Collivery;
     $collivery = $mds->getColliveryClass ();
-
+	    
     if (isset ($_POST['post_data'])) {
 	parse_str ($_POST['post_data'], $post_data);
 	$packages[0]['destination']['location_type'] = $post_data['billing_location_type'] . $post_data['shipping_location_type'];
