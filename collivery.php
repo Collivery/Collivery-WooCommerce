@@ -523,7 +523,17 @@ function mds_collivery_cart_shipping_packages ($packages) {
 	//@TODO: Find a way to fix this
 	$packages[0]['destination']['location_type'] = rand (0, 999999999999999999) . '-' . rand (0, 999999999999999999) . rand (0, 999999999999999999) . rand (0, 999999999999999999);
     }
-
+    
+    if (isset ($_POST['post_data'])) {
+	parse_str ($_POST['post_data'], $post_data);
+	$packages[0]['destination']['town'] = $post_data['billing_town'] . $post_data['shipping_town'];
+    } else if (isset ($_POST['billing_town']) || isset ($_POST['shipping_town'])) {
+	$packages[0]['destination']['town'] = $_POST['billing_town'] . $_POST['shipping_town'];
+    } else {
+	//Bad Practice... But incase town isn't set, do not cache the order!
+	//@TODO: Find a way to fix this
+	$packages[0]['destination']['town'] = rand (0, 999999999999999999) . '-' . rand (0, 999999999999999999) . rand (0, 999999999999999999) . rand (0, 999999999999999999);
+    }
     return $packages;
 }
 
