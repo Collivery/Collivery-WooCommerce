@@ -103,4 +103,29 @@ jQuery(document).ready(function($) {
 	
 	update_billing_subs();
 	update_shipping_subs();
+	
+	// This function is used to display shipping prices for loged in users.
+	// Seems to be a bug in woocommerce that does not display the prices unless you change the city.
+	if(jQuery('.checkout').length > 0)
+	{
+	    // Get our payment method
+	    var payment_method = "";
+	    jQuery('#payment').find('payment_method').each(function()
+	    {
+		if(jQuery(this).attr('checked'))
+		{
+		    payment_method = jQuery(this).val();
+		}
+	    });
+	    
+	    var datastring = jQuery('.checkout').serialize();
+            jQuery.ajax({
+                type: "POST",
+                url: '/wordpress/wp-admin/admin-ajax.php',
+                data: 'action=woocommerce_update_order_review&security='+wc_checkout_params.update_order_review_nonce+'&payment_method='+payment_method+'&'+datastring,
+                success: function(data) {
+		    jQuery('#order_review').replaceWith(data);
+                }
+            });
+	}
 });
