@@ -105,6 +105,11 @@ function mdsConfirmed () {
 
 // Install
 function mdsInstall () {
+    // We have to check what php version we have before anything is installed.
+    if (version_compare (PHP_VERSION, '5.3.0') < 0) {
+	die ('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
+    }
+	    
     global $wpdb;
     global $mds_db_version;
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
@@ -175,11 +180,6 @@ function init_mds_collivery () {
 	    $this->admin_page_description = __ ('Seamlessly integrate your website with MDS Collivery', 'woocommerce');
 
 	    add_action ('woocommerce_update_options_shipping_' . $this->id, array (&$this, 'process_admin_options'));
-
-	    // We have to check what php version we have before anything is installed.
-	    if (version_compare (PHP_VERSION, '5.3.0') > 0) {
-		die ('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
-	    }
 
 	    // Use the MDS API Files
 	    require_once 'Mds/Cache.php';
