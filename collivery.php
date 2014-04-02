@@ -6,6 +6,7 @@
  * Plugin Name: MDS Collivery
  * Description: Plugin to add support for MDS Collivery to WooCommerce
  */
+
 // Our versions
 global $wp_version;
 global $mds_db_version;
@@ -91,12 +92,10 @@ function mdsConfirmed () {
     $collection_contacts = $collivery->getContacts ($validation_results->collivery_from);
     $destination_contacts = $collivery->getContacts ($validation_results->collivery_to);
 
-//	// Set our status
-//	if ( $tracking['status_id'] == 6 ) {
-//		// change our status
-//		$this->db->setQuery( "UPDATE `#__mds_collivery_processed` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";" );
-//		$this->db->query();
-//	}
+    // Set our status if the delivery is invoiced (closed)
+    if ( $tracking['status_id'] == 6 ) {
+	$wpdb->query("UPDATE `" . $table_name . "` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";");
+    }
 
     $pod = glob ($directory . "/*.{pdf,PDF}", GLOB_BRACE);
     $image_list = glob ($directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE);
