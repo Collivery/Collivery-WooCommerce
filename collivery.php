@@ -367,7 +367,7 @@ function init_mds_collivery () {
 			$price = ($response['price']['inc_vat'] * $markup);
 
 			$rate = array (
-			    'id' => 'mds_' . $id . '_' . rand(5, 15),
+			    'id' => 'mds_' . $id,
 			    'label' => $title,
 			    'cost' => number_format ($price, 2, '.', ''),
 			);
