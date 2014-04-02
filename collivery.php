@@ -110,14 +110,16 @@ function mdsInstall () {
     global $mds_db_version;
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     mkdir (getcwd () . '/cache'); // Make this directory for our cache class
+
     // Creates our table to store our accepted deliveries
-    $sql = "CREATE TABLE IF NOT EXISTS `mds_collivery_processed` (
-		`id` int(11) NOT NULL AUTO_INCREMENT,
-		`waybill` int(11) NOT NULL,
-		`validation_results` TEXT NOT NULL,
-		`status` int(1) NOT NULL DEFAULT 1,
-		PRIMARY KEY (`id`)
-	);";
+    $table_name = $wpdb->prefix . $table;
+    $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
+	`id` int(11) NOT NULL AUTO_INCREMENT,
+	`waybill` int(11) NOT NULL,
+	`validation_results` TEXT NOT NULL,
+	`status` int(1) NOT NULL DEFAULT 1,
+	PRIMARY KEY (`id`)
+    );";
     dbDelta ($sql);
 
     add_option ("mds_db_version", $mds_db_version);

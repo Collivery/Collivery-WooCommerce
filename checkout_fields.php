@@ -76,20 +76,21 @@ function custom_override_default_fields($fields)
 			'required' => 1,
 			'class' => Array('form-row-last')
 		),
-		'phone' => Array(
-			'validate' => array('phone'),
-			'label' => 'Cell Phone',
-			'placeholder' => 'Phone number',
-			'required' => 1,
-			'class' => Array('form-row-first')
-		),
 		'email' => Array(
 			'validate' => array('email'),
 			'label' => 'Email Address',
 			'placeholder' => 'you@yourdomain.co.za',
 			'required' => 1,
+			'class' => Array('form-row-first')
+		),
+		'phone' => Array(
+			'validate' => array('phone'),
+			'label' => 'Cell Phone',
+			'placeholder' => 'Phone number',
+			'required' => 1,
 			'class' => Array('form-row-last')
 		),
+
 	);
 	return $data;
 }
