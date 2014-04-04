@@ -31,7 +31,7 @@ function adminMenu () {
 // Function used to display index of all our deliveries already accepted and sent to MDS Collivery
 function mdsConfirmedIndex () {
     global $wpdb;
-    wp_register_style ('mds_collivery_css', plugins_url ('Collivery-WooCommerce/views/css/mds_collivery.css'));
+    wp_register_style ('mds_collivery_css', __DIR__.'/views/css/mds_collivery.css');
     wp_enqueue_style ('mds_collivery_css');
 
     $post = $_POST;
@@ -53,7 +53,7 @@ function mdsConfirmedIndex () {
 // View our Collivery once it has been accepted
 function mdsConfirmed () {
     global $wpdb;
-    wp_register_script ('mds_collivery_js', plugins_url ('Collivery-WooCommerce/views/js/mds_collivery.js'));
+    wp_register_script ('mds_collivery_js', __DIR__.'/views/js/mds_collivery.js');
     wp_enqueue_script ('mds_collivery_js');
 
     $table_name = $wpdb->prefix . 'mds_collivery_processed';
