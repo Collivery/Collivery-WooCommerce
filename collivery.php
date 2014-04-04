@@ -3,9 +3,16 @@
 /**
  * @package MDS Collivery
  * @version 1.0
- * Plugin Name: MDS Collivery
- * Description: Plugin to add support for MDS Collivery to WooCommerce
  */
+/*
+ * Plugin Name: MDS Collivery
+ * Plugin URI: http://www.collivery.co.za/
+ *
+ * Description: Plugin to add support for MDS Collivery in WooCommerce
+ * Authors: Bryce Large, Bernhard Breytenbach 
+ * Version: 1.0
+ */
+
 // Our versions
 global $wp_version;
 global $mds_db_version;
@@ -14,8 +21,8 @@ $mds_db_version = "1.0";
 add_action ('admin_menu', 'adminMenu'); // Add our Admin menu items
 register_activation_hook (__FILE__, 'mdsInstall'); // Install Hook
 register_deactivation_hook (__FILE__, 'mdsUninstall'); // Uninstall Hook
-// Function to register our functions as pages from our admin menu
 
+// Function to register our functions as pages from our admin menu
 function adminMenu () {
     $firt_page = add_submenu_page ('woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex');
     add_submenu_page ($firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed');
@@ -109,23 +116,22 @@ function mdsInstall () {
     if (version_compare (PHP_VERSION, '5.3.0') < 0) {
 	die ('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
     }
-	    
+
     global $wpdb;
-    global $mds_db_version;
     require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
     mkdir (getcwd () . '/cache'); // Make this directory for our cache class
     // Creates our table to store our accepted deliveries
-    $table_name = $wpdb->prefix . $table;
+    $table_name = $wpdb->prefix . 'mds_collivery_processed';
     $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
-	`id` int(11) NOT NULL AUTO_INCREMENT,
-	`waybill` int(11) NOT NULL,
-	`validation_results` TEXT NOT NULL,
-	`status` int(1) NOT NULL DEFAULT 1,
-	PRIMARY KEY (`id`)
-    );";
+	    `id` int(11) NOT NULL AUTO_INCREMENT,
+	    `waybill` int(11) NOT NULL,
+	    `validation_results` TEXT NOT NULL,
+	    `status` int(1) NOT NULL DEFAULT 1,
+	    PRIMARY KEY (`id`)
+	);";
     dbDelta ($sql);
 
-    add_option ("mds_db_version", $mds_db_version);
+    add_option ("mds_db_version", "1.0");
 }
 
 // Uninstall
@@ -133,10 +139,10 @@ function mdsUninstall () {
     global $wpdb;
     delete_files (getcwd () . '/cache', TRUE);
     @rmdir (getcwd () . '/cache'); // Remove our cache directory
+    
     // Removes the table we created on install
     $table_name = $wpdb->prefix . 'mds_collivery_processed';
     $wpdb->query ("DROP TABLE IF EXISTS `$table_name`");
-
     delete_option ('mds_db_version');
 }
 
@@ -173,26 +179,27 @@ function init_mds_collivery () {
 	var $converter;
 
 	public function __construct () {
-	    $this->id = 'mds_collivery';
-	    $this->method_title = __ ('MDS Collivery', 'woocommerce');
-
-	    $this->admin_page_heading = __ ('MDS Collivery', 'woocommerce');
-	    $this->admin_page_description = __ ('Seamlessly integrate your website with MDS Collivery', 'woocommerce');
-
-	    add_action ('woocommerce_update_options_shipping_' . $this->id, array (&$this, 'process_admin_options'));
-
 	    // Use the MDS API Files
 	    require_once 'Mds/Cache.php';
 	    require_once 'Mds/Collivery.php';
 
 	    // Class for converting lengths and weights
 	    require_once 'UnitConvertor.php';
-	    $this->converter = new UnitConvertor();
+
+	    $this->id = 'mds_collivery';
+	    $this->method_title = __ ('MDS Collivery', 'woocommerce');
+	    $this->admin_page_heading = __ ('MDS Collivery', 'woocommerce');
+	    $this->admin_page_description = __ ('Seamlessly integrate your website with MDS Collivery', 'woocommerce');
+
+	    add_action ('woocommerce_update_options_shipping_' . $this->id, array (&$this, 'process_admin_options'));
 
 	    $this->init ();
 	}
 
 	function init () {
+	    // Load the form fields.
+	    $this->init_form_fields ();
+
 	    // Load the settings.
 	    $this->init_settings ();
 
@@ -202,7 +209,6 @@ function init_mds_collivery () {
 	    // MDS Specific Values
 	    $this->mds_user = $this->settings['mds_user'];
 	    $this->mds_pass = $this->settings['mds_pass'];
-	    $this->markup = $this->settings['markup'];
 
 	    $config = array (
 		'app_name' => 'Shipping by MDS Collivery for WooCommerce', // Application Name
@@ -223,8 +229,10 @@ function init_mds_collivery () {
 	    $this->default_contacts = $this->collivery->getContacts ($this->default_address_id);
 	    $this->mds_services = $this->collivery->getServices ();
 
-	    // Load the form fields.
-	    $this->init_form_fields ();
+	    $this->converter = new UnitConvertor();
+
+	    // Load the form fields that depend on the WS.
+	    $this->init_ws_form_fields ();
 	}
 
 	public function getColliveryClass () {
@@ -298,6 +306,13 @@ function init_mds_collivery () {
 		    'checked' => 'checked',
 		),
 	    );
+
+	    $this->form_fields = $fields;
+	}
+
+	public function init_ws_form_fields () {
+	    global $woocommerce;
+	    $fields = $this->form_fields;
 
 	    foreach ($this->mds_services as $id => $title) {
 		$fields['method_' . $id] = array (
@@ -523,7 +538,7 @@ function mds_collivery_cart_shipping_packages ($packages) {
 	//@TODO: Find a way to fix this
 	$packages[0]['destination']['location_type'] = rand (0, 999999999999999999) . '-' . rand (0, 999999999999999999) . rand (0, 999999999999999999) . rand (0, 999999999999999999);
     }
-    
+
     if (isset ($_POST['post_data'])) {
 	parse_str ($_POST['post_data'], $post_data);
 	$packages[0]['destination']['town'] = $post_data['billing_town'] . $post_data['shipping_town'];
