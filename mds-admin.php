@@ -289,16 +289,16 @@ function mds_register_collivery () {
 	update_post_meta ($order->id, 'mds_waybill', $new_col['results']['collivery_id']);
 	echo "<a href=\"" . home_url () . "/wp-admin/post.php?post=$_GET[post_id]&action=edit\">Shipping registered successfully. Return to Order.</a>";
     } else {
-	wp_register_script ('jquery.datetimepicker_js', __DIR__.'/views/js/jquery.datetimepicker.js');
+	wp_register_script ('jquery.datetimepicker_js', plugin_dir_url( __FILE__ ).'/views/js/jquery.datetimepicker.js');
 	wp_enqueue_script ('jquery.datetimepicker_js');
-	wp_register_script ('mds_collivery_js', __DIR__.'/views/js/mds_collivery.js');
+	wp_register_script ('mds_collivery_js', plugin_dir_url( __FILE__ ).'/views/js/mds_collivery.js');
 	wp_enqueue_script ('mds_collivery_js');
-	wp_register_script ('jquery.validate.min_js', __DIR__.'/views/js/jquery.validate.min.js');
+	wp_register_script ('jquery.validate.min_js', plugin_dir_url( __FILE__ ).'/views/js/jquery.validate.min.js');
 	wp_enqueue_script ('jquery.validate.min_js');
 
-	wp_register_style ('mds_collivery_css', __DIR__.'/views/css/mds_collivery.css');
+	wp_register_style ('mds_collivery_css', plugin_dir_url( __FILE__ ).'/views/css/mds_collivery.css');
 	wp_enqueue_style ('mds_collivery_css');
-	wp_register_style ('jquery.datetimepicker_css', __DIR__.'/views/css/jquery.datetimepicker.css');
+	wp_register_style ('jquery.datetimepicker_css', plugin_dir_url( __FILE__ ).'/views/css/jquery.datetimepicker.css');
 	wp_enqueue_style ('jquery.datetimepicker_css');
 //		print_r($defaults);
 	include 'views/order.php'; // Include our admin page
