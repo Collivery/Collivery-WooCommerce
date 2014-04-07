@@ -60,14 +60,16 @@
 						<div id="which_collection_hide_saved">
 							<label for="collivery_from">Address:</label><br />
 							<select name="collivery_from" id="collivery_from">
-								<option value="<?php echo $defaults['address']['address_id'];?>"><?php echo $defaults['address']['nice_address'];?></option>
+							    <?php foreach ( $addresses as $address ):?>
+								<option <?php if($defaults['default_address_id'] == $address['address_id']){echo 'selected="selected"';}?> value="<?php echo $address['address_id'];?>"><?php echo $address['nice_address'];?></option>
+							    <?php endforeach;?>
 							</select>
 							<br />
 							<label for="contact_from">Contact:</label><br />
 							<select name="contact_from" id="contact_from">
-								<?php foreach ( $defaults['contacts'] as $contact_id => $contact ):?>
+							    <?php foreach ( $defaults['contacts'] as $contact_id => $contact ):?>
 								<option value="<?php echo $contact_id;?>"><?php echo $contact['nice_contact'];?></option>
-								<?php endforeach;?>
+							    <?php endforeach;?>
 							</select>
 						</div>
 					</fieldset>
@@ -205,14 +207,14 @@
 						<div id="which_destination_hide_saved" style="display:none;">
 							<label for="collivery_to">Address:</label><br />
 							<select name="collivery_to" id="collivery_to">
-								<?php foreach($collivery->getAddresses() as $address_id => $address):?>
-								<option value="<?php echo $address['address_id'];?>"><?php echo $address['nice_address'];?></option>
-								<?php endforeach;?>
+							    <?php foreach ( $addresses as $address ):?>
+							    <option value="<?php echo $address['address_id'];?>"><?php echo $address['nice_address'];?></option>
+							    <?php endforeach;?>
 							</select>
 							<br />
 							<label for="contact_to">Contact:</label><br />
 							<select name="contact_to" id="contact_to">
-								<option value="0">---Select address first---</option>
+							    <option value="0">---Select address first---</option>
 							</select>
 						</div>
 					</fieldset>

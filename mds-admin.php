@@ -263,7 +263,7 @@ function mds_add_options () {
 
 // --------------------------------------------------------------------
 
-function mds_register_collivery () {
+function mds_register_collivery() {
     global $woocommerce, $woocommerce_errors;
 
     $order = new WC_Order ($_GET['post_id']);
@@ -272,10 +272,11 @@ function mds_register_collivery () {
     $my_order_meta = get_post_custom ($_GET['post_id']);
 
     $mds = new WC_MDS_Collivery;
-    $collivery = $mds->getColliveryClass ();
-    $settings = $mds->getColliverySettings ();
-    $parcels = $mds->get_order_content ($order->get_items ());
-    $defaults = $mds->getDefaulsAddress ();
+    $collivery = $mds->getColliveryClass();
+    $settings = $mds->getColliverySettings();
+    $parcels = $mds->get_order_content($order->get_items ());
+    $defaults = $mds->getDefaulsAddress();
+    $addresses = $collivery->getAddresses();
 
     wp_register_script ('jquery.datetimepicker_js', plugin_dir_url( __FILE__ ).'/views/js/jquery.datetimepicker.js');
     wp_enqueue_script ('jquery.datetimepicker_js');

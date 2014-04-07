@@ -51,7 +51,7 @@ function mdsConfirmedIndex () {
 }
 
 // View our Collivery once it has been accepted
-function mdsConfirmed () {
+function mdsConfirmed() {
     global $wpdb;
     wp_register_script ('mds_collivery_js', plugin_dir_url( __FILE__ ).'/views/js/mds_collivery.js');
     wp_enqueue_script ('mds_collivery_js');
@@ -243,8 +243,13 @@ function init_mds_collivery () {
 	    return $this->settings;
 	}
 
-	public function getDefaulsAddress () {
-	    return array ('address' => $this->collivery->getAddress ($this->default_address_id), 'contacts' => $this->collivery->getContacts ($this->default_address_id));
+	public function getDefaulsAddress() {
+		$data = array(
+			'address' => $this->collivery->getAddress($this->default_address_id),
+			'default_address_id' => $this->default_address_id,
+			'contacts' => $this->collivery->getContacts($this->default_address_id)
+		);
+	    return $data;
 	}
 
 	// This function is here so we can get WooCommerce version number to pass on to the API for logs
