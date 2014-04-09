@@ -297,5 +297,6 @@ function mds_register_collivery() {
     wp_register_style('jquery.datetimepicker_css', plugin_dir_url(__FILE__) . '/views/css/jquery.datetimepicker.css');
     wp_enqueue_style('jquery.datetimepicker_css');
     include 'views/order.php'; // Include our admin page
+
 // --------------------------------------------------------------------
 }
