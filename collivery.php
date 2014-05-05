@@ -20,7 +20,6 @@ $mds_db_version = "1.2";
 
 add_action('admin_menu', 'adminMenu'); // Add our Admin menu items
 register_activation_hook(__FILE__, 'mdsInstall'); // Install Hook
-register_deactivation_hook(__FILE__, 'mdsUninstall'); // Uninstall Hook
 // Function to register our functions as pages from our admin menu
 
 function adminMenu() {
@@ -132,17 +131,6 @@ function mdsInstall() {
     $wpdb->query($sql);
 
     add_option("mds_db_version", "1.2");
-}
-
-// Uninstall
-function mdsUninstall() {
-    global $wpdb;
-    delete_files(getcwd() . '/cache', TRUE);
-    @rmdir(getcwd() . '/cache'); // Remove our cache directory
-    // Removes the table we created on install
-    $table_name = $wpdb->prefix . 'mds_collivery_processed';
-    $wpdb->query("DROP TABLE IF EXISTS `$table_name`");
-    delete_option('mds_db_version');
 }
 
 add_action('plugins_loaded', 'init_mds_collivery', 0);
