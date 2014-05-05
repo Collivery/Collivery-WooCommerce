@@ -170,8 +170,8 @@ function accept_admin_callback() {
             die();
         } else {
             // set the collection address and contact from the returned array
-            $collivery_from = $address_response['address_id'];
-            $contact_from = $address_response['contact_id'];
+            $collivery_from = $collection_address_response['address_id'];
+            $contact_from = $collection_address_response['contact_id'];
         }
     } else {
         $collivery_from = $post['collivery_from'];
