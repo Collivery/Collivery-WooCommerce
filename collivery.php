@@ -2,21 +2,21 @@
 
 /**
  * @package MDS Collivery
- * @version 1.0
+ * @version 1.3
  */
 /*
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  *
  * Description: Plugin to add support for MDS Collivery in WooCommerce
- * Authors: Bryce Large | Bernhard Breytenbach
- * Version: 1.0
+ * Authors: Bryce Large
+ * Version: 1.3
  */
 
 // Our versions
 global $wp_version;
 global $mds_db_version;
-$mds_db_version = "1.2";
+$mds_db_version = "1.3";
 
 add_action('admin_menu', 'adminMenu'); // Add our Admin menu items
 register_activation_hook(__FILE__, 'mdsInstall'); // Install Hook
@@ -121,7 +121,7 @@ function mdsInstall() {
     if (!is_dir(__DIR__.'/Mds/cache')) {
 
 	// Lets make a cache directory
-	mkdir(__DIR__.'/Mds/cache', 0755, true);
+	@mkdir(__DIR__.'/Mds/cache', 0755, true);
 
 	// Make sure that we actually created the directory
 	if (!is_dir(__DIR__.'/Mds/cache')) {
@@ -143,7 +143,7 @@ function mdsInstall() {
 
     $wpdb->query($sql);
 
-    add_option("mds_db_version", "1.2");
+    add_option("mds_db_version", "1.3");
 }
 
 add_action('plugins_loaded', 'init_mds_collivery', 0);
