@@ -468,7 +468,7 @@ function init_mds_collivery() {
 
                 for ($i = 0; $i < $qty; $i++) {
                     // Length coversion, mds collivery only acceps CM
-                    if (strtolower(get_option('woocommerce_dimension_unit')) != 'çm') {
+                    if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
                         $length = $this->converter->convert($product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
                         $width = $this->converter->convert($product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
                         $height = $this->converter->convert($product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
