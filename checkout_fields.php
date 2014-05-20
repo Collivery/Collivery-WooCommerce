@@ -89,6 +89,13 @@ function custom_override_default_fields($fields) {
             'class' => Array('form-row-last')
         ),
     );
+
+    // Check if there is a postcode field and if so add it
+    if(isset($fields['postcode'])) {
+        $data['postcode'] = $fields['postcode'];
+	$data['postcode']['class'] = Array('form-row-first');
+    }
+
     return $data;
 }
 
