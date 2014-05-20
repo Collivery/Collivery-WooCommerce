@@ -98,6 +98,11 @@ class Collivery {
 		if ( ( $this->check_cache == 2 ) && $this->cache->has( 'collivery.auth' ) ) {
 			$authenticate = $this->cache->get( 'collivery.auth' );
 
+			if(isset($authenticate['user_email']) && $authenticate['user_email'] != $this->config->user_email) {
+			    $this->cache->clear();
+			    $this->authenticate();
+			}
+
 			$this->default_address_id = $authenticate['default_address_id'];
 			$this->client_id          = $authenticate['client_id'];
 			$this->user_id            = $authenticate['user_id'];
