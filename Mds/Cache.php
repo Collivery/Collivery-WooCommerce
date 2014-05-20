@@ -4,7 +4,7 @@ namespace Mds;
 
 class Cache {
 
-    private $cache_dir = '/cache/mds_collivery/';
+    private $cache_dir = '/cache/';
     private $cache;
 
     protected function load($name) {

@@ -65,7 +65,7 @@ function mdsConfirmed() {
     // Do we have images of the parcels
     if ($pod = $collivery->getPod($data->waybill)) {
         if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
+            mkdir($directory, 0755, true);
         }
 
         file_put_contents($directory . '/' . $pod['filename'], base64_decode($pod['file']));
@@ -74,7 +74,7 @@ function mdsConfirmed() {
     // Do we have proof of delivery
     if ($parcels = $collivery->getParcelImageList($data->waybill)) {
         if (!is_dir($directory)) {
-            mkdir($directory, 0777, true);
+            mkdir($directory, 0755, true);
         }
 
         foreach ($parcels as $parcel) {
@@ -111,9 +111,22 @@ function mdsConfirmed() {
 
 // Install
 function mdsInstall() {
+
     // We have to check what php version we have before anything is installed.
     if (version_compare(PHP_VERSION, '5.3.0') < 0) {
         die('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
+    }
+
+    // Check if there is a cache directory
+    if (!is_dir(__DIR__.'/Mds/cache')) {
+
+	// Lets make a cache directory
+	mkdir(__DIR__.'/Mds/cache', 0755, true);
+
+	// Make sure that we actually created the directory
+	if (!is_dir(__DIR__.'/Mds/cache')) {
+	    die('The plugin was unable to create a cache directory. Please make one manualy first, '.dir(__DIR__.'/Mds/cache'));
+	}
     }
 
     global $wpdb;
