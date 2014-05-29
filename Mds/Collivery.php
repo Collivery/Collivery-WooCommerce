@@ -24,7 +24,8 @@ class Collivery {
 	function __construct( array $config = array(), $cache = null )
 	{
 		if ( is_null( $cache ) ) {
-			$this->cache = new Cache();
+			$cache_dir = array_key_exists('cache_dir', $config) ? $config['cache_dir'] : null;
+			$this->cache = new Cache($cache_dir);
 		} else {
 			$this->cache = $cache;
 		}
@@ -34,8 +35,8 @@ class Collivery {
 			'app_version'   => '0.0.1',            // Application Version
 			'app_host'      => '', // Framework/CMS name and version, eg 'Wordpress 3.8.1 WooCommerce 2.0.20' / 'Joomla! 2.5.17 VirtueMart 2.0.26d'
 			'app_url'       => '', // URL your site is hosted on
-			'user_email'    => 'demo@collivery.co.za',
-			'user_password' => 'demo',
+			'user_email'    => 'api@collivery.co.za',
+			'user_password' => 'api123',
 			'demo'          => false,
 		);
 
@@ -44,8 +45,8 @@ class Collivery {
 		}
 
 		if ( $this->config->demo ) {
-			$this->config->user_email    = 'demo@collivery.co.za';
-			$this->config->user_password = 'demo';
+			$this->config->user_email    = 'api@collivery.co.za';
+			$this->config->user_password = 'api123';
 		}
 	}
 
@@ -95,13 +96,12 @@ class Collivery {
 	 */
 	protected function authenticate()
 	{
-		if ( ( $this->check_cache == 2 ) && $this->cache->has( 'collivery.auth' ) ) {
+		if (
+			$this->check_cache == 2 &&
+			$this->cache->has( 'collivery.auth' ) &&
+			$this->cache->get( 'collivery.auth' )['user_email'] == $this->config->user_email
+		) {
 			$authenticate = $this->cache->get( 'collivery.auth' );
-
-			if(isset($authenticate['user_email']) && $authenticate['user_email'] != $this->config->user_email) {
-			    $this->cache->clear();
-			    $this->authenticate();
-			}
 
 			$this->default_address_id = $authenticate['default_address_id'];
 			$this->client_id          = $authenticate['client_id'];
@@ -142,7 +142,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -182,7 +182,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -220,7 +220,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -252,7 +252,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -285,7 +285,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No results returned.' );
 
 				return false;
 			}
@@ -347,7 +347,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No results returned.' );
 
 				return false;
 			}
@@ -443,7 +443,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -479,7 +479,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -515,7 +515,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -555,7 +555,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -594,7 +594,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -672,31 +672,31 @@ class Collivery {
 		elseif ( ! is_array( $this->getAddress( $data['address_id'] ) ) )
 			$this->setError( 'invalid_data', 'Invalid address_id.' );
 
-		if ( ! isset( $data['street'] ) )
-			$this->setError( 'missing_data', 'street not set.' );
-
 		if ( ! isset( $data['full_name'] ) )
 			$this->setError( 'missing_data', 'full_name not set.' );
 
 		if ( ! isset( $data['phone'] ) and ! isset( $data['cellphone'] ) )
 			$this->setError( 'missing_data', 'Please supply ether a phone or cellphone number...' );
 
+		if ( ! isset( $data['email'] ) )
+			$this->setError( 'missing_data', 'email not set.' );
+
 		if ( ! $this->hasErrors() ) {
 			try {
-				$result = $this->client()->add_address( $data, $this->token );
+				$result = $this->client()->add_contact( $data, $this->token );
 				$this->cache->forget( 'collivery.addresses.'. $this->client_id );
 			} catch ( SoapFault $e ) {
 				$this->catchSoapFault( $e );
 				return false;
 			}
 
-			if ( isset( $result['address_id'] ) ) {
+			if ( isset( $result['contact_id'] ) ) {
 				return $result;
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No contact_id returned.' );
 
 				return false;
 			}
@@ -747,7 +747,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -823,7 +823,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -892,7 +892,7 @@ class Collivery {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
 				else
-					$this->setError( 'result_unexpected', 'No address_id returned.' );
+					$this->setError( 'result_unexpected', 'No result returned.' );
 
 				return false;
 			}
@@ -925,7 +925,7 @@ class Collivery {
 			if ( isset( $result['error_id'] ) )
 				$this->setError( $result['error_id'], $result['error'] );
 			else
-				$this->setError( 'result_unexpected', 'No address_id returned.' );
+				$this->setError( 'result_unexpected', 'No result returned.' );
 
 			return false;
 		}
@@ -940,6 +940,7 @@ class Collivery {
 	{
 		$this->setError( $e->faultcode, $e->faultstring );
 	}
+
 	/**
 	 * Add a new error
 	 *

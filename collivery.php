@@ -367,7 +367,7 @@ function init_mds_collivery() {
                 if ($this->settings["method_$id"] == 'yes') {
                     if ($this->settings["markup_$id"] > 0) {
                         $percent = $this->settings['markup_' . $id];
-                        $markup = "1.$percent";
+                        $markup = 1 + $percent / 100;
                     }
 
                     // Now lets get the price for

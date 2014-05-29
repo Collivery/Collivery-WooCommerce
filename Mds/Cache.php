@@ -2,19 +2,35 @@
 
 class Cache {
 
-	private $cache_dir = 'cache/';
+	private $cache_dir;
 	private $cache;
+
+	function __construct($cache_dir = 'cache/mds_collivery/')
+	{
+		$this->cache_dir = $cache_dir;
+	}
+
+	protected function create_dir($dir_array)
+	{
+		if (!is_array($dir_array))
+			$dir_array = explode('/', $this->cache_dir);
+		array_pop($dir_array);
+		$dir = implode('/', $dir_array);
+
+		if ( $dir!='' && ! is_dir( $dir ) ) {
+			$this->create_dir($dir_array);
+			mkdir($dir);
+		}
+	}
 
 	protected function load( $name )
 	{
 		if ( ! isset( $this->cache[ $name ] ) ) {
-			if ( file_exists( __DIR__ . $this->cache_dir . $name ) && $content = file_get_contents( __DIR__ . $this->cache_dir . $name ) ) {
+			if ( file_exists( $this->cache_dir . $name ) && $content = file_get_contents( $this->cache_dir . $name ) ) {
 				$this->cache[ $name ] = json_decode( $content, true );
 				return $this->cache[ $name ];
 			} else {
-				if ( ! is_dir( __DIR__ . $this->cache_dir ) ) {
-					mkdir( __DIR__ . $this->cache_dir );
-				}
+				$this->create_dir($this->cache_dir);
 			}
 		} else {
 			return $this->cache[ $name ];
@@ -44,7 +60,7 @@ class Cache {
 	public function put( $name, $value, $time = 1440 )
 	{
 		$cache = array( 'value' => $value, 'valid' => time() + ( $time*60 ) );
-		if ( file_put_contents( __DIR__ . $this->cache_dir . $name, json_encode( $cache ) ) ) {
+		if ( file_put_contents( $this->cache_dir . $name, json_encode( $cache ) ) ) {
 			$this->cache[ $name ] = $cache;
 			return true;
 		} else {
@@ -55,43 +71,11 @@ class Cache {
 	public function forget( $name )
 	{
 		$cache = array( 'value' => '', 'valid' => 0 );
-		if ( file_put_contents( __DIR__ . $this->cache_dir . $name, json_encode( $cache ) ) ) {
+		if ( file_put_contents( $this->cache_dir . $name, json_encode( $cache ) ) ) {
 			$this->cache[ $name ] = $cache;
 			return true;
 		} else {
 			return false;
 		}
-	}
-
-	public function clear() {
-		return $this->delete_files(__DIR__ . $this->cache_dir, true);
-	}
-
-	private function delete_files($path, $del_dir = FALSE, $level = 0)
-	{
-		$path = rtrim($path, DIRECTORY_SEPARATOR);
-
-		if (!$current_dir = @opendir($path)) {
-			return FALSE;
-		}
-
-		while (FALSE !== ($filename = @readdir($current_dir))) {
-			if ($filename != "." and $filename != "..") {
-				if (is_dir($path . DIRECTORY_SEPARATOR . $filename)) {
-					if (substr($filename, 0, 1) != '.') {
-						delete_files($path . DIRECTORY_SEPARATOR . $filename, $del_dir, $level + 1);
-					}
-				} else {
-					unlink($path . DIRECTORY_SEPARATOR . $filename);
-				}
-			}
-		}
-		@closedir($current_dir);
-
-		if ($del_dir == TRUE AND $level > 0) {
-			return @rmdir($path);
-		}
-
-		return TRUE;
 	}
 }
