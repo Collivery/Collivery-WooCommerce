@@ -357,8 +357,10 @@ function init_mds_collivery()
 		    $to_town_type = $_POST['shipping_location_type'];
 		}
 	    } else if(isset($package['destination'])) {
-		$to_town_id = array_search($package['destination']['town'], $towns);
-		$to_town_type = array_search($package['destination']['location_type'], $location_types);
+		$to_town_id = $package['destination']['town'];
+		$to_town_type = $package['destination']['location_type'];
+	    } else {
+		return;
 	    }
 
 	    // get an array with all our parcels
@@ -557,5 +559,6 @@ function mds_collivery_cart_shipping_packages($packages)
 	//@TODO: Find a way to fix this
 	$packages[0]['destination']['town'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
     }
+
     return $packages;
 }
