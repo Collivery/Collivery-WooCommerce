@@ -117,7 +117,11 @@ class UnitConvertor {
      */
     function convert($value, $from_unit, $to_unit, $precision) {
         if ($this->getConvSpecs($from_unit, $to_unit, $value, $converted)) {
-            return number_format($converted, (int) $precision, $this->decimal_point, $this->thousand_separator);
+	    if(!empty($converted)) {
+		return number_format($converted, (int) $precision, $this->decimal_point, $this->thousand_separator);
+	    } else {
+		return "";
+	    }
         } else {
             return false;
         }
