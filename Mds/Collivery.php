@@ -1009,6 +1009,9 @@ class Collivery {
 	 */
 	public function getDefaultAddressId()
 	{
+		if ( ! $this->default_address_id ) {
+			$this->authenticate();
+		}
 		return $this->default_address_id;
 	}
 

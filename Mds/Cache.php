@@ -7,6 +7,7 @@ class Cache {
 
 	function __construct($cache_dir = 'cache/mds_collivery/')
 	{
+		if ($cache_dir === null) $cache_dir = 'cache/mds_collivery/';
 		$this->cache_dir = $cache_dir;
 	}
 
