@@ -495,10 +495,10 @@ function init_mds_collivery()
 		    }
 
 		    $parcels[] = array(
-			'length' => $length,
-			'width' => $width,
-			'height' => $height,
-			'weight' => $weight
+			'length' => (empty($length)) ? (0) : ($length),
+			'width' => (empty($width)) ? (0) : ($width),
+			'height' => (empty($height)) ? (0) : ($height),
+			'weight' => (empty($weight)) ? (0) : ($weight)
 		    );
 		}
 	    }
