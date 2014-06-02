@@ -20,7 +20,7 @@
 			    <label for="collection_town">Town</label>
 			    <select id="collection_town" name="collection_town">
 				<?php foreach ($collivery->getTowns() as $town_id => $town): ?>
-				    <option value="<?php echo $town_id; ?>"><?php echo $town; ?></option>
+    				<option value="<?php echo $town_id; ?>"><?php echo $town; ?></option>
 				<?php endforeach; ?>
 			    </select>
 			    <br/>
@@ -42,7 +42,7 @@
 			    <label for="collection_location_type">Location Type</label>
 			    <select id="collection_location_type" name="collection_location_type">
 				<?php foreach ($collivery->getLocationTypes() as $location_id => $location): ?>
-				    <option value="<?php echo $location_id; ?>"<?php if ($location == 'Private House') {echo ' selected="selected" ';} ?>><?php echo $location; ?></option>
+				<option value="<?php echo $location_id; ?>" <?php if ($location == 'Private House') {echo ' selected="selected" ';}?>><?php echo $location; ?></option>
 				<?php endforeach; ?>
 			    </select>
 			    <br/>
@@ -68,14 +68,16 @@
 			    <label for="collivery_from">Address:</label><br/>
 			    <select name="collivery_from" id="collivery_from">
 				<?php foreach ($addresses as $address): ?>
-				    <option <?php if ($defaults['default_address_id'] == $address['address_id']) {echo 'selected="selected"';} ?> value="<?php echo $address['address_id']; ?>"><?php echo $address['nice_address']; ?></option>
+    				<option <?php if ($defaults['default_address_id'] == $address['address_id']) {
+				    echo 'selected="selected"';
+				} ?> value="<?php echo $address['address_id']; ?>"><?php echo $address['nice_address']; ?></option>
 				<?php endforeach; ?>
 			    </select>
 			    <br/>
 			    <label for="contact_from">Contact:</label><br/>
 			    <select name="contact_from" id="contact_from">
 				<?php foreach ($defaults['contacts'] as $contact_id => $contact): ?>
-				    <option value="<?php echo $contact_id; ?>"><?php echo $contact['nice_contact']; ?></option>
+    				<option value="<?php echo $contact_id; ?>"><?php echo $contact['nice_contact']; ?></option>
 				<?php endforeach; ?>
 			    </select>
 			</div>
@@ -87,12 +89,12 @@
 			<label for="service">Service</label>
 			<select id="service" name="service">
 			    <?php foreach ($collivery->getServices() as $service_id => $service): ?>
-				<option value="<?php echo $service_id; ?>"<?php if ($service == $order->get_shipping_method()) { echo ' selected="selected" ';} ?>><?php echo $service; ?></option>
+    			    <option value="<?php echo $service_id; ?>"<?php if ($service == $order->get_shipping_method()) {echo ' selected="selected" ';} ?>><?php echo $service; ?></option>
 			    <?php endforeach; ?>
 			</select>
 			<br/>
 			<label for="cover">Insurance Cover</label>
-			(&nbsp;&nbsp;Up to R5000&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="1"<?php if ($settings['risk_cover'] == 'yes') { echo ' checked="checked" '; } ?>>
+			(&nbsp;&nbsp;Up to R5000&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="1"<?php if ($settings['risk_cover'] == 'yes') {echo ' checked="checked" ';} ?>>
 			|&nbsp;&nbsp;No Cover&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="0"<?php if ($settings['risk_cover'] == 'no') {echo ' checked="checked" ';} ?>> )
 			<br/>
 			<label for="service">Collection Time:</label>
@@ -104,6 +106,27 @@
 			<div style="display:none">
 			    <table class="itemized_package_node">
 				<thead>
+				    <tr>
+					<th align="left">Length</th>
+					<th align="left">Width</th>
+					<th align="left">Height</th>
+					<th align="left">Weight</th>
+					<th align="left">&nbsp;</th>
+				    </tr>
+				</thead>
+				<tbody id="package_area">
+				    <tr class="package_row">
+					<td><input id="length" name="length" size="11" type="text" value=""></td>
+					<td><input id="width" name="width" size="11" type="text" value=""></td>
+					<td><input id="height" name="height" size="11" type="text" value=""></td>
+					<td><input id="weight" name="weight" size="11" type="text" value=""></td>
+					<td><a href="#">Remove</a></td>
+				    </tr>
+				</tbody>
+			    </table>
+			</div>
+			<table class="package_items">
+			    <thead>
 				<tr>
 				    <th align="left">Length</th>
 				    <th align="left">Width</th>
@@ -111,42 +134,21 @@
 				    <th align="left">Weight</th>
 				    <th align="left">&nbsp;</th>
 				</tr>
-				</thead>
-				<tbody id="package_area">
-				<tr class="package_row">
-				    <td><input id="length" name="length" size="11" type="text" value=""></td>
-				    <td><input id="width" name="width" size="11" type="text" value=""></td>
-				    <td><input id="height" name="height" size="11" type="text" value=""></td>
-				    <td><input id="weight" name="weight" size="11" type="text" value=""></td>
-				    <td><a href="#">Remove</a></td>
-				</tr>
-				</tbody>
-			    </table>
-			</div>
-			<table class="package_items">
-			    <thead>
-			    <tr>
-				<th align="left">Length</th>
-				<th align="left">Width</th>
-				<th align="left">Height</th>
-				<th align="left">Weight</th>
-				<th align="left">&nbsp;</th>
-			    </tr>
 			    </thead>
 			    <tbody id="package_area">
-			    <?php $count = 1; ?>
-			    <?php foreach ($parcels as $parcel): ?>
-				<tr class="package_row" id="item<?php echo $count; ?>">
-				    <td><input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="text" value="<?php echo $parcel['length']; ?>"></td>
-				    <td><input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="text" value="<?php echo $parcel['width']; ?>"></td>
-				    <td><input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="text" value="<?php echo $parcel['height']; ?>"></td>
-				    <td><input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="text" value="<?php echo $parcel['weight']; ?>"></td>
-				    <?php if ($count > 1): ?>
-					<td><a href="#" onclick="remove_parcel(<?php echo $count; ?>); return false;">Remove</a></td>
-				    <?php endif; ?>
-				</tr>
+				<?php $count = 1; ?>
+				<?php foreach ($parcels as $parcel): ?>
+    				<tr class="package_row" id="item<?php echo $count; ?>">
+    				    <td><input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="text" value="<?php echo $parcel['length']; ?>"></td>
+    				    <td><input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="text" value="<?php echo $parcel['width']; ?>"></td>
+    				    <td><input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="text" value="<?php echo $parcel['height']; ?>"></td>
+    				    <td><input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="text" value="<?php echo $parcel['weight']; ?>"></td>
+				<?php if ($count > 1): ?>
+				    <td><a href="#" onclick="remove_parcel(<?php echo $count; ?>);return false;">Remove</a></td>
+				<?php endif; ?>
+    				</tr>
 				<?php $count++; ?>
-			    <?php endforeach; ?>
+				<?php endforeach; ?>
 			    </tbody>
 			</table>
 			<a href="#" id="create_fields" onclick="return false;">Add Package</a>
@@ -159,16 +161,13 @@
 		    <fieldset class="parallel_target">
 			<legend>Destination Details:</legend>
 			<label for="which_destination_address">Which Address:</label>
-			(&nbsp;&nbsp;New&nbsp;&nbsp;<input checked="checked" class="which_destination_address"
-							   id="which_destination_address" name="which_destination_address" type="radio"
-							   value="default">
-			|&nbsp;&nbsp;Saved&nbsp;&nbsp;<input class="which_destination_address" id="which_destination_address"
-							     name="which_destination_address" type="radio" value="saved"> )
+			(&nbsp;&nbsp;New&nbsp;&nbsp;<input checked="checked" class="which_destination_address" id="which_destination_address" name="which_destination_address" type="radio" value="default">
+			|&nbsp;&nbsp;Saved&nbsp;&nbsp;<input class="which_destination_address" id="which_destination_address" name="which_destination_address" type="radio" value="saved"> )
 			<div id="which_destination_hide_default">
 			    <label for="destination_town">Town</label>
 			    <select id="destination_town" name="destination_town">
 				<?php foreach ($collivery->getTowns() as $town_id => $town): ?>
-				    <option value="<?php echo $town_id; ?>"<?php if ($town == $my_order_meta['_shipping_town'][0]) {echo ' selected="selected" ';} ?>><?php echo $town; ?></option>
+    				<option value="<?php echo $town_id; ?>"<?php if ($town == $my_order_meta['_shipping_town'][0]) {echo ' selected="selected" ';} ?>><?php echo $town; ?></option>
 				<?php endforeach; ?>
 			    </select>
 			    <br/>
@@ -177,7 +176,7 @@
 				<label for="destination_suburb">Suburb</label>
 				<select id="destination_suburb" name="destination_suburb">
 				    <?php foreach ($collivery->getSuburbs(array_search($my_order_meta['_shipping_town'][0], $collivery->getTowns())) as $suburb_id => $suburb): ?>
-					<option value="<?php echo $suburb_id; ?>"<?php if ($suburb == $my_order_meta['_shipping_suburb'][0]) {echo ' selected="selected" ';} ?>><?php echo $suburb; ?></option>
+    				    <option value="<?php echo $suburb_id; ?>"<?php if ($suburb == $my_order_meta['_shipping_suburb'][0]) {echo ' selected="selected" ';} ?>><?php echo $suburb; ?></option>
 				    <?php endforeach; ?>
 				</select>
 			    </div>
@@ -193,8 +192,8 @@
 			    <label for="destination_location_type">Location Type</label>
 			    <select id="destination_location_type" name="destination_location_type">
 				<?php foreach ($collivery->getLocationTypes() as $location_id => $location): ?>
-				    <option value="<?php echo $location_id; ?>"<?php if ($location == $my_order_meta['_shipping_location_type'][0]) { echo ' selected="selected" ';} ?>><?php echo $location; ?></option>
-				<?php endforeach; ?>
+    				<option value="<?php echo $location_id; ?>"<?php if ($location == $my_order_meta['_shipping_location_type'][0]) {echo ' selected="selected" ';} ?>><?php echo $location; ?></option>
+			    <?php endforeach; ?>
 			    </select>
 			    <br/>
 			    <label for="destination_building_details">Building Details</label>
@@ -220,7 +219,7 @@
 			    <label for="collivery_to">Address:</label><br/>
 			    <select name="collivery_to" id="collivery_to">
 				<?php foreach ($addresses as $address): ?>
-				    <option value="<?php echo $address['address_id']; ?>"><?php echo $address['nice_address']; ?></option>
+    				<option value="<?php echo $address['address_id']; ?>"><?php echo $address['nice_address']; ?></option>
 				<?php endforeach; ?>
 			    </select>
 			    <br/>

@@ -8,7 +8,6 @@
  * Author: Bryce Large | Bernhard Breytenbach
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
-
 // Our versions
 global $wp_version;
 global $mds_db_version;
@@ -16,7 +15,6 @@ $mds_db_version = "1.4";
 
 add_action('admin_menu', 'adminMenu'); // Add our Admin menu items
 register_activation_hook(__FILE__, 'mdsInstall'); // Install Hook
-
 // Function to register our functions as pages from our admin menu
 function adminMenu()
 {
@@ -158,9 +156,9 @@ function init_mds_collivery()
 
     include_once( 'checkout_fields.php' ); //Seperate file with large arrays.
     include_once( 'mds-admin.php' ); //Admin Scripts
-
     //Load JS file
     add_action('wp_enqueue_scripts', 'load_js');
+
     function load_js()
     {
 	wp_register_script('mds_js', plugins_url('script.js', __FILE__), array('jquery'));
@@ -269,6 +267,7 @@ function init_mds_collivery()
 	/*
 	 * Plugin Settings
 	 */
+
 	public function init_form_fields()
 	{
 	    global $woocommerce;
@@ -342,22 +341,22 @@ function init_mds_collivery()
 	    if (isset($_POST['post_data'])) {
 		parse_str($_POST['post_data'], $post_data);
 		if (!isset($post_data['ship_to_different_address']) || $post_data['ship_to_different_address'] != TRUE) {
-		    $to_town_id = $post_data['billing_town'];
+		    $to_town_id = $post_data['billing_city'];
 		    $to_town_type = $post_data['billing_location_type'];
 		} else {
-		    $to_town_id = $post_data['shipping_town'];
+		    $to_town_id = $post_data['shipping_city'];
 		    $to_town_type = $post_data['shipping_location_type'];
 		}
 	    } else if (isset($_POST['ship_to_different_address'])) {
 		if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
-		    $to_town_id = $_POST['billing_town'];
+		    $to_town_id = $_POST['billing_city'];
 		    $to_town_type = $_POST['billing_location_type'];
 		} else {
-		    $to_town_id = $_POST['shipping_town'];
+		    $to_town_id = $_POST['shipping_city'];
 		    $to_town_type = $_POST['shipping_location_type'];
 		}
-	    } else if(isset($package['destination'])) {
-		$to_town_id = $package['destination']['town'];
+	    } else if (isset($package['destination'])) {
+		$to_town_id = $package['destination']['city'];
 		$to_town_type = $package['destination']['location_type'];
 	    } else {
 		return;
@@ -465,6 +464,7 @@ function init_mds_collivery()
 	/*
 	 * Work through our order items and return an array of parcels
 	 */
+
 	function get_order_content($items)
 	{
 	    $parcels = array();
@@ -508,6 +508,7 @@ function init_mds_collivery()
 	/*
 	 * Get Town and Location Types for Checkout Dropdown's from MDS
 	 */
+
 	public function get_field_defaults()
 	{
 	    $towns = $this->collivery->getTowns();
@@ -516,12 +517,14 @@ function init_mds_collivery()
 	}
 
     }
+
 }
 
 /*
  * Register Plugin with WooCommerce
  */
 add_filter('woocommerce_shipping_methods', 'add_MDS_Collivery_method');
+
 function add_MDS_Collivery_method($methods)
 {
     $methods[] = 'WC_MDS_Collivery';
@@ -533,6 +536,7 @@ function add_MDS_Collivery_method($methods)
  * This adds location_type to the hash to update pricing cache when changed.
  */
 add_filter('woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages');
+
 function mds_collivery_cart_shipping_packages($packages)
 {
     $mds = new WC_MDS_Collivery;
@@ -551,9 +555,9 @@ function mds_collivery_cart_shipping_packages($packages)
 
     if (isset($_POST['post_data'])) {
 	parse_str($_POST['post_data'], $post_data);
-	$packages[0]['destination']['town'] = $post_data['billing_town'] . $post_data['shipping_town'];
-    } else if (isset($_POST['billing_town']) || isset($_POST['shipping_town'])) {
-	$packages[0]['destination']['town'] = (isset($_POST['shipping_town']) && $_POST['shipping_town']) ? ($_POST['billing_town']) : ($_POST['billing_location_type']);
+	$packages[0]['destination']['town'] = $post_data['billing_city'] . $post_data['shipping_city'];
+    } else if (isset($_POST['billing_city']) || isset($_POST['shipping_city'])) {
+	$packages[0]['destination']['town'] = (isset($_POST['shipping_city']) && $_POST['shipping_city']) ? ($_POST['billing_city']) : ($_POST['billing_location_type']);
     } else {
 	//Bad Practice... But incase town isn't set, do not cache the order!
 	//@TODO: Find a way to fix this
