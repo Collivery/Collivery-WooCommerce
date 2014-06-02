@@ -151,11 +151,18 @@ function custom_override_checkout_fields( $fields )
 			'required' => 1,
 			'class' => array( 'form-row-last' )
 		),
+		'billing_postcode' => array(
+			'name' => 'postcode',
+			'label' => 'Postal Code',
+			'placeholder' => 'Postal Code',
+			'required' => 0,
+			'class' => array( 'form-row-first' )
+		),
 		'billing_first_name' => array(
 			'label' => 'First Name',
 			'placeholder' => 'First Name',
 			'required' => 1,
-			'class' => array( 'form-row-first' )
+			'class' => array( 'form-row-last' )
 		),
 		'billing_last_name' => array(
 			'label' => 'Last Name',
@@ -226,11 +233,18 @@ function custom_override_checkout_fields( $fields )
 			'required' => 1,
 			'class' => array( 'form-row-last' )
 		),
+		'shipping_postcode' => array(
+			'name' => 'postcode',
+			'label' => 'Postal Code',
+			'placeholder' => 'Postal Code',
+			'required' => 0,
+			'class' => array( 'form-row-first' )
+		),
 		'shipping_first_name' => array(
 			'label' => 'First Name',
 			'placeholder' => 'First Name',
 			'required' => 1,
-			'class' => array( 'form-row-first' )
+			'class' => array( 'form-row-last' )
 		),
 		'shipping_last_name' => array(
 			'label' => 'Last Name',
