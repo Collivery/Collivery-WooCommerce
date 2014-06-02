@@ -13,100 +13,8 @@ global $wp_version;
 global $mds_db_version;
 $mds_db_version = "1.4";
 
-add_action('admin_menu', 'adminMenu'); // Add our Admin menu items
 register_activation_hook(__FILE__, 'mdsInstall'); // Install Hook
-// Function to register our functions as pages from our admin menu
-function adminMenu()
-{
-    $firt_page = add_submenu_page('woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex');
-    add_submenu_page($firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed');
-}
 
-// Function used to display index of all our deliveries already accepted and sent to MDS Collivery
-function mdsConfirmedIndex()
-{
-    global $wpdb;
-    wp_register_style('mds_collivery_css', plugin_dir_url(__FILE__) . '/views/css/mds_collivery.css');
-    wp_enqueue_style('mds_collivery_css');
-
-    $post = $_POST;
-    $status = ( isset($post['status']) && $post['status'] != "" ) ? $post['status'] : 1;
-    $waybill = ( isset($post['waybill']) && $post['waybill'] != "" ) ? $post['waybill'] : false;
-
-    $table_name = $wpdb->prefix . 'mds_collivery_processed';
-    if (isset($post['waybill']) && $post['waybill'] != "") {
-	$colliveries = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE status=" . $status . " and waybill=" . $waybill . " ORDER BY id DESC;", OBJECT);
-    } else {
-	$colliveries = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE status=" . $status . " ORDER BY id DESC;", OBJECT);
-    }
-
-    $mds = new WC_MDS_Collivery();
-    $collivery = $mds->getColliveryClass();
-    include 'views/index.php';
-}
-
-// View our Collivery once it has been accepted
-function mdsConfirmed()
-{
-    global $wpdb;
-    wp_register_script('mds_collivery_js', plugin_dir_url(__FILE__) . '/views/js/mds_collivery.js');
-    wp_enqueue_script('mds_collivery_js');
-
-    $table_name = $wpdb->prefix . 'mds_collivery_processed';
-    $data_ = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE waybill=" . $_GET['waybill'] . ";", OBJECT);
-    $data = $data_[0];
-    $mds = new WC_MDS_Collivery();
-    $collivery = $mds->getColliveryClass();
-    $directory = getcwd() . '/cache/mds_collivery/waybills/' . $data->waybill;
-
-    // Do we have images of the parcels
-    if ($pod = $collivery->getPod($data->waybill)) {
-	if (!is_dir($directory)) {
-	    mkdir($directory, 0755, true);
-	}
-
-	file_put_contents($directory . '/' . $pod['filename'], base64_decode($pod['file']));
-    }
-
-    // Do we have proof of delivery
-    if ($parcels = $collivery->getParcelImageList($data->waybill)) {
-	if (!is_dir($directory)) {
-	    mkdir($directory, 0755, true);
-	}
-
-	foreach ($parcels as $parcel) {
-	    $size = $parcel['size'];
-	    $mime = $parcel['mime'];
-	    $filename = $parcel['filename'];
-	    $parcel_id = $parcel['parcel_id'];
-
-	    if ($image = $collivery->getParcelImage($parcel_id)) {
-		file_put_contents($directory . '/' . $filename, base64_decode($image['file']));
-	    }
-	}
-    }
-
-    // Get our tracking information
-    $tracking = $collivery->getStatus($data->waybill);
-    $validation_results = json_decode($data->validation_results);
-
-    $collection_address = $collivery->getAddress($validation_results->collivery_from);
-    $destination_address = $collivery->getAddress($validation_results->collivery_to);
-    $collection_contacts = $collivery->getContacts($validation_results->collivery_from);
-    $destination_contacts = $collivery->getContacts($validation_results->collivery_to);
-
-    // Set our status if the delivery is invoiced (closed)
-    if ($tracking['status_id'] == 6) {
-	$wpdb->query("UPDATE `" . $table_name . "` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";");
-    }
-
-    $pod = glob($directory . "/*.{pdf,PDF}", GLOB_BRACE);
-    $image_list = glob($directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE);
-    $view_waybill = 'https://quote.collivery.co.za/waybillpdf.php?wb=' . base64_encode($data->waybill) . '&output=I';
-    include 'views/view.php';
-}
-
-// Install
 function mdsInstall()
 {
 
@@ -154,8 +62,8 @@ function init_mds_collivery()
 	return;
     }
 
-    include_once( 'checkout_fields.php' ); //Seperate file with large arrays.
     include_once( 'mds-admin.php' ); //Admin Scripts
+    include_once( 'checkout_fields.php' ); //Seperate file with large arrays.
     //Load JS file
     add_action('wp_enqueue_scripts', 'load_js');
 
@@ -341,22 +249,22 @@ function init_mds_collivery()
 	    if (isset($_POST['post_data'])) {
 		parse_str($_POST['post_data'], $post_data);
 		if (!isset($post_data['ship_to_different_address']) || $post_data['ship_to_different_address'] != TRUE) {
-		    $to_town_id = $post_data['billing_city'];
+		    $to_town_id = $post_data['billing_state'];
 		    $to_town_type = $post_data['billing_location_type'];
 		} else {
-		    $to_town_id = $post_data['shipping_city'];
+		    $to_town_id = $post_data['shipping_state'];
 		    $to_town_type = $post_data['shipping_location_type'];
 		}
 	    } else if (isset($_POST['ship_to_different_address'])) {
 		if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
-		    $to_town_id = $_POST['billing_city'];
+		    $to_town_id = $_POST['billing_state'];
 		    $to_town_type = $_POST['billing_location_type'];
 		} else {
-		    $to_town_id = $_POST['shipping_city'];
+		    $to_town_id = $_POST['shipping_state'];
 		    $to_town_type = $_POST['shipping_location_type'];
 		}
 	    } else if (isset($package['destination'])) {
-		$to_town_id = $package['destination']['city'];
+		$to_town_id = $package['destination']['state'];
 		$to_town_type = $package['destination']['location_type'];
 	    } else {
 		return;
@@ -555,9 +463,9 @@ function mds_collivery_cart_shipping_packages($packages)
 
     if (isset($_POST['post_data'])) {
 	parse_str($_POST['post_data'], $post_data);
-	$packages[0]['destination']['town'] = $post_data['billing_city'] . $post_data['shipping_city'];
-    } else if (isset($_POST['billing_city']) || isset($_POST['shipping_city'])) {
-	$packages[0]['destination']['town'] = (isset($_POST['shipping_city']) && $_POST['shipping_city']) ? ($_POST['billing_city']) : ($_POST['billing_location_type']);
+	$packages[0]['destination']['town'] = $post_data['billing_state'] . $post_data['shipping_state'];
+    } else if (isset($_POST['billing_state']) || isset($_POST['shipping_state'])) {
+	$packages[0]['destination']['town'] = (isset($_POST['shipping_state']) && $_POST['shipping_state']) ? ($_POST['billing_state']) : ($_POST['billing_location_type']);
     } else {
 	//Bad Practice... But incase town isn't set, do not cache the order!
 	//@TODO: Find a way to fix this

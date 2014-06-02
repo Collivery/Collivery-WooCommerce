@@ -4,6 +4,104 @@
  * This file contains all the functions used for the admin side of the plugin.  *
  * ****************************************************************************** */
 
+add_action('admin_menu', 'adminMenu'); // Add our Admin menu items
+
+// --------------------------------------------------------------------
+
+function adminMenu()
+{
+    $firt_page = add_submenu_page('woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex');
+    add_submenu_page($firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed');
+}
+
+// --------------------------------------------------------------------
+
+// Function used to display index of all our deliveries already accepted and sent to MDS Collivery
+function mdsConfirmedIndex()
+{
+    global $wpdb;
+    wp_register_style('mds_collivery_css', plugin_dir_url(__FILE__) . '/views/css/mds_collivery.css');
+    wp_enqueue_style('mds_collivery_css');
+
+    $post = $_POST;
+    $status = ( isset($post['status']) && $post['status'] != "" ) ? $post['status'] : 1;
+    $waybill = ( isset($post['waybill']) && $post['waybill'] != "" ) ? $post['waybill'] : false;
+
+    $table_name = $wpdb->prefix . 'mds_collivery_processed';
+    if (isset($post['waybill']) && $post['waybill'] != "") {
+	$colliveries = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE status=" . $status . " and waybill=" . $waybill . " ORDER BY id DESC;", OBJECT);
+    } else {
+	$colliveries = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE status=" . $status . " ORDER BY id DESC;", OBJECT);
+    }
+
+    $mds = new WC_MDS_Collivery();
+    $collivery = $mds->getColliveryClass();
+    include 'views/index.php';
+}
+
+// --------------------------------------------------------------------
+
+// View our Collivery once it has been accepted
+function mdsConfirmed()
+{
+    global $wpdb;
+    wp_register_script('mds_collivery_js', plugin_dir_url(__FILE__) . '/views/js/mds_collivery.js');
+    wp_enqueue_script('mds_collivery_js');
+
+    $table_name = $wpdb->prefix . 'mds_collivery_processed';
+    $data_ = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE waybill=" . $_GET['waybill'] . ";", OBJECT);
+    $data = $data_[0];
+    $mds = new WC_MDS_Collivery();
+    $collivery = $mds->getColliveryClass();
+    $directory = getcwd() . '/cache/mds_collivery/waybills/' . $data->waybill;
+
+    // Do we have images of the parcels
+    if ($pod = $collivery->getPod($data->waybill)) {
+	if (!is_dir($directory)) {
+	    mkdir($directory, 0755, true);
+	}
+
+	file_put_contents($directory . '/' . $pod['filename'], base64_decode($pod['file']));
+    }
+
+    // Do we have proof of delivery
+    if ($parcels = $collivery->getParcelImageList($data->waybill)) {
+	if (!is_dir($directory)) {
+	    mkdir($directory, 0755, true);
+	}
+
+	foreach ($parcels as $parcel) {
+	    $size = $parcel['size'];
+	    $mime = $parcel['mime'];
+	    $filename = $parcel['filename'];
+	    $parcel_id = $parcel['parcel_id'];
+
+	    if ($image = $collivery->getParcelImage($parcel_id)) {
+		file_put_contents($directory . '/' . $filename, base64_decode($image['file']));
+	    }
+	}
+    }
+
+    // Get our tracking information
+    $tracking = $collivery->getStatus($data->waybill);
+    $validation_results = json_decode($data->validation_results);
+
+    $collection_address = $collivery->getAddress($validation_results->collivery_from);
+    $destination_address = $collivery->getAddress($validation_results->collivery_to);
+    $collection_contacts = $collivery->getContacts($validation_results->collivery_from);
+    $destination_contacts = $collivery->getContacts($validation_results->collivery_to);
+
+    // Set our status if the delivery is invoiced (closed)
+    if ($tracking['status_id'] == 6) {
+	$wpdb->query("UPDATE `" . $table_name . "` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";");
+    }
+
+    $pod = glob($directory . "/*.{pdf,PDF}", GLOB_BRACE);
+    $image_list = glob($directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE);
+    $view_waybill = 'https://quote.collivery.co.za/waybillpdf.php?wb=' . base64_encode($data->waybill) . '&output=I';
+    include 'views/view.php';
+}
+
 // --------------------------------------------------------------------
 
 /**

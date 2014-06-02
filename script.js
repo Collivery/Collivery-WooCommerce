@@ -9,20 +9,20 @@ jQuery(document).ready(function($) {
 		if (mds_ajax_billing_state)
 			mds_ajax_billing_state.abort();
 
-		if (jQuery('#billing_city').val() == '') {
+		if (jQuery('#billing_state').val() == '') {
 
-			jQuery('#billing_state').empty();
-			jQuery('#billing_state').append('<option value="">Select town first...</option>');
+			jQuery('#billing_city').empty();
+			jQuery('#billing_city').append('<option value="">Select a city first...</option>');
 		} else {
 
-			jQuery('#billing_state').empty();
-			jQuery('#billing_state').append('<option value="">Loading...</option>');
+			jQuery('#billing_city').empty();
+			jQuery('#billing_city').append('<option value="">Loading...</option>');
 
-			var town = jQuery('#billing_city').val();
+			var town = jQuery('#billing_state').val();
 			var type = 'billing_';
 
 			var data = {
-				action: 'mds_collivery_generate_states',
+				action: 'mds_collivery_generate_suburbs',
 				security: woocommerce_params.update_order_review_nonce,
 				town: town,
 				type: type,
@@ -33,29 +33,30 @@ jQuery(document).ready(function($) {
 				url: woocommerce_params.ajax_url,
 				data: data,
 				success: function(my_response) {
-					jQuery('#billing_state').empty();
-					jQuery('#billing_state').append(my_response);
+					jQuery('#billing_city').empty();
+					jQuery('#billing_city').append(my_response);
 				}
 			});
 		}
 	}
 
 	function update_shipping_subs() {
+
 		if (mds_ajax_shipping_state)
 			mds_ajax_shipping_state.abort();
 
-		if (jQuery('#shipping_city').val() == '') {
-			jQuery('#shipping_state').empty();
-			jQuery('#shipping_state').append('<option value="">---Please select a town first---</option>');
+		if (jQuery('#shipping_state').val() == '') {
+			jQuery('#shipping_city').empty();
+			jQuery('#shipping_city').append('<option value="">---Please select a city first---</option>');
 		} else {
-			jQuery('#shipping_state').empty();
-			jQuery('#shipping_state').append('<option value="">Loading...</option>');
+			jQuery('#shipping_city').empty();
+			jQuery('#shipping_city').append('<option value="">Loading...</option>');
 
-			var town = jQuery('#shipping_city').val();
+			var town = jQuery('#shipping_state').val();
 			var type = 'shipping_';
 
 			var data = {
-				action: 'mds_collivery_generate_states',
+				action: 'mds_collivery_generate_suburbs',
 				security: woocommerce_params.update_order_review_nonce,
 				town: town,
 				type: type,
@@ -66,14 +67,14 @@ jQuery(document).ready(function($) {
 				url: woocommerce_params.ajax_url,
 				data: data,
 				success: function(my_response) {
-					jQuery('#shipping_state').empty();
-					jQuery('#shipping_state').append(my_response);
+					jQuery('#shipping_city').empty();
+					jQuery('#shipping_city').append(my_response);
 				}
 			});
 		}
 	}
 
-	jQuery('select#billing_city').live('keydown', function(e) {
+	jQuery('#billing_state').live('keydown', function(e) {
 		var keyCode = e.keyCode || e.which;
 
 		if (keyCode != 9) {
@@ -82,7 +83,7 @@ jQuery(document).ready(function($) {
 		}
 	});
 
-	jQuery('select#shipping_city').live('keydown', function(e) {
+	jQuery('#shipping_state').live('keydown', function(e) {
 		var keyCode = e.keyCode || e.which;
 
 		if (keyCode != 9) {
@@ -91,12 +92,12 @@ jQuery(document).ready(function($) {
 		}
 	});
 
-	jQuery('select#billing_city').live('change', function() {
+	jQuery('#billing_state').live('change', function() {
 		clearTimeout(timer_update_billing_subs);
 		update_billing_subs();
 	});
 
-	jQuery('select#shipping_city').live('change', function() {
+	jQuery('#shipping_state').live('change', function() {
 		clearTimeout(timer_update_shipping_subs);
 		update_shipping_subs();
 	});
@@ -118,18 +119,18 @@ jQuery(window).load(function()
 	var payment_method = jQuery('#order_review input[name=payment_method]:checked').val();
 	var country = jQuery('#billing_country').val();
 	var state = jQuery('#billing_state').val();
-	var postcode = jQuery('input#billing_postcode').val();
-	var city = jQuery('input#billing_city').val();
+	var postcode = jQuery('#billing_postcode').val();
+	var city = jQuery('#billing_city').val();
 	var address = jQuery('input#billing_address_1').val();
 	var address_2 = jQuery('input#billing_address_2').val();
 
 	if (jQuery('#ship-to-different-address input').is(':checked') || jQuery('#ship-to-different-address input').size() == 0) {
 		var s_country = jQuery('#shipping_country').val();
 		var s_state = jQuery('#shipping_state').val();
-		var s_postcode = jQuery('input#shipping_postcode').val();
-		var s_city = jQuery('input#shipping_city').val();
-		var s_address = jQuery('input#shipping_address_1').val();
-		var s_address_2 = jQuery('input#shipping_address_2').val();
+		var s_postcode = jQuery('#shipping_postcode').val();
+		var s_city = jQuery('#shipping_city').val();
+		var s_address = jQuery('#shipping_address_1').val();
+		var s_address_2 = jQuery('#shipping_address_2').val();
 	} else {
 		var s_country = country;
 		var s_state = state;
