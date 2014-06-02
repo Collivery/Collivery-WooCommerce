@@ -96,10 +96,11 @@ class Collivery {
 	 */
 	protected function authenticate()
 	{
+		$auth_cache = $this->cache->get( 'collivery.auth' );
 		if (
 			$this->check_cache == 2 &&
 			$this->cache->has( 'collivery.auth' ) &&
-			$this->cache->get( 'collivery.auth' )['user_email'] == $this->config->user_email
+			$auth_cache['user_email'] == $this->config->user_email
 		) {
 			$authenticate = $this->cache->get( 'collivery.auth' );
 
