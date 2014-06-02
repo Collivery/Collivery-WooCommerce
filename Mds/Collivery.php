@@ -24,8 +24,8 @@ class Collivery {
 	function __construct( array $config = array(), $cache = null )
 	{
 		if ( is_null( $cache ) ) {
-			$cache_dir = array_key_exists('cache_dir', $config) ? $config['cache_dir'] : null;
-			$this->cache = new Cache($cache_dir);
+			$cache_dir = array_key_exists( 'cache_dir', $config ) ? $config['cache_dir'] : null;
+			$this->cache = new Cache( $cache_dir );
 		} else {
 			$this->cache = $cache;
 		}

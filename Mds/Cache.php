@@ -5,22 +5,22 @@ class Cache {
 	private $cache_dir;
 	private $cache;
 
-	function __construct($cache_dir = 'cache/mds_collivery/')
+	function __construct( $cache_dir = 'cache/mds_collivery/' )
 	{
-		if ($cache_dir === null) $cache_dir = 'cache/mds_collivery/';
+		if ( $cache_dir === null ) $cache_dir = 'cache/mds_collivery/';
 		$this->cache_dir = $cache_dir;
 	}
 
-	protected function create_dir($dir_array)
+	protected function create_dir( $dir_array )
 	{
-		if (!is_array($dir_array))
-			$dir_array = explode('/', $this->cache_dir);
-		array_pop($dir_array);
-		$dir = implode('/', $dir_array);
+		if ( !is_array( $dir_array ) )
+			$dir_array = explode( '/', $this->cache_dir );
+		array_pop( $dir_array );
+		$dir = implode( '/', $dir_array );
 
 		if ( $dir!='' && ! is_dir( $dir ) ) {
-			$this->create_dir($dir_array);
-			mkdir($dir);
+			$this->create_dir( $dir_array );
+			mkdir( $dir );
 		}
 	}
 
@@ -31,7 +31,7 @@ class Cache {
 				$this->cache[ $name ] = json_decode( $content, true );
 				return $this->cache[ $name ];
 			} else {
-				$this->create_dir($this->cache_dir);
+				$this->create_dir( $this->cache_dir );
 			}
 		} else {
 			return $this->cache[ $name ];
