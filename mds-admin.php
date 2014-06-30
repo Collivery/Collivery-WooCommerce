@@ -212,7 +212,7 @@ function quote_admin_callback()
 
 	// Check which collection address we using
 	if ( $post['which_collection_address'] == 'default' ) {
-		$data['from_town_id'] = $post['collection_city'];
+		$data['from_town_id'] = $post['collection_town'];
 		$data['from_town_type'] = $post['collection_location_type'];
 	} else {
 		$data['collivery_from'] = $post['collivery_from'];
@@ -221,7 +221,7 @@ function quote_admin_callback()
 
 	// Check which destination address we using
 	if ( $post['which_destination_address'] == 'default' ) {
-		$data['to_town_id'] = $post['destination_city'];
+		$data['to_town_id'] = $post['destination_town'];
 		$data['to_town_type'] = $post['destination_location_type'];
 	} else {
 		$data['collivery_to'] = $post['collivery_to'];
@@ -260,7 +260,7 @@ function accept_admin_callback()
 			'location_type' => $post['collection_location_type'],
 			'suburb_id' => $post['collection_state'],
 			'building' => $post['collection_building_details'],
-			'town_id' => $post['collection_city'],
+			'town_id' => $post['collection_town'],
 			'full_name' => $post['collection_full_name'],
 			'phone' => $post['collection_phone'],
 			'cellphone' => $post['collection_cellphone'],
@@ -290,7 +290,7 @@ function accept_admin_callback()
 			'location_type' => $post['destination_location_type'],
 			'suburb_id' => $post['destination_state'],
 			'building' => $post['destination_building_details'],
-			'town_id' => $post['destination_city'],
+			'town_id' => $post['destination_town'],
 			'full_name' => $post['destination_full_name'],
 			'phone' => $post['destination_phone'],
 			'cellphone' => $post['destination_cellphone'],
