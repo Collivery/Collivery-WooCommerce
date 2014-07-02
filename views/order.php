@@ -167,7 +167,7 @@
 							<label for="destination_town">Town</label>
 							<select id="destination_town" name="destination_town">
 							<?php foreach ( $collivery->getTowns() as $town_id => $town ): ?>
-								<option value="<?php echo $town_id; ?>"<?php if ( $town == $my_order_meta['_shipping_town'][0] ) {echo ' selected="selected" ';} ?>><?php echo $town; ?></option>
+								<option value="<?php echo $town_id; ?>"<?php if ( $town == $order->shipping_state ) {echo ' selected="selected" ';} ?>><?php echo $town; ?></option>
 							<?php endforeach; ?>
 							</select>
 							<br/>
@@ -175,7 +175,7 @@
 							<div id="populate_destination_suburb">
 								<label for="destination_suburb">Suburb</label>
 								<select id="destination_suburb" name="destination_suburb">
-									<?php foreach ( $collivery->getSuburbs( array_search( $my_order_meta['_shipping_town'][0], $collivery->getTowns() ) ) as $suburb_id => $suburb ): ?>
+									<?php foreach ( $collivery->getSuburbs( array_search( $order->shipping_city, $collivery->getTowns() ) ) as $suburb_id => $suburb ): ?>
 										<option value="<?php echo $suburb_id; ?>"<?php if ( $suburb == $my_order_meta['_shipping_suburb'][0] ) {echo ' selected="selected" ';} ?>><?php echo $suburb; ?></option>
 									<?php endforeach; ?>
 								</select>
@@ -184,35 +184,35 @@
 							<label for="destination_which_company">Private/Corprate</label>
 							( Private <input class="destination_which_company" id="destination_which_company" name="destination_which_company" type="radio" value="private"<?php if ( $my_order_meta['_shipping_company'][0] == "" ) {echo ' checked="checked" ';} ?>>
 							Company <input class="destination_which_company" id="destination_which_company" name="destination_which_company" type="radio" value="company"<?php if ( $my_order_meta['_shipping_company'][0] != "" ) {echo ' checked="checked" ';} ?>> )
-							<div id="destination_hide_company" <?php if ( $my_order_meta['_shipping_company'][0] == "" ) {echo 'style="display:none"';} ?>>
+							<div id="destination_hide_company" <?php if ( $order->shipping_company == "" ) {echo 'style="display:none"';} ?>>
 							<label for="destination_company_name">Company</label>
-							<input id="destination_company_name" name="destination_company_name" size="30" type="text" value="<?php echo $my_order_meta['_shipping_company'][0]; ?>">
+							<input id="destination_company_name" name="destination_company_name" size="30" type="text" value="<?php echo $order->shipping_company; ?>">
 							</div>
 							<br/>
 							<label for="destination_location_type">Location Type</label>
 							<select id="destination_location_type" name="destination_location_type">
 							<?php foreach ( $collivery->getLocationTypes() as $location_id => $location ): ?>
-								<option value="<?php echo $location_id; ?>"<?php if ( $location == $my_order_meta['_shipping_location_type'][0] ) {echo ' selected="selected" ';} ?>><?php echo $location; ?></option>
+								<option value="<?php echo $location_id; ?>"<?php if ( $location == $order->shipping_location_type ) {echo ' selected="selected" ';} ?>><?php echo $location; ?></option>
 							<?php endforeach; ?>
 							</select>
 							<br/>
 							<label for="destination_building_details">Building Details</label>
-							<input id="destination_building_details" name="destination_building_details" size="30" type="text" value="<?php echo $my_order_meta['_shipping_building_details'][0]; ?>">
+							<input id="destination_building_details" name="destination_building_details" size="30" type="text" value="<?php echo $order->shipping_building_details; ?>">
 							<br/>
 							<label for="destination_street">Street</label>
-							<input id="destination_street" name="destination_street" size="30" type="text" data-validetta="required" value="<?php echo $my_order_meta['_shipping_address_1'][0] . ' ' . $my_order_meta['_shipping_address_2'][0]; ?>">
+							<input id="destination_street" name="destination_street" size="30" type="text" data-validetta="required" value="<?php echo $order->shipping_address_1 . ' ' . $order->shipping_address_2; ?>">
 							<br/>
 							<label for="destination_full_name">Contact Person</label>
-							<input id="destination_full_name" name="destination_full_name" size="30" type="text" data-validetta="required" value="<?php echo $my_order_meta['_shipping_first_name'][0] . ' ' . $my_order_meta['_shipping_last_name'][0]; ?>">
+							<input id="destination_full_name" name="destination_full_name" size="30" type="text" data-validetta="required" value="<?php echo $order->shipping_first_name . ' ' . $order->shipping_last_name; ?>">
 							<br/>
 							<label for="destination_phone">Landline</label>
 							<input id="destination_phone" name="destination_phone" size="30" type="text" value="">
 							<br/>
 							<label for="destination_cellphone">Cell Phone</label>
-							<input id="destination_cellphone" name="destination_cellphone" size="30" type="text" data-validetta="required" value="<?php echo $my_order_meta['_shipping_phone'][0]; ?>">
+							<input id="destination_cellphone" name="destination_cellphone" size="30" type="text" data-validetta="required" value="<?php echo $order->shipping_phone; ?>">
 							<br/>
 							<label for="destination_email">Email</label>
-							<input id="destination_email" name="destination_email" size="30" type="text" data-validetta="email" value="<?php echo $my_order_meta['_shipping_email'][0]; ?>">
+							<input id="destination_email" name="destination_email" size="30" type="text" data-validetta="email" value="<?php echo $order->shipping_email; ?>">
 						</div>
 
 						<div id="which_destination_hide_saved" style="display:none;">
