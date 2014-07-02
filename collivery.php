@@ -11,7 +11,7 @@
 // Our versions
 global $wp_version;
 global $mds_db_version;
-$mds_db_version = "1.5";
+$mds_db_version = "1.6";
 
 register_activation_hook( __FILE__, 'mdsInstall' ); // Install Hook
 
@@ -49,7 +49,7 @@ function mdsInstall()
 
 	$wpdb->query( $sql );
 
-	add_option( "mds_db_version", "1.5" );
+	add_option( "mds_db_version", "1.6" );
 }
 
 add_action( 'plugins_loaded', 'init_mds_collivery', 0 );
