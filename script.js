@@ -105,11 +105,3 @@ jQuery(document).ready(function($) {
 	update_billing_subs();
 	update_shipping_subs();
 });
-
-jQuery(window).load(function()
-{
-	// This function is used to display shipping prices for logged in users.
-	// Seems to be a bug in woocommerce that does not display the prices unless you change the city or location type.
-    // This waits till the page has loaded then uses woocommerce update_checkout() function to get the prices.
-    update_checkout();
-});
