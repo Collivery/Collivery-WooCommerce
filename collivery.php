@@ -124,47 +124,58 @@ function init_mds_collivery()
 				'user_password' => $this->mds_pass
 			);
 
-			$this->collivery = new Mds\Collivery( $config );
+			$this->collivery = new Mds\Collivery($config);
 
 			// Load the form fields that depend on the WS.
 			$this->init_ws_form_fields();
 		}
 
+		/**
+		 * Returns the MDS Collivery class
+		 */
 		public function getColliveryClass()
 		{
 			return $this->collivery;
 		}
 
+		/**
+		 * Returns plugin settings
+		 */
 		public function getColliverySettings()
 		{
 			return $this->settings;
 		}
 
+		/**
+		 * Gets default address of the MDS Account
+		 */
 		public function getDefaulsAddress()
 		{
 			$default_address_id = $this->collivery->getDefaultAddressId();
 			$data = array(
-				'address' => $this->collivery->getAddress( $default_address_id ),
+				'address' => $this->collivery->getAddress($default_address_id),
 				'default_address_id' => $default_address_id,
-				'contacts' => $this->collivery->getContacts( $default_address_id )
+				'contacts' => $this->collivery->getContacts($default_address_id)
 			);
 			return $data;
 		}
 
-		// This function is here so we can get WooCommerce version number to pass on to the API for logs
+		/**
+		 * This function is here so we can get WooCommerce version number to pass on to the API for logs
+		 */
 		function wpbo_get_woo_version_number()
 		{
 			// If get_plugins() isn't available, require it
-			if ( !function_exists( 'get_plugins' ) ) {
+			if (!function_exists('get_plugins')) {
 				require_once ABSPATH . 'wp-admin/includes/plugin.php';
 			}
 
 			// Create the plugins folder and file variables
-			$plugin_folder = get_plugins( '/' . 'woocommerce' );
+			$plugin_folder = get_plugins('/' . 'woocommerce');
 			$plugin_file = 'woocommerce.php';
 
 			// If the plugin version number is set, return it
-			if ( isset( $plugin_folder[$plugin_file]['Version'] ) ) {
+			if (isset($plugin_folder[$plugin_file]['Version'])) {
 				return $plugin_folder[$plugin_file]['Version'];
 			} else {
 				// Otherwise return null
@@ -172,42 +183,47 @@ function init_mds_collivery()
 			}
 		}
 
-		/*
-	 * Plugin Settings
-	 */
-
+		/**
+		 * Initial Plugin Settings
+		 */
 		public function init_form_fields()
 		{
 			global $woocommerce;
 			$fields = array(
 				'enabled' => array(
-					'title' => __( 'Enabled?', 'woocommerce' ),
+					'title' => __('Enabled?', 'woocommerce'),
 					'type' => 'checkbox',
-					'label' => __( 'Enable this shipping method', 'woocommerce' ),
+					'label' => __('Enable this shipping method', 'woocommerce'),
 					'default' => 'yes',
 				),
 				'title' => array(
-					'title' => __( 'Method Title', 'woocommerce' ),
+					'title' => __('Method Title', 'woocommerce'),
 					'type' => 'text',
-					'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce' ),
-					'default' => __( 'MDS Collivery', 'woocommerce' ),
+					'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
+					'default' => __('MDS Collivery', 'woocommerce'),
 				),
 				'mds_user' => array(
-					'title' => "MDS " . __( 'Username', 'woocommerce' ),
+					'title' => "MDS " . __('Username', 'woocommerce'),
 					'type' => 'text',
-					'description' => __( 'Email address associated with your MDS account.', 'woocommerce' ),
+					'description' => __('Email address associated with your MDS account.', 'woocommerce'),
 					'default' => "api@collivery.co.za",
 				),
 				'mds_pass' => array(
-					'title' => "MDS " . __( 'Password', 'woocommerce' ),
+					'title' => "MDS " . __('Password', 'woocommerce'),
 					'type' => 'text',
-					'description' => __( 'The password used when logging in to MDS.', 'woocommerce' ),
+					'description' => __('The password used when logging in to MDS.', 'woocommerce'),
 					'default' => "api123",
 				),
 				'risk_cover' => array(
-					'title' => "MDS " . __( 'Insurance', 'woocommerce' ),
+					'title' => "MDS " . __('Insurance', 'woocommerce'),
 					'type' => 'checkbox',
-					'description' => __( 'Insurance up to a maximum of R5000.', 'woocommerce' ),
+					'description' => __('Insurance up to a maximum of R5000.', 'woocommerce'),
+					'default' => 'yes',
+				),
+				'round' => array(
+					'title' => "MDS " . __('Round Price', 'woocommerce'),
+					'type' => 'checkbox',
+					'description' => __('Rounds price up.', 'woocommerce'),
 					'default' => 'yes',
 				),
 			);
@@ -215,20 +231,23 @@ function init_mds_collivery()
 			$this->form_fields = $fields;
 		}
 
+		/**
+		 * Next Plugin Settings after class is instantiated
+		 */
 		public function init_ws_form_fields()
 		{
 			global $woocommerce;
 			$fields = $this->form_fields;
 			$services = $this->collivery->getServices();
 
-			foreach ( $services as $id => $title ) {
+			foreach ($services as $id => $title) {
 				$fields['method_' . $id] = array(
-					'title' => __( $title . ': Enabled', 'woocommerce' ),
+					'title' => __($title . ': Enabled', 'woocommerce'),
 					'type' => 'checkbox',
 					'default' => 'yes',
 				);
 				$fields['markup_' . $id] = array(
-					'title' => __( $title . ': Markup', 'woocommerce' ),
+					'title' => __($title . ': Markup', 'woocommerce'),
 					'type' => 'text',
 					'default' => '10',
 				);
@@ -237,7 +256,10 @@ function init_mds_collivery()
 			$this->form_fields = $fields;
 		}
 
-		function calculate_shipping( $package = array() )
+		/**
+		 * Function used by Woocommerce to fetch shipping price
+		 */
+		function calculate_shipping($package = array())
 		{
 			$towns = $this->collivery->getTowns();
 			$location_types = $this->collivery->getLocationTypes();
@@ -246,73 +268,71 @@ function init_mds_collivery()
 			$defaults = $this->getDefaulsAddress();
 
 			// Capture the correct Town and location type
-			if ( isset( $_POST['post_data'] ) ) {
-				parse_str( $_POST['post_data'], $post_data );
-				if ( !isset( $post_data['ship_to_different_address'] ) || $post_data['ship_to_different_address'] != TRUE ) {
+			if (isset($_POST['post_data'])) {
+				parse_str($_POST['post_data'], $post_data);
+				if (!isset($post_data['ship_to_different_address']) || $post_data['ship_to_different_address'] != TRUE) {
 					$to_town_id = $post_data['billing_state'];
 					$to_town_type = $post_data['billing_location_type'];
 				} else {
 					$to_town_id = $post_data['shipping_state'];
 					$to_town_type = $post_data['shipping_location_type'];
 				}
-			} else if ( isset( $_POST['ship_to_different_address'] ) ) {
-					if ( !isset( $_POST['ship_to_different_address'] ) || $_POST['ship_to_different_address'] != TRUE ) {
-						$to_town_id = $_POST['billing_state'];
-						$to_town_type = $_POST['billing_location_type'];
-					} else {
-						$to_town_id = $_POST['shipping_state'];
-						$to_town_type = $_POST['shipping_location_type'];
-					}
-				} else if ( isset( $package['destination'] ) ) {
-					$to_town_id = $package['destination']['state'];
-					$to_town_type = $package['destination']['location_type'];
+			} else if (isset($_POST['ship_to_different_address'])) {
+				if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
+					$to_town_id = $_POST['billing_state'];
+					$to_town_type = $_POST['billing_location_type'];
 				} else {
+					$to_town_id = $_POST['shipping_state'];
+					$to_town_type = $_POST['shipping_location_type'];
+				}
+			} else if (isset($package['destination'])) {
+				$to_town_id = $package['destination']['state'];
+				$to_town_type = $package['destination']['location_type'];
+			} else {
 				return;
 			}
 
 			// get an array with all our parcels
-			$cart = $this->get_cart_content( $package );
+			$cart = $this->get_cart_content($package);
 			$services = $this->collivery->getServices();
 
 			// Get pricing for each service
-			foreach ( $services as $id => $title ) {
-				if ( $this->settings["method_$id"] == 'yes' ) {
-					if ( $this->settings["markup_$id"] > 0 ) {
-						$percent = $this->settings['markup_' . $id];
-						$markup = "1.$percent";
-					}
-
+			foreach ($services as $id => $title) {
+				if ($this->settings["method_$id"] == 'yes') {
 					// Now lets get the price for
 					$data = array(
 						"from_town_id" => $defaults['address']['town_id'],
 						"from_town_type" => $defaults['address']['location_type'],
-						"to_town_id" => array_search( $to_town_id, $towns ),
-						"to_town_type" => array_search( $to_town_type, $location_types ),
-						"num_package" => count( $cart['products'] ),
+						"to_town_id" => array_search($to_town_id, $towns),
+						"to_town_type" => array_search($to_town_type, $location_types),
+						"num_package" => count($cart['products']),
 						"service" => $id,
 						"parcels" => $cart['products'],
 						"exclude_weekend" => 1,
-						"cover" => ( $this->settings['risk_cover'] == 'yes' ) ? ( 1 ) : ( 0 )
+						"cover" => ($this->settings['risk_cover'] == 'yes') ? (1) : (0)
 					);
 
 					// query the API for our prices
-					$response = $this->collivery->getPrice( $data );
-					if ( isset( $response['price']['inc_vat'] ) ) {
-						$price = ( $response['price']['inc_vat'] * $markup );
+					$response = $this->collivery->getPrice($data);
+					if (isset($response['price']['inc_vat'])) {
 						$rate = array(
 							'id' => 'mds_' . $id,
 							'label' => $title,
-							'cost' => number_format( $price, 2, '.', '' ),
+							'cost' => $this->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
 						);
-						$this->add_rate( $rate ); //Only add shipping if it has a value
+						$this->add_rate($rate); //Only add shipping if it has a value
 					}
 				}
 			}
 		}
 
-		function get_cart_content( $package )
+		/**
+		 * Work through our shopping cart
+		 * Convert lengths and weights to desired unit
+		 */
+		function get_cart_content($package)
 		{
-			if ( sizeof( $package['contents'] ) > 0 ) {
+			if (sizeof($package['contents']) > 0) {
 
 				//Reset array to defaults
 				$this->cart = array(
@@ -322,7 +342,7 @@ function init_mds_collivery()
 					'products' => array()
 				);
 
-				foreach ( $package['contents'] as $item_id => $values ) {
+				foreach ($package['contents'] as $item_id => $values) {
 					$_product = $values['data']; // = WC_Product class
 					$qty = $values['quantity'];
 
@@ -330,20 +350,20 @@ function init_mds_collivery()
 					$this->cart['weight'] += $_product->get_weight() * $qty;
 
 					// Work out Volumetric Weight based on MDS's calculations
-					$vol_weight = ( ( $_product->length * $_product->width * $_product->height ) / 4000 );
+					$vol_weight = (($_product->length * $_product->width * $_product->height) / 4000);
 
-					if ( $vol_weight > $_product->get_weight() ) {
+					if ($vol_weight > $_product->get_weight()) {
 						$this->cart['max_weight'] += $vol_weight * $qty;
 					} else {
 						$this->cart['max_weight'] += $_product->get_weight() * $qty;
 					}
 
-					for ( $i = 0; $i < $qty; $i++ ) {
+					for ($i = 0; $i < $qty; $i++) {
 						// Length coversion, mds collivery only acceps CM
-						if ( strtolower( get_option( 'woocommerce_dimension_unit' ) ) != 'cm' ) {
-							$length = $this->converter->convert( $_product->length, strtolower( get_option( 'woocommerce_dimension_unit' ) ), 'cm', 6 );
-							$width = $this->converter->convert( $_product->width, strtolower( get_option( 'woocommerce_dimension_unit' ) ), 'cm', 6 );
-							$height = $this->converter->convert( $_product->height, strtolower( get_option( 'woocommerce_dimension_unit' ) ), 'cm', 6 );
+						if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
+							$length = $this->converter->convert($_product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+							$width = $this->converter->convert($_product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+							$height = $this->converter->convert($_product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
 						} else {
 							$length = $_product->length;
 							$width = $_product->width;
@@ -351,8 +371,8 @@ function init_mds_collivery()
 						}
 
 						// Weight coversion, mds collivery only acceps KG'S
-						if ( strtolower( get_option( 'woocommerce_weight_unit' ) ) != 'kg' ) {
-							$weight = $this->converter->convert( $_product->get_weight(), strtolower( get_option( 'woocommerce_weight_unit' ) ), 'kg', 6 );
+						if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
+							$weight = $this->converter->convert($_product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
 						} else {
 							$weight = $_product->get_weight();
 						}
@@ -424,8 +444,32 @@ function init_mds_collivery()
 			return array( 'towns' => array_combine( $towns, $towns ), 'location_types' => array_combine( $location_types, $location_types ) );
 		}
 
+		/**
+		 * Adds markup to price
+		 */
+		public function addMarkup($price, $markup)
+		{
+			$price += $price * ($markup / 100);
+			return (isset($this->settings['round']) && $this->settings['round'] == 'yes') ? $this->round($price) : $this->format($price);
+		}
 	}
 
+		/**
+		 * Format a number with grouped thousands
+		 */
+		public function format($price)
+		{
+			return number_format($price, 2, '.', '');
+		}
+
+		/**
+		 * Rounds number up to the next highest integer
+		 */
+		public function round($price)
+		{
+			return ceil($this->format($price));
+		}
+	}
 }
 
 /*
