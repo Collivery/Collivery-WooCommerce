@@ -4,35 +4,20 @@
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 1.4
+ * Version: 1.8
  * Author: Bryce Large | Bernhard Breytenbach
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
-// Our versions
-global $wp_version;
-global $mds_db_version;
-$mds_db_version = "1.7";
 
-register_activation_hook( __FILE__, 'mdsInstall' ); // Install Hook
-
+/**
+ * Register Install function
+ */
+register_activation_hook(__FILE__, 'mdsInstall');
 function mdsInstall()
 {
-
 	// We have to check what php version we have before anything is installed.
-	if ( version_compare( PHP_VERSION, '5.3.0' ) < 0 ) {
-		die( 'Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.' );
-	}
-
-	// Check if there is a cache directory
-	if ( !is_dir( __DIR__ . '/Mds/cache' ) ) {
-
-		// Lets make a cache directory
-		@mkdir( __DIR__ . '/Mds/cache', 0755, true );
-
-		// Make sure that we actually created the directory
-		if ( !is_dir( __DIR__ . '/Mds/cache' ) ) {
-			die( 'The plugin was unable to create a cache directory. Please make one manualy first, ' . dir( __DIR__ . '/Mds/cache' ) );
-		}
+	if (version_compare(PHP_VERSION, '5.3.0') < 0) {
+		die('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
 	}
 
 	global $wpdb;
@@ -47,40 +32,47 @@ function mdsInstall()
 		PRIMARY KEY (`id`)
 	);";
 
-	$wpdb->query( $sql );
+	$wpdb->query($sql);
 
-	add_option( "mds_db_version", "1.7" );
+	add_option("mds_db_version", "1.8");
 }
 
-add_action( 'plugins_loaded', 'init_mds_collivery', 0 );
+add_action('plugins_loaded', 'init_mds_collivery', 0);
 
+/**
+ * Instantiate the plugin
+ */
 function init_mds_collivery()
 {
-
 	// Check if 'WC_Shipping_Method' class is loaded, else exit.
-	if ( !class_exists( 'WC_Shipping_Method' ) ) {
+	if (!class_exists('WC_Shipping_Method')) {
 		return;
 	}
 
 	include_once 'mds-admin.php'; //Admin Scripts
 	include_once 'checkout_fields.php'; //Seperate file with large arrays.
-	//Load JS file
-	add_action( 'wp_enqueue_scripts', 'load_js' );
 
+	/**
+	 * Load JS file throught
+	 */
 	function load_js()
 	{
-		wp_register_script( 'mds_js', plugins_url( 'script.js', __FILE__ ), array( 'jquery' ) );
-		wp_enqueue_script( 'mds_js' );
+		wp_register_script('mds_js', plugins_url('script.js', __FILE__), array('jquery'));
+		wp_enqueue_script('mds_js');
 	}
 
-	class WC_MDS_Collivery extends WC_Shipping_Method {
+	add_action('wp_enqueue_scripts', 'load_js');
 
+	/**
+	 * WC_MDS_Collivery class extending from WC_Shipping_Method class
+	 */
+	class WC_MDS_Collivery extends WC_Shipping_Method
+	{
 		var $collivery;
 		var $converter;
 
 		public function __construct()
 		{
-
 			// Use the MDS API Files
 			require_once 'Mds/Cache.php';
 			require_once 'Mds/Collivery.php';
@@ -90,17 +82,21 @@ function init_mds_collivery()
 			$this->converter = new UnitConvertor();
 
 			$this->id = 'mds_collivery';
-			$this->method_title = __( 'MDS Collivery', 'woocommerce' );
-			$this->admin_page_heading = __( 'MDS Collivery', 'woocommerce' );
-			$this->admin_page_description = __( 'Seamlessly integrate your website with MDS Collivery', 'woocommerce' );
+			$this->method_title = __('MDS Collivery', 'woocommerce');
+			$this->admin_page_heading = __('MDS Collivery', 'woocommerce');
+			$this->admin_page_description = __('Seamlessly integrate your website with MDS Collivery', 'woocommerce');
 
-			add_action( 'woocommerce_update_options_shipping_' . $this->id, array( &$this, 'process_admin_options' ) );
+			add_action('woocommerce_update_options_shipping_' . $this->id, array(&$this, 'process_admin_options'));
 
 			$this->init();
 		}
 
+		/**
+		 * Instatiates the plugin
+		 */
 		function init()
 		{
+			global $wp_version;
 
 			// Load the form fields.
 			$this->init_form_fields();
@@ -389,26 +385,25 @@ function init_mds_collivery()
 			return $this->cart;
 		}
 
-		/*
-	 * Work through our order items and return an array of parcels
-	 */
-
-		function get_order_content( $items )
+		/**
+		 * Work through our order items and return an array of parcels
+		 */
+		function get_order_content($items)
 		{
 			$parcels = array();
-			foreach ( $items as $item_id => $item ) {
-				$product = new WC_Product( $item['product_id'] );
+			foreach ($items as $item_id => $item) {
+				$product = new WC_Product($item['product_id']);
 				$qty = $item['item_meta']['_qty'][0];
 
 				// Work out Volumetric Weight based on MDS's calculations
-				$vol_weight = ( ( $product->length * $product->width * $product->height ) / 4000 );
+				$vol_weight = (($product->length * $product->width * $product->height) / 4000);
 
-				for ( $i = 0; $i < $qty; $i++ ) {
+				for ($i = 0; $i < $qty; $i++) {
 					// Length coversion, mds collivery only acceps CM
-					if ( strtolower( get_option( 'woocommerce_dimension_unit' ) ) != 'cm' ) {
-						$length = $this->converter->convert( $product->length, strtolower( get_option( 'woocommerce_dimension_unit' ) ), 'cm', 6 );
-						$width = $this->converter->convert( $product->width, strtolower( get_option( 'woocommerce_dimension_unit' ) ), 'cm', 6 );
-						$height = $this->converter->convert( $product->height, strtolower( get_option( 'woocommerce_dimension_unit' ) ), 'cm', 6 );
+					if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
+						$length = $this->converter->convert($product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+						$width = $this->converter->convert($product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+						$height = $this->converter->convert($product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
 					} else {
 						$length = $product->length;
 						$width = $product->width;
@@ -416,32 +411,31 @@ function init_mds_collivery()
 					}
 
 					// Weight coversion, mds collivery only acceps KG'S
-					if ( strtolower( get_option( 'woocommerce_weight_unit' ) ) != 'kg' ) {
-						$weight = $this->converter->convert( $product->get_weight(), strtolower( get_option( 'woocommerce_weight_unit' ) ), 'kg', 6 );
+					if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
+						$weight = $this->converter->convert($product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
 					} else {
 						$weight = $product->get_weight();
 					}
 
 					$parcels[] = array(
-						'length' => ( empty( $length ) ) ? ( 0 ) : ( $length ),
-						'width' => ( empty( $width ) ) ? ( 0 ) : ( $width ),
-						'height' => ( empty( $height ) ) ? ( 0 ) : ( $height ),
-						'weight' => ( empty( $weight ) ) ? ( 0 ) : ( $weight )
+						'length' => (empty($length)) ? (0) : ($length),
+						'width' => (empty($width)) ? (0) : ($width),
+						'height' => (empty($height)) ? (0) : ($height),
+						'weight' => (empty($weight)) ? (0) : ($weight)
 					);
 				}
 			}
 			return $parcels;
 		}
 
-		/*
-	 * Get Town and Location Types for Checkout Dropdown's from MDS
-	 */
-
+		/**
+		 * Get Town and Location Types for Checkout Dropdown's from MDS
+		 */
 		public function get_field_defaults()
 		{
 			$towns = $this->collivery->getTowns();
 			$location_types = $this->collivery->getLocationTypes();
-			return array( 'towns' => array_combine( $towns, $towns ), 'location_types' => array_combine( $location_types, $location_types ) );
+			return array('towns' => array_combine($towns, $towns), 'location_types' => array_combine($location_types, $location_types));
 		}
 
 		/**
@@ -452,7 +446,6 @@ function init_mds_collivery()
 			$price += $price * ($markup / 100);
 			return (isset($this->settings['round']) && $this->settings['round'] == 'yes') ? $this->round($price) : $this->format($price);
 		}
-	}
 
 		/**
 		 * Format a number with grouped thousands
@@ -472,49 +465,55 @@ function init_mds_collivery()
 	}
 }
 
-/*
+/**
  * Register Plugin with WooCommerce
+ *
+ * @param $methods
+ * @return array
  */
-add_filter( 'woocommerce_shipping_methods', 'add_MDS_Collivery_method' );
-
-function add_MDS_Collivery_method( $methods )
+function add_MDS_Collivery_method($methods)
 {
 	$methods[] = 'WC_MDS_Collivery';
 	return $methods;
 }
 
-/*
+add_filter('woocommerce_shipping_methods', 'add_MDS_Collivery_method');
+
+/**
  * WooCommerce caches pricing information.
  * This adds location_type to the hash to update pricing cache when changed.
+ *
+ * @param $packages
+ * @return mixed
  */
-add_filter( 'woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages' );
-
-function mds_collivery_cart_shipping_packages( $packages )
+function mds_collivery_cart_shipping_packages($packages)
 {
 	$mds = new WC_MDS_Collivery;
 	$collivery = $mds->getColliveryClass();
 
-	if ( isset( $_POST['post_data'] ) ) {
-		parse_str( $_POST['post_data'], $post_data );
+	if (isset($_POST['post_data'])) {
+		parse_str($_POST['post_data'], $post_data);
 		$packages[0]['destination']['location_type'] = $post_data['billing_location_type'] . $post_data['shipping_location_type'];
-	} else if ( isset( $_POST['billing_location_type'] ) || isset( $_POST['shipping_location_type'] ) ) {
-			$packages[0]['destination']['location_type'] = ( isset( $_POST['billing_location_type'] ) && $_POST['shipping_location_type'] ) ? ( $_POST['shipping_location_type'] ) : ( $_POST['billing_location_type'] );
-		} else {
+	} else if (isset($_POST['billing_location_type']) || isset($_POST['shipping_location_type'])) {
+		$packages[0]['destination']['location_type'] = (isset($_POST['billing_location_type']) && $_POST['shipping_location_type']) ? ($_POST['shipping_location_type']) : ($_POST['billing_location_type']);
+	} else {
 		//Bad Practice... But incase location_type isn't set, do not cache the order!
 		//@TODO: Find a way to fix this
-		$packages[0]['destination']['location_type'] = rand( 0, 999999999999999999 ) . '-' . rand( 0, 999999999999999999 ) . rand( 0, 999999999999999999 ) . rand( 0, 999999999999999999 );
+		$packages[0]['destination']['location_type'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
 	}
 
-	if ( isset( $_POST['post_data'] ) ) {
-		parse_str( $_POST['post_data'], $post_data );
+	if (isset($_POST['post_data'])) {
+		parse_str($_POST['post_data'], $post_data);
 		$packages[0]['destination']['town'] = $post_data['billing_state'] . $post_data['shipping_state'];
-	} else if ( isset( $_POST['billing_state'] ) || isset( $_POST['shipping_state'] ) ) {
-			$packages[0]['destination']['town'] = ( isset( $_POST['shipping_state'] ) && $_POST['shipping_state'] ) ? ( $_POST['billing_state'] ) : ( $_POST['billing_location_type'] );
-		} else {
+	} else if (isset($_POST['billing_state']) || isset($_POST['shipping_state'])) {
+		$packages[0]['destination']['town'] = (isset($_POST['shipping_state']) && $_POST['shipping_state']) ? ($_POST['billing_state']) : ($_POST['billing_location_type']);
+	} else {
 		//Bad Practice... But incase town isn't set, do not cache the order!
 		//@TODO: Find a way to fix this
-		$packages[0]['destination']['town'] = rand( 0, 999999999999999999 ) . '-' . rand( 0, 999999999999999999 ) . rand( 0, 999999999999999999 ) . rand( 0, 999999999999999999 );
+		$packages[0]['destination']['town'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
 	}
 
 	return $packages;
 }
+
+add_filter('woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages');
