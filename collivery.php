@@ -49,8 +49,8 @@ function init_mds_collivery()
 		return;
 	}
 
-	include_once 'mds-admin.php'; //Admin Scripts
-	include_once 'checkout_fields.php'; //Seperate file with large arrays.
+	require_once( 'mds-admin.php' ); //Admin Scripts
+	require_once( 'checkout_fields.php' ); //Seperate file with large arrays.
 	require_once( 'GitHubPluginUpdater.php' ); // Auto updating class
 
 	/**
@@ -82,11 +82,11 @@ function init_mds_collivery()
 		public function __construct()
 		{
 			// Use the MDS API Files
-			require_once 'Mds/Cache.php';
-			require_once 'Mds/Collivery.php';
+			require_once( 'Mds/Cache.php' );
+			require_once( 'Mds/Collivery.php' );
 
 			// Class for converting lengths and weights
-			require_once 'UnitConvertor.php';
+			require_once( 'UnitConvertor.php' );
 			$this->converter = new UnitConvertor();
 
 			$this->id = 'mds_collivery';
