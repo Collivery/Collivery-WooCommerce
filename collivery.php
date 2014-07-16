@@ -51,7 +51,7 @@ function init_mds_collivery()
 
 	require_once( 'mds-admin.php' ); //Admin Scripts
 	require_once( 'checkout_fields.php' ); //Seperate file with large arrays.
-	require_once( 'GitHubPluginUpdater.php' ); // Auto updating class
+	require_once( 'GithubPluginUpdater.php' ); // Auto updating class
 
 	/**
 	 * Load JS file throught
