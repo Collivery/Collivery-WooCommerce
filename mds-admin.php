@@ -253,12 +253,19 @@ function accept_admin_callback()
 
 	// Check which collection address we using and if we need to add the address to collivery api
 	if ( $post['which_collection_address'] == 'default' ) {
+		if(!is_numeric($post['collection_suburb'])) {
+			$suburbs = $collivery->getSuburbs($post['collection_town']);
+			$suburb_id = array_search( $post['collection_suburb'], $suburbs );
+		} else {
+			$suburb_id = $post['collection_suburb'];
+		}
+
 		$collection_address = array(
 			'company_name' => ( $post['collection_company_name'] != "" ) ? $post['collection_company_name'] : 'Private',
 			'building' => $post['collection_building_details'],
 			'street' => $post['collection_street'],
 			'location_type' => $post['collection_location_type'],
-			'suburb_id' => $post['collection_state'],
+			'suburb_id' => $suburb_id,
 			'building' => $post['collection_building_details'],
 			'town_id' => $post['collection_town'],
 			'full_name' => $post['collection_full_name'],
@@ -283,12 +290,19 @@ function accept_admin_callback()
 
 	// Check which destination address we using and if we need to add the address to collivery api
 	if ( $post['which_destination_address'] == 'default' ) {
+		if(!is_numeric($post['destination_suburb'])) {
+			$suburbs = $collivery->getSuburbs($post['destination_town']);
+			$suburb_id = array_search( $post['destination_suburb'], $suburbs );
+		} else {
+			$suburb_id = $post['destination_suburb'];
+		}
+
 		$destination_address = array(
 			'company_name' => ( $post['destination_company_name'] != "" ) ? $post['destination_company_name'] : 'Private',
 			'building' => $post['destination_building_details'],
 			'street' => $post['destination_street'],
 			'location_type' => $post['destination_location_type'],
-			'suburb_id' => $post['destination_state'],
+			'suburb_id' => $suburb_id,
 			'building' => $post['destination_building_details'],
 			'town_id' => $post['destination_town'],
 			'full_name' => $post['destination_full_name'],
