@@ -1,8 +1,14 @@
 <p>
-	<b>Please Note:</b> if you make changes and accept, those changes will be sent to MDS Collivery as a collection and
-	delivery request, make sure your information is correct. If you have managed to pass incorrect information then you
-	can log onto <a href="https://quote.collivery.co.za/login.php" target="blank">MDS Collivery</a> to cancel or make
-	changes.
+	<b>Please Note:</b>
+	<ul>
+		<li><b>Allow an addition 24 hours on all services for outlying areas</b></li>
+		<li>
+			If you make changes and accept, those changes will be sent to MDS Collivery as a collection and
+			delivery request, make sure your information is correct. If you have managed to pass incorrect information then you
+			can log onto <a href="https://quote.collivery.co.za/login.php" target="blank">MDS Collivery</a> to cancel or make
+			changes.
+		</li>
+	</ul>
 </p>
 
 <form accept-charset="UTF-8" action="" method="post" id="api_quote">
