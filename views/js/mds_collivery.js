@@ -177,7 +177,7 @@ jQuery(document).ready(function()
 		},
 		beforeSend: function() {
 		    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
-		},
+		}
 	    });
 	}
     });
@@ -203,9 +203,9 @@ jQuery(document).ready(function()
 			var order_id = redirect[1];
 			var redirect_url = '/wordpress/wp-admin/post.php?post=' + order_id + '&action=edit';
 			jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Delivery has been processed and sent through to MDS Collivery. You will be redirect to your order in 5 seconds.</div>');
-			setTimeout(function() {
-			    window.location.href = redirect_url;
-			}, 5000);
+				setTimeout(function() {
+					window.location.replace(redirect_url);
+				}, 5000);
 		    }
 		    else
 		    {
@@ -217,7 +217,7 @@ jQuery(document).ready(function()
 		},
 		beforeSend: function() {
 		    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
-		},
+		}
 	    });
 	}
     });
@@ -239,7 +239,7 @@ jQuery(document).ready(function()
 	    },
 	    beforeSend: function() {
 		jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
-	    },
+	    }
 	});
     });
 
