@@ -6,15 +6,11 @@
 
 add_action( 'admin_menu', 'adminMenu' ); // Add our Admin menu items
 
-// --------------------------------------------------------------------
-
 function adminMenu()
 {
 	$firt_page = add_submenu_page( 'woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex' );
 	add_submenu_page( $firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed' );
 }
-
-// --------------------------------------------------------------------
 
 // Function used to display index of all our deliveries already accepted and sent to MDS Collivery
 function mdsConfirmedIndex()
@@ -38,8 +34,6 @@ function mdsConfirmedIndex()
 	$collivery = $mds->getColliveryClass();
 	include 'views/index.php';
 }
-
-// --------------------------------------------------------------------
 
 // View our Collivery once it has been accepted
 function mdsConfirmed()
@@ -102,8 +96,6 @@ function mdsConfirmed()
 	include 'views/view.php';
 }
 
-// --------------------------------------------------------------------
-
 /**
  * Add a button to order page to register shipping with MDS
  */
@@ -114,8 +106,6 @@ function mds_order_actions( $actions )
 	$actions['confirm_shipping'] = "Confirm MDS Shipping";
 	return $actions;
 }
-
-// --------------------------------------------------------------------
 
 /**
  * Redirect Admin to plugin page to register the Collivery
@@ -128,7 +118,6 @@ function mds_process_order_meta( $order )
 	die();
 }
 
-// --------------------------------------------------------------------
 // Ajax for getting suburbs in admin section
 add_action( 'wp_ajax_suburbs_admin', 'suburbs_admin_callback' );
 
@@ -159,7 +148,6 @@ function suburbs_admin_callback()
 	die();
 }
 
-// --------------------------------------------------------------------
 // Ajax for getting suburbs in admin section
 add_action( 'wp_ajax_contacts_admin', 'contacts_admin_callback' );
 
@@ -190,7 +178,6 @@ function contacts_admin_callback()
 	die();
 }
 
-// --------------------------------------------------------------------
 // Ajax get a quote
 add_action( 'wp_ajax_quote_admin', 'quote_admin_callback' );
 
@@ -240,7 +227,6 @@ function quote_admin_callback()
 	}
 }
 
-// --------------------------------------------------------------------
 // Ajax get a quote
 add_action( 'wp_ajax_accept_admin', 'accept_admin_callback' );
 
@@ -290,7 +276,7 @@ function accept_admin_callback()
 
 	// Check which destination address we using and if we need to add the address to collivery api
 	if ( $post['which_destination_address'] == 'default' ) {
-		if(!is_numeric($post['destination_suburb'])) {
+		if(!is_numeric(trim($post['destination_suburb']))) {
 			$suburbs = $collivery->getSuburbs($post['destination_town']);
 			$suburb_id = array_search( $post['destination_suburb'], $suburbs );
 		} else {
@@ -373,8 +359,6 @@ function accept_admin_callback()
 	die();
 }
 
-// --------------------------------------------------------------------
-
 /**
  * WordPress Backend to Register Collivery
  */
@@ -385,8 +369,6 @@ function mds_add_options()
 	add_submenu_page( null, 'Register Collivery', null, 8, 'mds_register', 'mds_register_collivery' );
 }
 
-// --------------------------------------------------------------------
-
 function mds_register_collivery()
 {
 	global $woocommerce, $woocommerce_errors;
@@ -394,7 +376,6 @@ function mds_register_collivery()
 	$order = new WC_Order( $_GET['post_id'] );
 	$order_id = $_GET['post_id'];
 	$custom_fields = $order->order_custom_fields;
-	$my_order_meta = get_post_custom( $_GET['post_id'] );
 
 	$mds = new WC_MDS_Collivery;
 	$collivery = $mds->getColliveryClass();
