@@ -320,7 +320,7 @@ function init_mds_collivery()
 					$response = $this->collivery->getPrice($data);
 					if (isset($response['price']['inc_vat'])) {
 						if($id == 1 || $id == 2) {
-							$title = $title . ', addition 24 hours on outlying areas';
+							$title = $title . ', additional 24 hours on outlying areas';
 						}
 						$rate = array(
 							'id' => 'mds_' . $id,
