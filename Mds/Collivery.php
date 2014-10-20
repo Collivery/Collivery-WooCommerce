@@ -24,8 +24,8 @@ class Collivery {
 	function __construct( array $config = array(), $cache = null )
 	{
 		if ( is_null( $cache ) ) {
-			$cache_dir = array_key_exists( 'cache_dir', $config ) ? $config['cache_dir'] : null;
-			$this->cache = new Cache( $cache_dir );
+			$cache_dir = array_key_exists('cache_dir', $config) ? $config['cache_dir'] : null;
+			$this->cache = new Cache($cache_dir);
 		} else {
 			$this->cache = $cache;
 		}
@@ -96,11 +96,10 @@ class Collivery {
 	 */
 	protected function authenticate()
 	{
-		$auth_cache = $this->cache->get( 'collivery.auth' );
 		if (
 			$this->check_cache == 2 &&
 			$this->cache->has( 'collivery.auth' ) &&
-			$auth_cache['user_email'] == $this->config->user_email
+			$this->cache->get( 'collivery.auth' )['user_email'] == $this->config->user_email
 		) {
 			$authenticate = $this->cache->get( 'collivery.auth' );
 
