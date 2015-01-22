@@ -154,6 +154,25 @@ class Collivery {
 			}
 		}
 	}
+    
+    /**
+     * Returns a list of provinces and their codes for creating new addresses.
+     * 
+     * @return array List of provinces and their codes
+     */
+    public function getProvinces() {
+        return array(
+            'CAP'   => 'Western Cape',
+            'EC'    => 'Eastern Cape',
+            'GAU'   => 'Gauteng',
+            'KZN'   => 'Kwa-Zulu Natal',
+            'MP'    => 'Mpumalanga',
+            'NC'    => 'Northern Cape',
+            'NP'    => 'Limpopo',
+            'NW'    => 'North-West',
+            'OFS'   => 'Free State',
+        );
+    }
 
 	/**
 	 * Returns a list of towns and their ID's for creating new addresses.
