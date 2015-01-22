@@ -76,7 +76,14 @@ function init_mds_collivery()
 	 */
 	class WC_MDS_Collivery extends WC_Shipping_Method
 	{
+        /**
+         * @var \Mds\Collivery
+         */
 		var $collivery;
+        
+        /**
+         * @var UnitConvertor
+         */
 		var $converter;
 
 		public function __construct()
@@ -136,6 +143,8 @@ function init_mds_collivery()
 
 		/**
 		 * Returns the MDS Collivery class
+         * 
+         * @return \Mds\Collivery
 		 */
 		public function getColliveryClass()
 		{
