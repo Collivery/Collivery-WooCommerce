@@ -14,6 +14,11 @@ class Collivery {
 	protected $default_address_id;
 	protected $client_id;
 	protected $user_id;
+    
+    /**
+     * @var Cache
+     */
+    protected $cache;
 
 	/**
 	 * Setup class with basic Config
