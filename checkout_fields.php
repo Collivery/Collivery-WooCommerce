@@ -94,6 +94,8 @@ function custom_override_default_address_fields( $address_fields )
 add_filter( 'woocommerce_checkout_fields', 'custom_override_checkout_fields' );
 add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
 add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
+add_action( 'wp_ajax_mds_collivery_generate_towns', 'generate_towns' );
+add_action( 'wp_ajax_nopriv_mds_collivery_generate_towns', 'generate_towns' );
 
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields )
@@ -101,10 +103,19 @@ function custom_override_checkout_fields( $fields )
 	$mds = new WC_MDS_Collivery();
 	$collivery = $mds->getColliveryClass();
 	$field = $mds->get_field_defaults();
-	$towns = array( '' => 'Select Town' ) + $field['towns'];
+    $provinces = array( '' => 'Select Province' ) + $field['provinces'];
+	$towns = array( '' => 'Select province first...' );
 	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
 
 	$billing_data = array(
+        'billing_province'   => array(
+            'type'      => 'select',
+            'label'     => 'Province',
+            'required'  => true,
+            'class'     => array( 'update_totals_on_change' ),
+            'options'   => $provinces,
+            'selected'  => '',
+        ),
 		'billing_state' => array(
 			'type' => 'select',
 			'label' => 'Town',
@@ -187,6 +198,14 @@ function custom_override_checkout_fields( $fields )
 	);
 
 	$shipping_data = array(
+        'shipping_province'   => array(
+            'type'      => 'select',
+            'label'     => 'Province',
+            'required'  => true,
+            'class'     => array( 'update_totals_on_change' ),
+            'options'   => $provinces,
+            'selected'  => '',
+        ),
 		'shipping_state' => array(
 			'type' => 'select',
 			'label' => 'Town',
@@ -328,4 +347,56 @@ function generate_suburbs()
 	}
 
 	die();
+}
+
+// Get towns on province change...
+function generate_towns() {
+    $customer_id = WC()->session->get_customer_id();
+    // Here so we can auto select the clients province
+    if ( $customer_id > 0 && $_POST['type'] ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'usermeta';
+        $config = $wpdb->get_results( "SELECT * FROM `{$table_name}` WHERE `user_id` = {$customer_id} AND `meta_key` = '{$_POST['type']}state';", OBJECT );
+        $selected_town = !empty($config) ? $config[0]->meta_value : '';
+    }
+    
+    if ( isset( $_POST['province'] ) && $_POST['province'] != '' ) {
+        $mds = new WC_MDS_Collivery;
+        $collivery = $mds->getColliveryClass();
+        $province_code = array_search( $_POST['province'], $collivery->getProvinces() );
+        $fields = $collivery->getTowns( $country = "ZAF", $province_code );
+        if ( !empty( $fields ) ) {
+            if ( count( $fields ) == 1 ) {
+                foreach ( $fields as $value ) {
+                    echo '<option value="' . $value . '">' . $value . '</option>';
+                }
+            }
+            else {
+                if ( !empty( $selected_town ) ) {
+                    foreach ( $fields as $value ) {
+                        if ( $value != $selected_town ) {
+                            echo '<option value="' . $value . '">' . $value . '</option>';
+                        }
+                        else {
+                            echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
+                        }
+                    }
+                }
+                else {
+                    echo '<option value="" selected="selected">Select Town</option>';
+                    foreach ( $fields as $value ) {
+                        echo '<option value="' . $value . '">' . $value . '</option>';
+                    }
+                }
+            }
+        }
+        else {
+            echo '<option value="">Error retrieving data from server. Please try again later...</option>';
+        }
+    }
+    else {
+        echo '<option value="">First Select Province...</option>';
+    }
+    
+    die();
 }
