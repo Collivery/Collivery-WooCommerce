@@ -453,9 +453,13 @@ function init_mds_collivery()
 		 */
 		public function get_field_defaults()
 		{
+            $provinces = $this->collivery->getProvinces();
 			$towns = $this->collivery->getTowns();
 			$location_types = $this->collivery->getLocationTypes();
-			return array('towns' => array_combine($towns, $towns), 'location_types' => array_combine($location_types, $location_types));
+			return array(
+                'provinces'         => array_combine($provinces, $provinces),
+                'towns'             => array_combine($towns, $towns),
+                'location_types'    => array_combine($location_types, $location_types));
 		}
 
 		/**
