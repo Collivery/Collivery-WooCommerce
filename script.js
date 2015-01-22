@@ -9,7 +9,7 @@ jQuery(document).ready(function($) {
 		if (mds_ajax_billing_state)
 			mds_ajax_billing_state.abort();
 
-		if (jQuery('#billing_state').val() == '') {
+		if (jQuery('#billing_state').val() === '') {
 
 			jQuery('#billing_city').empty();
 			jQuery('#billing_city').append('<option value="">Select a city first...</option>');
@@ -45,7 +45,7 @@ jQuery(document).ready(function($) {
 		if (mds_ajax_shipping_state)
 			mds_ajax_shipping_state.abort();
 
-		if (jQuery('#shipping_state').val() == '') {
+		if (jQuery('#shipping_state').val() === '') {
 			jQuery('#shipping_city').empty();
 			jQuery('#shipping_city').append('<option value="">---Please select a city first---</option>');
 		} else {
@@ -77,7 +77,7 @@ jQuery(document).ready(function($) {
 	jQuery('#billing_state').live('keydown', function(e) {
 		var keyCode = e.keyCode || e.which;
 
-		if (keyCode != 9) {
+		if (keyCode !== 9) {
 			clearTimeout(timer_update_billing_subs);
 			timer_update_billing_subs = setTimeout(update_billing_subs, '1000');
 		}
