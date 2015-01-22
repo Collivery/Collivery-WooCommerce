@@ -366,7 +366,7 @@ add_action( 'admin_menu', 'mds_add_options' );
 
 function mds_add_options()
 {
-	add_submenu_page( null, 'Register Collivery', null, 8, 'mds_register', 'mds_register_collivery' );
+	add_submenu_page( null, 'Register Collivery', null, 'manage_options', 'mds_register', 'mds_register_collivery' );
 }
 
 function mds_register_collivery()
