@@ -39,6 +39,7 @@ jQuery(document).ready(function($) {
                 data: data,
                 success: function(my_response) {
                     jQuery('#billing_state').empty();
+                    jQuery('#billing_state').append('<option value="">Select town...</option>');
                     jQuery('#billing_state').append(my_response);
                 }
             });
@@ -75,6 +76,7 @@ jQuery(document).ready(function($) {
                 data: data,
                 success: function(my_response) {
                     jQuery('#shipping_state').empty();
+                    jQuery('#shipping_state').append('<option value="">Select town...</option>');
                     jQuery('#shipping_state').append(my_response);
                 }
             });
@@ -110,6 +112,7 @@ jQuery(document).ready(function($) {
 				data: data,
 				success: function(my_response) {
 					jQuery('#billing_city').empty();
+                    jQuery('#billing_city').append('<option value="">Select suburb...</option>');
 					jQuery('#billing_city').append(my_response);
 				}
 			});
@@ -144,6 +147,7 @@ jQuery(document).ready(function($) {
 				data: data,
 				success: function(my_response) {
 					jQuery('#shipping_city').empty();
+                    jQuery('#shipping_city').append('<option value="">Select suburb...</option>');
 					jQuery('#shipping_city').append(my_response);
 				}
 			});
