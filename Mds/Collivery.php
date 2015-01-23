@@ -185,9 +185,9 @@ class Collivery {
 	public function getTowns( $country = "ZAF", $province = null )
 	{
 		if ( ( $this->check_cache == 2 ) && is_null( $province ) && $this->cache->has( 'collivery.towns.'. $country ) ) {
-			return $this->cache->get( 'collivery.towns.'.$country );
+			return apply_filters( 'collivery_get_towns', $this->cache->get( 'collivery.towns.'.$country ) );
 		} elseif ( ( $this->check_cache == 2 ) && ! is_null( $province ) && $this->cache->has( 'collivery.towns.'. $country .'.'. $province ) ) {
-			return $this->cache->get( 'collivery.towns.'.$country.'.'.$province );
+			return apply_filters( 'collivery_get_towns', $this->cache->get( 'collivery.towns.'.$country.'.'.$province ) );
 		} else {
 			try {
 				$result = $this->client()->get_towns( $this->token, $country, $province );
@@ -202,7 +202,7 @@ class Collivery {
 				} else {
 					if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.towns.'. $country .'.'. $province, $result['towns'], 60*24 );
 				}
-				return $result['towns'];
+				return apply_filters( 'collivery_get_towns', $result['towns'] );
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
@@ -261,7 +261,7 @@ class Collivery {
 	public function getSuburbs( $town_id )
 	{
 		if ( ( $this->check_cache == 2 ) && $this->cache->has( 'collivery.suburbs.'. $town_id ) ) {
-			return $this->cache->get( 'collivery.suburbs.'. $town_id );
+			return apply_filters( 'collivery_get_suburbs', $this->cache->get( 'collivery.suburbs.'. $town_id ) );
 		} else {
 			try {
 				$result = $this->client()->get_suburbs( $town_id, $this->token );
@@ -272,7 +272,7 @@ class Collivery {
 
 			if ( isset( $result['suburbs'] ) ) {
 				if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.suburbs.'. $town_id, $result['suburbs'], 60*24*7 );
-				return $result['suburbs'];
+				return apply_filters( 'collivery_get_suburbs', $result['suburbs'] );
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
