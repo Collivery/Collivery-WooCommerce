@@ -161,7 +161,7 @@ class Collivery {
      * @return array List of provinces and their codes
      */
     public function getProvinces() {
-        return array(
+        return apply_filters( 'collivery_get_provinces', array(
             'CAP'   => 'Western Cape',
             'EC'    => 'Eastern Cape',
             'GAU'   => 'Gauteng',
@@ -171,7 +171,7 @@ class Collivery {
             'NP'    => 'Limpopo',
             'NW'    => 'North-West',
             'OFS'   => 'Free State',
-        );
+        ) );
     }
 
 	/**
