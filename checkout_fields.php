@@ -128,7 +128,7 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last' ),
+			'class' => array( 'form-row-last', 'update_totals_on_change' ),
 			'options' => array( 'Select town first...' )
 		),
 		'billing_location_type' => array(
@@ -218,7 +218,7 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last' ),
+			'class' => array( 'form-row-last', 'update_totals_on_change' ),
 			'options' => array( 'Select town first...' )
 		),
 		'shipping_location_type' => array(
@@ -311,7 +311,7 @@ function generate_suburbs()
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'usermeta';
 		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id=" . WC()->session->get_customer_id() . " and meta_key='" . $_POST['type'] . "city';", OBJECT );
-		$selected_suburb = $config[0]->meta_value;
+		$selected_suburb = !empty($config) ? $config[0]->meta_value : '';
 	}
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
