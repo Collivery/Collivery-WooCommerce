@@ -8,16 +8,24 @@ function custom_override_default_address_fields( $address_fields )
 	$mds = new WC_MDS_Collivery();
 	$collivery = $mds->getColliveryClass();
 	$field = $mds->get_field_defaults();
+    $provinces = array( '' => 'Select Province' ) + $field['provinces'];
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
 
 	$address_fields = array(
+        'province'  => array(
+            'type'  => 'select',
+            'label' => 'Province',
+            'required'  => 1,
+            'class'     => array( 'update_totals_on_change' ),
+            'options'   => $provinces
+        ),
 		'state' => array(
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
 			'class' => array( 'form-row-first', 'update_totals_on_change' ),
-			'options' => $towns,
+			'options' => array('Select province first...'),
 			'selected' => ''
 		),
 		'city' => array(
@@ -399,4 +407,13 @@ function generate_towns() {
     }
     
     die();
+}
+
+// store province in woocommerce customer
+add_action( 'woocommerce_checkout_update_order_review', 'collivery_add_checkout_province' );
+function collivery_add_checkout_province( $post_data ) {
+    
+    parse_str($post_data, $post_data_arr);
+    WC()->customer->shipping_province = $post_data_arr['shipping_province'];
+    
 }
