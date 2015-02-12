@@ -321,6 +321,9 @@ function generate_suburbs()
 		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id=" . WC()->session->get_customer_id() . " and meta_key='" . $_POST['type'] . "city';", OBJECT );
 		$selected_suburb = !empty($config) ? $config[0]->meta_value : '';
 	}
+    
+    // add filter to override selected suburb
+    $selected_suburb = apply_filters( 'collivery_selected_suburb', $selected_suburb );
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
 		$mds = new WC_MDS_Collivery;
@@ -330,7 +333,12 @@ function generate_suburbs()
 		if ( !empty( $fields ) ) {
 			if ( count( $fields ) == 1 ) {
 				foreach ( $fields as $value ) {
-					echo '<option value="' . $value . '">' . $value . '</option>';
+                    if ( $value != $selected_suburb ) {
+                        echo '<option value="' . $value . '">' . $value . '</option>';
+                    }
+                    else {
+                        echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
+                    }
 				}
 			} else {
 				if ( isset( $selected_suburb ) ) {
@@ -368,6 +376,9 @@ function generate_towns() {
         $selected_town = !empty($config) ? $config[0]->meta_value : '';
     }
     
+    // apply filter to $selected_town
+    $selected_town = apply_filters( 'collivery_selected_town', $selected_town );
+    
     if ( isset( $_POST['province'] ) && $_POST['province'] != '' ) {
         $mds = new WC_MDS_Collivery;
         $collivery = $mds->getColliveryClass();
@@ -376,7 +387,12 @@ function generate_towns() {
         if ( !empty( $fields ) ) {
             if ( count( $fields ) == 1 ) {
                 foreach ( $fields as $value ) {
-                    echo '<option value="' . $value . '">' . $value . '</option>';
+                    if ( $value != $selected_town ) {
+                        echo '<option value="' . $value . '">' . $value . '</option>';
+                    }
+                    else {
+                        echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
+                    }
                 }
             }
             else {
