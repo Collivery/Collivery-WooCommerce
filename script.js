@@ -78,6 +78,11 @@ jQuery(document).ready(function($) {
                     jQuery('#shipping_state').empty();
                     jQuery('#shipping_state').append('<option value="">Select town...</option>');
                     jQuery('#shipping_state').append(my_response);
+                    
+                    // if a value is pre-selected, trigger update_billing_surbs as well
+                    if ( jQuery('#shipping_state').val() !== '' ) {
+                        update_shipping_subs();
+                    }
                 }
             });
         }
