@@ -4,7 +4,7 @@
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 1.9.8
+ * Version: 1.9.9
  * Author: Bryce Large | Bernhard Breytenbach
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
@@ -34,7 +34,7 @@ function mdsInstall()
 
 	$wpdb->query($sql);
 
-	add_option("mds_db_version", "1.9.8");
+	add_option("mds_db_version", "1.9.9");
 }
 
 add_action('plugins_loaded', 'init_mds_collivery', 0);
@@ -306,9 +306,9 @@ function init_mds_collivery()
 					// Now lets get the price for
 					$data = array(
 						"from_town_id" => $defaults['address']['town_id'],
-						"from_town_type" => $defaults['address']['location_type'],
+						"from_location_type" => $defaults['address']['location_type'],
 						"to_town_id" => array_search($to_town_id, $towns),
-						"to_town_type" => array_search($to_town_type, $location_types),
+						"to_location_type" => array_search($to_town_type, $location_types),
 						"num_package" => count($cart['products']),
 						"service" => $id,
 						"parcels" => $cart['products'],
