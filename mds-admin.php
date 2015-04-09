@@ -200,7 +200,7 @@ function quote_admin_callback()
 	// Check which collection address we using
 	if ( $post['which_collection_address'] == 'default' ) {
 		$data['from_town_id'] = $post['collection_town'];
-		$data['from_town_type'] = $post['collection_location_type'];
+		$data['from_location_type'] = $post['collection_location_type'];
 	} else {
 		$data['collivery_from'] = $post['collivery_from'];
 		$data['contact_from'] = $post['contact_from'];
@@ -209,7 +209,7 @@ function quote_admin_callback()
 	// Check which destination address we using
 	if ( $post['which_destination_address'] == 'default' ) {
 		$data['to_town_id'] = $post['destination_town'];
-		$data['to_town_type'] = $post['destination_location_type'];
+		$data['to_location_type'] = $post['destination_location_type'];
 	} else {
 		$data['collivery_to'] = $post['collivery_to'];
 		$data['contact_to'] = $post['contact_to'];
