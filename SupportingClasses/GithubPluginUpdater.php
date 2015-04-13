@@ -202,7 +202,7 @@ class GitHubPluginUpdater
 		// reponame-tagname change it to our original one:
 		global $wp_filesystem;
 		$pluginFolder = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . dirname( $this->slug );
-		$wp_filesystem->move( $result['destination'], $pluginFolder );
+		@$wp_filesystem->move( $result['destination'], $pluginFolder );
 		$result['destination'] = $pluginFolder;
 
 		// Re-activate plugin if needed
