@@ -12,12 +12,13 @@
 /**
  * Register Install function
  */
-register_activation_hook(__FILE__, 'mdsInstall');
-function mdsInstall()
+register_activation_hook(__FILE__, 'install');
+
+function install()
 {
 	// We have to check what php version we have before anything is installed.
 	if (version_compare(PHP_VERSION, '5.3.0') < 0) {
-		die('Your PHP version is not able to run this plugin, update to the latest version before instaling this plugin.');
+		die('Your PHP version is not able to run this plugin, update to the latest version before installing this plugin.');
 	}
 
 	global $wpdb;
@@ -49,9 +50,9 @@ function init_mds_collivery()
 		return;
 	}
 
-	require_once( 'mds-admin.php' ); //Admin Scripts
-	require_once( 'mds_checkout_fields.php' ); //Seperate file with large arrays.
-	require_once( 'GithubPluginUpdater.php' ); // Auto updating class
+	require_once( 'mds_admin.php' ); // Admin scripts
+	require_once( 'mds_checkout_fields.php' ); // Checkout fields.
+	require_once( 'SupportingClasses/GithubPluginUpdater.php' ); // Auto updating class
 
 	/**
 	 * Load JS file throught
@@ -137,7 +138,7 @@ function init_mds_collivery()
 		/**
 		 * Returns the MDS Collivery class
 		 */
-		public function getColliveryClass()
+		public function get_collivery_class()
 		{
 			return $this->collivery;
 		}
@@ -145,7 +146,7 @@ function init_mds_collivery()
 		/**
 		 * Returns plugin settings
 		 */
-		public function getColliverySettings()
+		public function get_collivery_settings()
 		{
 			return $this->settings;
 		}
@@ -153,7 +154,7 @@ function init_mds_collivery()
 		/**
 		 * Gets default address of the MDS Account
 		 */
-		public function getDefaulsAddress()
+		public function get_defauls_address()
 		{
 			$default_address_id = $this->collivery->getDefaultAddressId();
 			$data = array(

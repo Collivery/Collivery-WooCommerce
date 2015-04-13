@@ -6,7 +6,7 @@ add_filter( 'woocommerce_default_address_fields', 'custom_override_default_addre
 function custom_override_default_address_fields( $address_fields )
 {
 	$mds = new WC_MDS_Collivery();
-	$collivery = $mds->getColliveryClass();
+	$collivery = $mds->get_collivery_class();
 	$field = $mds->get_field_defaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
@@ -99,7 +99,7 @@ add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' 
 function custom_override_checkout_fields( $fields )
 {
 	$mds = new WC_MDS_Collivery();
-	$collivery = $mds->getColliveryClass();
+	$collivery = $mds->get_collivery_class();
 	$field = $mds->get_field_defaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
@@ -297,7 +297,7 @@ function generate_suburbs()
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
 		$mds = new WC_MDS_Collivery;
-		$collivery = $mds->getColliveryClass();
+		$collivery = $mds->get_collivery_class();
 		$town_id = array_search( $_POST['town'], $collivery->getTowns() );
 		$fields = $collivery->getSuburbs( $town_id );
 		if ( !empty( $fields ) ) {

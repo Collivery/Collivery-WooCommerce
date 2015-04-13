@@ -16,7 +16,7 @@ function adminMenu()
 function mdsConfirmedIndex()
 {
 	global $wpdb;
-	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/views/css/mds_collivery.css' );
+	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/Views/css/mds_collivery.css' );
 	wp_enqueue_style( 'mds_collivery_css' );
 
 	$post = $_POST;
@@ -31,22 +31,22 @@ function mdsConfirmedIndex()
 	}
 
 	$mds = new WC_MDS_Collivery();
-	$collivery = $mds->getColliveryClass();
-	include 'views/index.php';
+	$collivery = $mds->get_collivery_class();
+	include 'Views/index.php';
 }
 
 // View our Collivery once it has been accepted
 function mdsConfirmed()
 {
 	global $wpdb;
-	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/views/js/mds_collivery.js' );
+	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/Views/js/mds_collivery.js' );
 	wp_enqueue_script( 'mds_collivery_js' );
 
 	$table_name = $wpdb->prefix . 'mds_collivery_processed';
 	$data_ = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE waybill=" . $_GET['waybill'] . ";", OBJECT );
 	$data = $data_[0];
 	$mds = new WC_MDS_Collivery();
-	$collivery = $mds->getColliveryClass();
+	$collivery = $mds->get_collivery_class();
 	$directory = getcwd() . '/cache/mds_collivery/waybills/' . $data->waybill;
 
 	// Do we have images of the parcels
@@ -93,7 +93,7 @@ function mdsConfirmed()
 	$pod = glob( $directory . "/*.{pdf,PDF}", GLOB_BRACE );
 	$image_list = glob( $directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE );
 	$view_waybill = 'https://quote.collivery.co.za/waybillpdf.php?wb=' . base64_encode( $data->waybill ) . '&output=I';
-	include 'views/view.php';
+	include 'Views/view.php';
 }
 
 /**
@@ -125,7 +125,7 @@ function suburbs_admin_callback()
 {
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
 		$mds = new WC_MDS_Collivery;
-		$collivery = $mds->getColliveryClass();
+		$collivery = $mds->get_collivery_class();
 		$fields = $collivery->getSuburbs( $_POST['town'] );
 		if ( !empty( $fields ) ) {
 			if ( count( $fields ) == 1 ) {
@@ -155,7 +155,7 @@ function contacts_admin_callback()
 {
 	if ( ( isset( $_POST['address_id'] ) ) && ( $_POST['address_id'] != '' ) ) {
 		$mds = new WC_MDS_Collivery;
-		$collivery = $mds->getColliveryClass();
+		$collivery = $mds->get_collivery_class();
 		$fields = $collivery->getContacts( $_POST['address_id'] );
 		if ( !empty( $fields ) ) {
 			if ( count( $fields ) == 1 ) {
@@ -184,7 +184,7 @@ add_action( 'wp_ajax_quote_admin', 'quote_admin_callback' );
 function quote_admin_callback()
 {
 	$mds = new WC_MDS_Collivery;
-	$collivery = $mds->getColliveryClass();
+	$collivery = $mds->get_collivery_class();
 	$services = $collivery->getServices();
 	$post = $_POST;
 
@@ -234,7 +234,7 @@ function accept_admin_callback()
 {
 	global $wpdb;
 	$mds = new WC_MDS_Collivery;
-	$collivery = $mds->getColliveryClass();
+	$collivery = $mds->get_collivery_class();
 	$post = $_POST;
 
 	// Check which collection address we using and if we need to add the address to collivery api
@@ -378,22 +378,22 @@ function mds_register_collivery()
 	$custom_fields = $order->order_custom_fields;
 
 	$mds = new WC_MDS_Collivery;
-	$collivery = $mds->getColliveryClass();
-	$settings = $mds->getColliverySettings();
+	$collivery = $mds->get_collivery_class();
+	$settings = $mds->get_collivery_settings();
 	$parcels = $mds->get_order_content( $order->get_items() );
-	$defaults = $mds->getDefaulsAddress();
-	$addresses = $collivery->getAddresses();
+	$defaults = $mds->get_defauls_address();
+	$addresses = $collivery->get_addresses();
 
-	wp_register_script( 'jquery.datetimepicker_js', plugin_dir_url( __FILE__ ) . '/views/js/jquery.datetimepicker.js' );
+	wp_register_script( 'jquery.datetimepicker_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.datetimepicker.js' );
 	wp_enqueue_script( 'jquery.datetimepicker_js' );
-	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/views/js/mds_collivery.js' );
+	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/Views/js/mds_collivery.js' );
 	wp_enqueue_script( 'mds_collivery_js' );
-	wp_register_script( 'jquery.validate.min_js', plugin_dir_url( __FILE__ ) . '/views/js/jquery.validate.min.js' );
+	wp_register_script( 'jquery.validate.min_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.validate.min.js' );
 	wp_enqueue_script( 'jquery.validate.min_js' );
 
-	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/views/css/mds_collivery.css' );
+	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/Views/css/mds_collivery.css' );
 	wp_enqueue_style( 'mds_collivery_css' );
-	wp_register_style( 'jquery.datetimepicker_css', plugin_dir_url( __FILE__ ) . '/views/css/jquery.datetimepicker.css' );
+	wp_register_style( 'jquery.datetimepicker_css', plugin_dir_url( __FILE__ ) . '/Views/css/jquery.datetimepicker.css' );
 	wp_enqueue_style( 'jquery.datetimepicker_css' );
-	include 'views/order.php'; // Include our admin page
+	include 'Views/order.php'; // Include our admin page
 }
