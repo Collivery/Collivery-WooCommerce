@@ -1,6 +1,6 @@
 <?php
 
-class UnitConvertor {
+class UnitConverter {
 
 	var $conversion_table = array();
 	var $decimal_point;
@@ -41,7 +41,7 @@ class UnitConvertor {
 	}
 
 	/**
-	 * Constructor. Initializes the UnitConvertor object with the most important
+	 * Constructor. Initializes the unitConverter object with the most important
 	 * properties.
 	 *
 	 * @param string  decimal point character
@@ -49,7 +49,7 @@ class UnitConvertor {
 	 * @return   void
 	 * @access   public
 	 */
-	function UnitConvertor( $dec_point = '.', $thousand_sep = '' )
+	function unitConverter( $dec_point = '.', $thousand_sep = '' )
 	{
 		$this->decimal_point = $dec_point;
 		$this->thousand_separator = $thousand_sep;
@@ -148,8 +148,12 @@ class UnitConvertor {
 	 * acceptable and the ressource small...
 	 *
 	 * CVH check_key checks for a key in the Conversiontable and returns a value
+	 *
+	 * @param $key
+	 *
+	 * @return bool
 	 */
-	function check_key( $key )
+	function checkKey( $key )
 	{
 		if ( array_key_exists( $key, $this->conversion_table ) ) {
 			if ( !empty( $this->conversion_table[$key] ) ) {
@@ -178,7 +182,7 @@ class UnitConvertor {
 		$key = $from_unit . "_" . $to_unit;
 		$revkey = $to_unit . "_" . $from_unit;
 		$found = false;
-		if ( $ct_arr = $this->check_key( $key ) ) {
+		if ( $ct_arr = $this->checkKey( $key ) ) {
 			// Conversion Specs found directly
 			$ratio = (double) $ct_arr['ratio'];
 			$offset = $ct_arr['offset'];
@@ -186,7 +190,7 @@ class UnitConvertor {
 
 			return true;
 		}  // not found in direct order, try reverse order
-		elseif ( $ct_arr = $this->check_key( $revkey ) ) {
+		elseif ( $ct_arr = $this->checkKey( $revkey ) ) {
 			$ratio = (double) ( 1 / $ct_arr['ratio'] );
 			$offset = -$ct_arr['offset'];
 			$converted = (double) ( ( $value + $offset ) * $ratio );
@@ -208,13 +212,13 @@ class UnitConvertor {
 				$keyparts = preg_split( "/_/", $convk );
 				// return ratio = 1 if keyparts match
 				// Now test if either part matches the from or to unit
-				if ( $keyparts[1] == $to_unit && ( $i2_value = $this->check_key( $keyparts[0] . "_" . $from_unit ) ) ) {
+				if ( $keyparts[1] == $to_unit && ( $i2_value = $this->checkKey( $keyparts[0] . "_" . $from_unit ) ) ) {
 					// an intermediary $keyparts[0] was found
 					// now let us put things together intermediary 1 and 2
 					$converted = (double) ( ( ( ( $value - $i2_value['offset'] ) / $i2_value['ratio'] ) * $i1_value['ratio'] ) + $i1_value['offset'] );
 
 					$found = true;
-				} elseif ( $keyparts[1] == $from_unit && ( $i2_value = $this->check_key( $keyparts[0] . "_" . $to_unit ) ) ) {
+				} elseif ( $keyparts[1] == $from_unit && ( $i2_value = $this->checkKey( $keyparts[0] . "_" . $to_unit ) ) ) {
 					// an intermediary $keyparts[0] was found
 					// now let us put things together intermediary 2 and 1
 					$converted = (double) ( ( ( ( $value - $i1_value['offset'] ) / $i1_value['ratio'] ) + $i2_value['offset'] ) * $i2_value['ratio'] );
@@ -225,5 +229,4 @@ class UnitConvertor {
 			return $found;
 		}
 	}
-
 }
