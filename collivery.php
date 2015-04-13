@@ -255,6 +255,11 @@ function init_mds_collivery()
 					'type' => 'text',
 					'default' => '10',
 				);
+				$fields['wording_' . $id] = array(
+					'title' => __($title . ': Wording', 'woocommerce'),
+					'type' => 'text',
+					'default' => $title,
+				);
 			}
 
 			$this->form_fields = $fields;
@@ -324,7 +329,7 @@ function init_mds_collivery()
 						}
 						$rate = array(
 							'id' => 'mds_' . $id,
-							'label' => $title,
+							'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
 							'cost' => $this->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
 						);
 						$this->add_rate($rate); //Only add shipping if it has a value
