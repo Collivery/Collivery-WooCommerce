@@ -4,7 +4,7 @@
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 1.9.9
+ * Version: 2.0.1
  * Author: Bryce Large | Bernhard Breytenbach
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
@@ -35,7 +35,7 @@ function install()
 
 	$wpdb->query($sql);
 
-	add_option("mds_db_version", "1.9.9");
+	add_option("mds_db_version", "2.0.1");
 }
 
 add_action('plugins_loaded', 'init_mds_collivery', 0);
@@ -55,7 +55,7 @@ function init_mds_collivery()
 	require_once( 'SupportingClasses/GithubPluginUpdater.php' ); // Auto updating class
 
 	/**
-	 * Load JS file throught
+	 * Load JS file throughout
 	 */
 	function load_js()
 	{
@@ -87,8 +87,8 @@ function init_mds_collivery()
 			require_once( 'Mds/Collivery.php' );
 
 			// Class for converting lengths and weights
-			require_once( 'UnitConvertor.php' );
-			$this->converter = new UnitConvertor();
+			require_once( 'SupportingClasses/UnitConverter.php' );
+			$this->converter = new UnitConverter();
 
 			$this->id = 'mds_collivery';
 			$this->method_title = __('MDS Collivery', 'woocommerce');
@@ -101,7 +101,7 @@ function init_mds_collivery()
 		}
 
 		/**
-		 * Instatiates the plugin
+		 * Instantiates the plugin
 		 */
 		function init()
 		{
@@ -220,10 +220,26 @@ function init_mds_collivery()
 					'default' => "api123",
 				),
 				'risk_cover' => array(
-					'title' => "MDS " . __('Insurance', 'woocommerce'),
+					'title' => "MDS " . __('Risk Cover', 'woocommerce'),
 					'type' => 'checkbox',
-					'description' => __('Insurance up to a maximum of R5000.', 'woocommerce'),
+					'description' => __('Risk cover, up to a maximum of R5000.', 'woocommerce'),
 					'default' => 'yes',
+				),
+				'free_delivery' => array(
+					'title' => "MDS " . __('Free Delivery', 'woocommerce'),
+					'type' => 'checkbox',
+					'description' => __('Enable or disable free delivery option.', 'woocommerce'),
+					'default' => 'no',
+				),
+				'free_delivery_min_total' => array(
+					'title' => "MDS " . __('Free Delivery Min Total', 'woocommerce'),
+					'type' => 'number',
+					'description' => __('Min order total before free delivery is included, amount is including vat.', 'woocommerce'),
+					'default' => '1000.00',
+					'custom_attributes' => array(
+						'step' 	=> 'any',
+						'min'	=> '0'
+					)
 				),
 				'round' => array(
 					'title' => "MDS " . __('Round Price', 'woocommerce'),
@@ -253,8 +269,12 @@ function init_mds_collivery()
 				);
 				$fields['markup_' . $id] = array(
 					'title' => __($title . ': Markup', 'woocommerce'),
-					'type' => 'text',
+					'type' => 'number',
 					'default' => '10',
+					'custom_attributes' => array(
+						'step' 	=> 'any',
+						'min'	=> '0'
+					)
 				);
 				$fields['wording_' . $id] = array(
 					'title' => __($title . ': Wording', 'woocommerce'),
@@ -262,6 +282,18 @@ function init_mds_collivery()
 					'default' => $title,
 				);
 			}
+
+			$fields['method_free'] = array(
+				'title' => __('Free Delivery: Enabled', 'woocommerce'),
+				'type' => 'checkbox',
+				'default' => 'yes',
+			);
+
+			$fields['wording_free'] = array(
+				'title' => __('Free Delivery: Wording', 'woocommerce'),
+				'type' => 'text',
+				'default' => 'Free Delivery',
+			);
 
 			$this->form_fields = $fields;
 		}
@@ -275,7 +307,7 @@ function init_mds_collivery()
 			$location_types = $this->collivery->getLocationTypes();
 
 			// Get our default address
-			$defaults = $this->getDefaulsAddress();
+			$defaults = $this->get_defauls_address();
 
 			// Capture the correct Town and location type
 			if (isset($_POST['post_data'])) {
@@ -302,38 +334,49 @@ function init_mds_collivery()
 				return;
 			}
 
-			// get an array with all our parcels
 			$cart = $this->get_cart_content($package);
-			$services = $this->collivery->getServices();
+			if ($this->settings["free_delivery"] == 'yes' && $cart['total'] >= $this->settings["free_delivery_min_total"]) {
+				$rate = array(
+					'id' => 'mds_free',
+					'label' => (!empty($this->settings["wording_free"])) ? $this->settings["wording_free"] : "Free Delivery",
+					'cost' => 0.0,
+				);
 
-			// Get pricing for each service
-			foreach ($services as $id => $title) {
-				if ($this->settings["method_$id"] == 'yes') {
-					// Now lets get the price for
-					$data = array(
-						"from_town_id" => $defaults['address']['town_id'],
-						"from_location_type" => $defaults['address']['location_type'],
-						"to_town_id" => array_search($to_town_id, $towns),
-						"to_location_type" => array_search($to_town_type, $location_types),
-						"num_package" => count($cart['products']),
-						"service" => $id,
-						"parcels" => $cart['products'],
-						"exclude_weekend" => 1,
-						"cover" => ($this->settings['risk_cover'] == 'yes') ? (1) : (0)
-					);
+				$this->add_rate($rate);
+			} else {
+				$services = $this->collivery->getServices();
 
-					// query the API for our prices
-					$response = $this->collivery->getPrice($data);
-					if (isset($response['price']['inc_vat'])) {
-						if($id == 1 || $id == 2) {
-							$title = $title . ', additional 24 hours on outlying areas';
-						}
-						$rate = array(
-							'id' => 'mds_' . $id,
-							'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
-							'cost' => $this->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
+				// Get pricing for each service
+				foreach ($services as $id => $title) {
+					if ($this->settings["method_$id"] == 'yes') {
+						// Now lets get the price for
+						$data = array(
+							"from_town_id" => $defaults['address']['town_id'],
+							"from_location_type" => $defaults['address']['location_type'],
+							"to_town_id" => array_search($to_town_id, $towns),
+							"to_location_type" => array_search($to_town_type, $location_types),
+							"num_package" => count($cart['products']),
+							"service" => $id,
+							"parcels" => $cart['products'],
+							"exclude_weekend" => 1,
+							"cover" => ($this->settings['risk_cover'] == 'yes') ? (1) : (0)
 						);
-						$this->add_rate($rate); //Only add shipping if it has a value
+
+						// query the API for our prices
+						$response = $this->collivery->getPrice($data);
+						if (isset($response['price']['inc_vat'])) {
+							if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
+								$title = $title . ', additional 24 hours on outlying areas';
+							}
+
+							$rate = array(
+								'id' => 'mds_' . $id,
+								'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
+								'cost' => $this->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
+							);
+
+							$this->add_rate($rate);
+						}
 					}
 				}
 			}
@@ -350,6 +393,7 @@ function init_mds_collivery()
 				//Reset array to defaults
 				$this->cart = array(
 					'count' => 0,
+					'total' => 0,
 					'weight' => 0,
 					'max_weight' => 0,
 					'products' => array()
@@ -360,9 +404,10 @@ function init_mds_collivery()
 					$qty = $values['quantity'];
 
 					$this->cart['count'] += $qty;
+					$this->cart['total'] += $values['line_subtotal'];
 					$this->cart['weight'] += $_product->get_weight() * $qty;
 
-					// Work out Volumetric Weight based on MDS's calculations
+					// Work out Volumetric Weight based on MDS calculations
 					$vol_weight = (($_product->length * $_product->width * $_product->height) / 4000);
 
 					if ($vol_weight > $_product->get_weight()) {
@@ -372,7 +417,7 @@ function init_mds_collivery()
 					}
 
 					for ($i = 0; $i < $qty; $i++) {
-						// Length coversion, mds collivery only acceps CM
+						// Length conversion, mds collivery only accepts cm
 						if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
 							$length = $this->converter->convert($_product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
 							$width = $this->converter->convert($_product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
@@ -383,7 +428,7 @@ function init_mds_collivery()
 							$height = $_product->height;
 						}
 
-						// Weight coversion, mds collivery only acceps KG'S
+						// Weight conversion, mds collivery only accepts kg
 						if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
 							$weight = $this->converter->convert($_product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
 						} else {
@@ -506,7 +551,7 @@ add_filter('woocommerce_shipping_methods', 'add_MDS_Collivery_method');
 function mds_collivery_cart_shipping_packages($packages)
 {
 	$mds = new WC_MDS_Collivery;
-	$collivery = $mds->getColliveryClass();
+	$collivery = $mds->get_collivery_class();
 
 	if (isset($_POST['post_data'])) {
 		parse_str($_POST['post_data'], $post_data);

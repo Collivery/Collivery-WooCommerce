@@ -16,7 +16,7 @@ function custom_override_default_address_fields( $address_fields )
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
 			'selected' => ''
 		),
@@ -24,21 +24,21 @@ function custom_override_default_address_fields( $address_fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last' ),
+			'class' => array( 'form-row-wide' ),
 			'options' => array( 'Select town first...' )
 		),
 		'location_type' => array(
 			'type' => 'select',
 			'label' => 'Location Type',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $location_types,
 			'selected' => ''
 		),
 		'company' => array(
 			'label' => 'Company Name',
 			'placeholder' => 'Company (optional)',
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'building_details' => array(
 			'label' => 'Building Details',
@@ -52,12 +52,19 @@ function custom_override_default_address_fields( $address_fields )
 			'required' => 1,
 			'class' => array( 'form-row-first' )
 		),
+		'postcode' => array(
+			'name' => 'postcode',
+			'label' => 'Postal Code',
+			'placeholder' => 'Postal Code',
+			'required' => 0,
+			'class' => array( 'form-row-last' )
+		),
 		'address_2' => array(
 			'name' => 'billing-street',
 			'label' => 'Street Name',
 			'placeholder' => 'Street',
 			'required' => 1,
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'first_name' => array(
 			'label' => 'First Name',
@@ -71,17 +78,17 @@ function custom_override_default_address_fields( $address_fields )
 			'required' => 1,
 			'class' => array( 'form-row-last' )
 		),
-		'email' => array(
-			'validate' => array( 'email' ),
-			'label' => 'Email Address',
-			'placeholder' => 'you@yourdomain.co.za',
-			'required' => 1,
-			'class' => array( 'form-row-first' )
-		),
 		'phone' => array(
 			'validate' => array( 'phone' ),
 			'label' => 'Cell Phone',
 			'placeholder' => 'Phone number',
+			'required' => 1,
+			'class' => array( 'form-row-first' )
+		),
+		'email' => array(
+			'validate' => array( 'email' ),
+			'label' => 'Email Address',
+			'placeholder' => 'you@yourdomain.co.za',
 			'required' => 1,
 			'class' => array( 'form-row-last' )
 		),
@@ -109,7 +116,7 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
 			'selected' => ''
 		),
@@ -117,20 +124,20 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last' ),
+			'class' => array( 'form-row-wide' ),
 			'options' => array( 'Select town first...' )
 		),
 		'billing_location_type' => array(
 			'type' => 'select',
 			'label' => 'Location Type',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $location_types
 		),
 		'billing_company' => array(
 			'label' => 'Company Name',
 			'placeholder' => 'Company (optional)',
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'billing_building_details' => array(
 			'label' => 'Building Details',
@@ -144,25 +151,25 @@ function custom_override_checkout_fields( $fields )
 			'required' => 1,
 			'class' => array( 'form-row-first' )
 		),
-		'billing_address_2' => array(
-			'name' => 'billing-street',
-			'label' => 'Street Name',
-			'placeholder' => 'Street',
-			'required' => 1,
-			'class' => array( 'form-row-last' )
-		),
 		'billing_postcode' => array(
 			'name' => 'postcode',
 			'label' => 'Postal Code',
 			'placeholder' => 'Postal Code',
 			'required' => 0,
-			'class' => array( 'form-row-first' )
+			'class' => array( 'form-row-last' )
+		),
+		'billing_address_2' => array(
+			'name' => 'billing-street',
+			'label' => 'Street Name',
+			'placeholder' => 'Street',
+			'required' => 1,
+			'class' => array( 'form-row-wide' )
 		),
 		'billing_first_name' => array(
 			'label' => 'First Name',
 			'placeholder' => 'First Name',
 			'required' => 1,
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-first' )
 		),
 		'billing_last_name' => array(
 			'label' => 'Last Name',
@@ -191,7 +198,7 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
 			'selected' => ''
 		),
@@ -199,20 +206,20 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last' ),
+			'class' => array( 'form-row-wide' ),
 			'options' => array( 'Select town first...' )
 		),
 		'shipping_location_type' => array(
 			'type' => 'select',
 			'label' => 'Location Type',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $location_types
 		),
 		'shipping_company' => array(
 			'label' => 'Company Name',
 			'placeholder' => 'Company (optional)',
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'shipping_building_details' => array(
 			'label' => 'Building Details',
@@ -226,25 +233,25 @@ function custom_override_checkout_fields( $fields )
 			'required' => 1,
 			'class' => array( 'form-row-first' )
 		),
-		'shipping_address_2' => array(
-			'name' => 'billing-street',
-			'label' => 'Street Name',
-			'placeholder' => 'Street',
-			'required' => 1,
-			'class' => array( 'form-row-last' )
-		),
 		'shipping_postcode' => array(
 			'name' => 'postcode',
 			'label' => 'Postal Code',
 			'placeholder' => 'Postal Code',
 			'required' => 0,
-			'class' => array( 'form-row-first' )
+			'class' => array( 'form-row-last' )
+		),
+		'shipping_address_2' => array(
+			'name' => 'billing-street',
+			'label' => 'Street Name',
+			'placeholder' => 'Street',
+			'required' => 1,
+			'class' => array( 'form-row-wide' )
 		),
 		'shipping_first_name' => array(
 			'label' => 'First Name',
 			'placeholder' => 'First Name',
 			'required' => 1,
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-first' )
 		),
 		'shipping_last_name' => array(
 			'label' => 'Last Name',
