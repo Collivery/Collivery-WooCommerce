@@ -50,7 +50,7 @@ class GitHubPluginUpdater
 		// Query the GitHub API
 		$url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases";
 
-		// We need the access token for private repos
+		// We need the access token for private repositories
 		if ( ! empty( $this->accessToken ) ) {
 			$url = add_query_arg( array( "access_token" => $this->accessToken ), $url );
 		}
