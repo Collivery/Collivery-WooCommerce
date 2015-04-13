@@ -300,6 +300,7 @@ function init_mds_collivery()
 
 		/**
 		 * Function used by Woocommerce to fetch shipping price
+		 * @param array $package
 		 */
 		function calculate_shipping($package = array())
 		{
@@ -385,6 +386,8 @@ function init_mds_collivery()
 		/**
 		 * Work through our shopping cart
 		 * Convert lengths and weights to desired unit
+		 * @param $package
+		 * @return array
 		 */
 		function get_cart_content($package)
 		{
@@ -449,6 +452,8 @@ function init_mds_collivery()
 
 		/**
 		 * Work through our order items and return an array of parcels
+		 * @param $items
+		 * @return array
 		 */
 		function get_order_content($items)
 		{
@@ -502,6 +507,9 @@ function init_mds_collivery()
 
 		/**
 		 * Adds markup to price
+		 * @param $price
+		 * @param $markup
+		 * @return float|string
 		 */
 		public function addMarkup($price, $markup)
 		{
@@ -511,6 +519,8 @@ function init_mds_collivery()
 
 		/**
 		 * Format a number with grouped thousands
+		 * @param $price
+		 * @return string
 		 */
 		public function format($price)
 		{
@@ -519,6 +529,8 @@ function init_mds_collivery()
 
 		/**
 		 * Rounds number up to the next highest integer
+		 * @param $price
+		 * @return float
 		 */
 		public function round($price)
 		{
@@ -559,7 +571,7 @@ function mds_collivery_cart_shipping_packages($packages)
 	} else if (isset($_POST['billing_location_type']) || isset($_POST['shipping_location_type'])) {
 		$packages[0]['destination']['location_type'] = (isset($_POST['billing_location_type']) && $_POST['shipping_location_type']) ? ($_POST['shipping_location_type']) : ($_POST['billing_location_type']);
 	} else {
-		//Bad Practice... But incase location_type isn't set, do not cache the order!
+		//Bad Practice... But in case location_type isn't set, do not cache the order!
 		//@TODO: Find a way to fix this
 		$packages[0]['destination']['location_type'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
 	}
@@ -570,7 +582,7 @@ function mds_collivery_cart_shipping_packages($packages)
 	} else if (isset($_POST['billing_state']) || isset($_POST['shipping_state'])) {
 		$packages[0]['destination']['town'] = (isset($_POST['shipping_state']) && $_POST['shipping_state']) ? ($_POST['billing_state']) : ($_POST['billing_location_type']);
 	} else {
-		//Bad Practice... But incase town isn't set, do not cache the order!
+		//Bad Practice... But in case town isn't set, do not cache the order!
 		//@TODO: Find a way to fix this
 		$packages[0]['destination']['town'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
 	}
