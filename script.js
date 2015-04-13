@@ -3,7 +3,6 @@ jQuery(document).ready(function($) {
 	var timer_update_shipping_subs;
 	var mds_ajax_billing_state;
 	var mds_ajax_shipping_state;
-	var mds_ajax_update_price;
 
 	function update_billing_subs() {
 		if (mds_ajax_billing_state)
