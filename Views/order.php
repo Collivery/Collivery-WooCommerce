@@ -134,10 +134,17 @@
 								<?php $count = 1; ?>
 								<?php foreach ( $parcels as $parcel ): ?>
 									<tr class="package_row" id="item<?php echo $count; ?>">
-										<td><input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="text" value="<?php echo $parcel['length']; ?>"></td>
-										<td><input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="text" value="<?php echo $parcel['width']; ?>"></td>
-										<td><input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="text" value="<?php echo $parcel['height']; ?>"></td>
-										<td><input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="text" value="<?php echo $parcel['weight']; ?>"></td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="number" step="0.1" value="<?php echo $parcel['length']; ?>">
+										</td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="number" step="0.1" value="<?php echo $parcel['width']; ?>"></td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="number" step="0.1" value="<?php echo $parcel['height']; ?>">
+										</td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="number" step="0.1" value="<?php echo $parcel['weight']; ?>">
+										</td>
 								<?php if ( $count > 1 ): ?>
 									<td><a href="#" onclick="remove_parcel(<?php echo $count; ?>);return false;">Remove</a></td>
 								<?php endif; ?>
