@@ -73,7 +73,7 @@ jQuery(document).ready(function($) {
 		}
 	}
 
-	jQuery('#billing_state').live('keydown', function(e) {
+	jQuery('#billing_state').on('keydown', function(e) {
 		var keyCode = e.keyCode || e.which;
 
 		if (keyCode != 9) {
@@ -82,7 +82,7 @@ jQuery(document).ready(function($) {
 		}
 	});
 
-	jQuery('#shipping_state').live('keydown', function(e) {
+	jQuery('#shipping_state').on('keydown', function(e) {
 		var keyCode = e.keyCode || e.which;
 
 		if (keyCode != 9) {
@@ -91,12 +91,12 @@ jQuery(document).ready(function($) {
 		}
 	});
 
-	jQuery('#billing_state').live('change', function() {
+	jQuery('#billing_state').on('change', function() {
 		clearTimeout(timer_update_billing_subs);
 		update_billing_subs();
 	});
 
-	jQuery('#shipping_state').live('change', function() {
+	jQuery('#shipping_state').on('change', function() {
 		clearTimeout(timer_update_shipping_subs);
 		update_shipping_subs();
 	});
