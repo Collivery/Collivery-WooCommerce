@@ -5,7 +5,7 @@
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
  * Version: 2.0.1
- * Author: Bryce Large | Bernhard Breytenbach
+ * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
 
@@ -63,6 +63,8 @@ function init_mds_collivery()
 		wp_enqueue_script('mds_js');
 	}
 
+	add_action('wp_enqueue_scripts', 'load_js');
+
 	/**
 	 * Check for updates
 	 */
@@ -74,18 +76,18 @@ function init_mds_collivery()
 }
 
 /**
- * Register Plugin with WooCommerce
+ * Register Chipping Plugin with WooCommerce
  *
  * @param $methods
  * @return array
  */
-function add_MDS_Collivery_method($methods)
+function add_mds_shipping_method($methods)
 {
 	$methods[] = 'WC_MDS_Collivery';
 	return $methods;
 }
 
-add_filter('woocommerce_shipping_methods', 'add_MDS_Collivery_method');
+add_filter('woocommerce_shipping_methods', 'add_mds_shipping_method');
 
 /**
  * WooCommerce caches pricing information.
@@ -105,7 +107,7 @@ function mds_collivery_cart_shipping_packages($packages)
 	} else if (isset($_POST['billing_location_type']) || isset($_POST['shipping_location_type'])) {
 		$packages[0]['destination']['location_type'] = (isset($_POST['billing_location_type']) && $_POST['shipping_location_type']) ? ($_POST['shipping_location_type']) : ($_POST['billing_location_type']);
 	} else {
-		//Bad Practice... But in case location_type isn't set, do not cache the order!
+		//Bad Practice... But incase location_type isn't set, do not cache the order!
 		//@TODO: Find a way to fix this
 		$packages[0]['destination']['location_type'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
 	}
@@ -116,7 +118,7 @@ function mds_collivery_cart_shipping_packages($packages)
 	} else if (isset($_POST['billing_state']) || isset($_POST['shipping_state'])) {
 		$packages[0]['destination']['town'] = (isset($_POST['shipping_state']) && $_POST['shipping_state']) ? ($_POST['billing_state']) : ($_POST['billing_location_type']);
 	} else {
-		//Bad Practice... But in case town isn't set, do not cache the order!
+		//Bad Practice... But incase town isn't set, do not cache the order!
 		//@TODO: Find a way to fix this
 		$packages[0]['destination']['town'] = rand(0, 999999999999999999) . '-' . rand(0, 999999999999999999) . rand(0, 999999999999999999) . rand(0, 999999999999999999);
 	}
