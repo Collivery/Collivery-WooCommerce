@@ -26,6 +26,7 @@
 			</thead>
 			<tbody>
 			<?php if ( count( $colliveries ) > 0 ):
+				$services = $collivery->getServices();
 				$count = 0;
 				foreach ( $colliveries as $key => $order ):
 					$validation_results = json_decode( $order->validation_results );
@@ -34,12 +35,12 @@
 				<tr <?php if ( $count % 2 == 0 ) echo ' class="alt" '; ?>>
 					<td><?php echo $order->id; ?></td>
 					<td><a href="<?php echo get_site_url() . '/wp-admin/admin.php?page=mds_confirmed&waybill=' . $order->waybill; ?>"><?php echo $order->waybill; ?></a></td>
-					<td><?php echo $collivery->getServices()[ $validation_results->service ]; ?></td>
+					<td><?php echo $services[ $validation_results->service ]; ?></td>
 					<td><?php echo date( "Y-m-d H:m", $validation_results->collection_time ); ?></td>
 				</tr>
-				<?php
+			<?php
 				endforeach;
-			endif;
+				endif;
 			?>
 			</tbody>
 		</table>
