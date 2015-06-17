@@ -120,29 +120,6 @@
 						<input type="text" name="collection_time" id="datetimepicker4" value=""/><hr />
 
 						<label for="parcels">Parcel(s)</label>
-						<!-- This is here only so that we can clone it when trying to create a new itemized -->
-						<div style="display:none">
-							<table class="itemized_package_node">
-								<thead>
-									<tr>
-										<th align="left">Length</th>
-										<th align="left">Width</th>
-										<th align="left">Height</th>
-										<th align="left">Weight</th>
-										<th align="left">&nbsp;</th>
-									</tr>
-								</thead>
-								<tbody id="package_area">
-									<tr class="package_row">
-										<td><input id="length" name="length" size="11" type="text" value=""></td>
-										<td><input id="width" name="width" size="11" type="text" value=""></td>
-										<td><input id="height" name="height" size="11" type="text" value=""></td>
-										<td><input id="weight" name="weight" size="11" type="text" value=""></td>
-										<td><a href="#">Remove</a></td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
 						<table class="package_items">
 							<thead>
 								<tr>
@@ -264,3 +241,28 @@
 </form>
 
 <div id="api_results"></div>
+
+<!-- This is here only so that we can clone it when trying to create a new itemized -->
+<div style="display:none">
+	<table class="itemized_package_node">
+		<thead>
+		<tr>
+			<th align="left">Length</th>
+			<th align="left">Width</th>
+			<th align="left">Height</th>
+			<th align="left">Weight</th>
+			<th align="left">&nbsp;</th>
+		</tr>
+		</thead>
+		<tbody id="package_area">
+		<tr class="package_row">
+			<td><input id="length" name="length" size="11" type="number" step="0.1" value=""></td>
+			<td><input id="width" name="width" size="11" type="number" step="0.1" value=""></td>
+			<td><input id="height" name="height" size="11" type="number" step="0.1" value=""></td>
+			<td><input id="weight" name="weight" size="11" type="number" step="0.1" value=""></td>
+			<td><a href="#">Remove</a></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
