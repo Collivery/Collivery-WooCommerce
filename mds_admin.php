@@ -4,16 +4,22 @@
  * This file contains all the functions used for the admin side of the plugin. *
  *******************************************************************************/
 
-add_action( 'admin_menu', 'adminMenu' ); // Add our Admin menu items
 
-function adminMenu()
+/**
+ * Add our Admin menu items
+ */
+add_action( 'admin_menu', 'mds_admin_menu' );
+
+function mds_admin_menu()
 {
-	$firt_page = add_submenu_page( 'woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mdsConfirmedIndex' );
-	add_submenu_page( $firt_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mdsConfirmed' );
+	$first_page = add_submenu_page( 'woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mds_confirmed_orders' );
+	add_submenu_page( $first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mds_confirmed_order' );
 }
 
-// Function used to display index of all our deliveries already accepted and sent to MDS Collivery
-function mdsConfirmedIndex()
+/**
+ * Function used to display index of all our deliveries already accepted and sent to MDS Collivery
+ */
+function mds_confirmed_orders()
 {
 	global $wpdb;
 	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/Views/css/mds_collivery.css' );
@@ -35,8 +41,10 @@ function mdsConfirmedIndex()
 	include 'Views/index.php';
 }
 
-// View our Collivery once it has been accepted
-function mdsConfirmed()
+/**
+ * View our Collivery once it has been accepted
+ */
+function mds_confirmed_order()
 {
 	global $wpdb;
 	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/Views/js/mds_collivery.js' );
@@ -118,7 +126,9 @@ function mds_process_order_meta( $order )
 	die();
 }
 
-// Ajax for getting suburbs in admin section
+/**
+ * Ajax for getting suburbs in admin section
+ */
 add_action( 'wp_ajax_suburbs_admin', 'suburbs_admin_callback' );
 
 function suburbs_admin_callback()
@@ -178,7 +188,9 @@ function contacts_admin_callback()
 	die();
 }
 
-// Ajax get a quote
+/**
+ * Ajax get a quote
+ */
 add_action( 'wp_ajax_quote_admin', 'quote_admin_callback' );
 
 function quote_admin_callback()
@@ -227,7 +239,9 @@ function quote_admin_callback()
 	}
 }
 
-// Ajax get a quote
+/**
+ * Ajax accept quote
+ */
 add_action( 'wp_ajax_accept_admin', 'accept_admin_callback' );
 
 function accept_admin_callback()
@@ -366,8 +380,36 @@ add_action( 'admin_menu', 'mds_add_options' );
 
 function mds_add_options()
 {
-	add_submenu_page( null, 'Register Collivery', null, 8, 'mds_register', 'mds_register_collivery' );
+	$submenu = add_submenu_page( null, 'Register Collivery', null, 'manage_options', 'mds_register', 'mds_register_collivery' );
+
+	// load JS conditionally
+	add_action( 'load-' . $submenu, 'mds_load_admin_js' );
 }
+
+/**
+ * this action is only called on the register page load
+ */
+function mds_load_admin_js() {
+	// Unfortunately we can't just enqueue our scripts here - it's too early. So
+	// register against the proper action hook to do it
+	add_action( 'admin_enqueue_scripts', 'mds_enqueue_admin_js' );
+}
+
+function mds_enqueue_admin_js() {
+
+	wp_register_script( 'jquery.datetimepicker_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.datetimepicker.js' );
+	wp_enqueue_script( 'jquery.datetimepicker_js' );
+	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/Views/js/mds_collivery.js' );
+	wp_enqueue_script( 'mds_collivery_js' );
+	wp_register_script( 'jquery.validate.min_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.validate.min.js' );
+	wp_enqueue_script( 'jquery.validate.min_js' );
+
+	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/Views/css/mds_collivery.css' );
+	wp_enqueue_style( 'mds_collivery_css' );
+	wp_register_style( 'jquery.datetimepicker_css', plugin_dir_url( __FILE__ ) . '/Views/css/jquery.datetimepicker.css' );
+	wp_enqueue_style( 'jquery.datetimepicker_css' );
+}
+
 
 function mds_register_collivery()
 {
@@ -381,19 +423,8 @@ function mds_register_collivery()
 	$collivery = $mds->get_collivery_class();
 	$settings = $mds->get_collivery_settings();
 	$parcels = $mds->get_order_content( $order->get_items() );
-	$defaults = $mds->get_defauls_address();
-	$addresses = $collivery->get_addresses();
+	$defaults = $mds->get_default_address();
+	$addresses = $collivery->getAddresses();
 
-	wp_register_script( 'jquery.datetimepicker_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.datetimepicker.js' );
-	wp_enqueue_script( 'jquery.datetimepicker_js' );
-	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/Views/js/mds_collivery.js' );
-	wp_enqueue_script( 'mds_collivery_js' );
-	wp_register_script( 'jquery.validate.min_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.validate.min.js' );
-	wp_enqueue_script( 'jquery.validate.min_js' );
-
-	wp_register_style( 'mds_collivery_css', plugin_dir_url( __FILE__ ) . '/Views/css/mds_collivery.css' );
-	wp_enqueue_style( 'mds_collivery_css' );
-	wp_register_style( 'jquery.datetimepicker_css', plugin_dir_url( __FILE__ ) . '/Views/css/jquery.datetimepicker.css' );
-	wp_enqueue_style( 'jquery.datetimepicker_css' );
 	include 'Views/order.php'; // Include our admin page
 }
