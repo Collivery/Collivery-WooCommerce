@@ -307,6 +307,21 @@ function custom_override_state_label( $locale )
 }
 
 /**
+ * Update the order meta with field value
+ */
+add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
+
+function my_custom_checkout_field_update_order_meta( $order_id ) {
+	if(!empty($_POST['shipping_location_type'])) {
+		update_post_meta( $order_id, 'shipping_location_type', sanitize_text_field( $_POST['shipping_location_type'] ) );
+	}
+
+	if(!empty($_POST['billing_location_type'])) {
+		update_post_meta( $order_id, 'billing_location_type', sanitize_text_field( $_POST['billing_location_type'] ) );
+	}
+}
+
+/**
  * Add location_type to session
  */
 add_action('wp_ajax_add_location_type_to_session', 'add_location_type_to_session');
