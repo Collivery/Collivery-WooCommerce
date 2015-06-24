@@ -8,7 +8,7 @@ function custom_override_default_address_fields( $address_fields )
 	$mds = new WC_MDS_Collivery();
 	$field = $mds->get_field_defaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
-	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
+	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
 	$address_fields = array(
 		'state' => array(
@@ -98,8 +98,6 @@ function custom_override_default_address_fields( $address_fields )
 
 // Hook in
 add_filter( 'woocommerce_checkout_fields', 'custom_override_checkout_fields' );
-add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
-add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
 
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields )
@@ -107,7 +105,7 @@ function custom_override_checkout_fields( $fields )
 	$mds = new WC_MDS_Collivery();
 	$field = $mds->get_field_defaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
-	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
+	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
 	$billing_data = array(
 		'billing_state' => array(
