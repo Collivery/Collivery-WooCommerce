@@ -41,7 +41,7 @@
 								</select>
 							</div><br />
 
-							<label for="collection_which_company">Private/Corprate</label>
+							<label for="collection_which_company">Private/Corporate</label>
 							( Private <input checked="checked" class="collection_which_company" id="collection_which_company" name="collection_which_company" type="radio" value="private"> Company <input class="collection_which_company" id="collection_which_company" name="collection_which_company" type="radio" value="company"> )
 
 							<div id="collection_hide_company" style="display:none">
@@ -184,7 +184,7 @@
 								</select>
 							</div><br />
 
-							<label for="destination_which_company">Private/Corprate</label>
+							<label for="destination_which_company">Private/Corporate</label>
 							( Private <input class="destination_which_company" id="destination_which_company" name="destination_which_company" type="radio" value="private"<?php if(empty($order->shipping_company)) {echo ' checked="checked" ';} ?>> Company <input class="destination_which_company" id="destination_which_company" name="destination_which_company" type="radio" value="company"<?php if(!empty($order->shipping_company)) {echo ' checked="checked" ';} ?>> )
 
 							<div id="destination_hide_company" <?php if ( $order->shipping_company == "" ) {echo 'style="display:none"';} ?>>
