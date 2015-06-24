@@ -289,6 +289,22 @@ function custom_override_state_label( $locale )
 	return $locale;
 }
 
+/**
+ * Add location_type to session
+ */
+add_action('wp_ajax_add_location_type_to_session', 'add_location_type_to_session');
+add_action('wp_ajax_nopriv_add_location_type_to_session', 'add_location_type_to_session');
+function add_location_type_to_session() {
+	WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
+	WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
+	WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
+	echo 'done';
+	die();
+}
+
+add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
+add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
+
 // Get the Suburbs on Town Change...
 function generate_suburbs()
 {
