@@ -1,7 +1,9 @@
 <p>
 	<b>Please Note:</b>
 	<ul>
-		<li><b>Allow an addition 24 hours on all services for outlying areas</b></li>
+		<li>
+			<b>Allow an addition 24 hours on all services for outlying areas. If both the collection point and delivery point are both outlying allow an addition 48 hours.</b>
+		</li>
 		<li>
 			If you make changes and accept, those changes will be sent to MDS Collivery as a collection and
 			delivery request, make sure your information is correct. If you have managed to pass incorrect information then you
