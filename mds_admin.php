@@ -251,126 +251,105 @@ function accept_admin_callback()
 	$collivery = $mds->get_collivery_class();
 	$post = $_POST;
 
-	// Check which collection address we using and if we need to add the address to collivery api
-	if ( $post['which_collection_address'] == 'default' ) {
-		if(!is_numeric($post['collection_suburb'])) {
-			$suburbs = $collivery->getSuburbs($post['collection_town']);
-			$suburb_id = array_search( $post['collection_suburb'], $suburbs );
-		} else {
-			$suburb_id = $post['collection_suburb'];
-		}
+	try {
+		// Check which collection address we using and if we need to add the address to collivery api
+		if ( $post['which_collection_address'] == 'default' ) {
+			$collection_address = $mds->add_collivery_address(array(
+				'company_name' => ( $post['collection_company_name'] != "" ) ? $post['collection_company_name'] : 'Private',
+				'building' => $post['collection_building_details'],
+				'street' => $post['collection_street'],
+				'location_type' => $post['collection_location_type'],
+				'suburb' => $post['collection_suburb'],
+				'building' => $post['collection_building_details'],
+				'town' => $post['collection_town'],
+				'full_name' => $post['collection_full_name'],
+				'phone' => $post['collection_phone'],
+				'cellphone' => $post['collection_cellphone'],
+				'email' => $post['collection_email']
+			));
 
-		$collection_address = array(
-			'company_name' => ( $post['collection_company_name'] != "" ) ? $post['collection_company_name'] : 'Private',
-			'building' => $post['collection_building_details'],
-			'street' => $post['collection_street'],
-			'location_type' => $post['collection_location_type'],
-			'suburb_id' => $suburb_id,
-			'building' => $post['collection_building_details'],
-			'town_id' => $post['collection_town'],
-			'full_name' => $post['collection_full_name'],
-			'phone' => $post['collection_phone'],
-			'cellphone' => $post['collection_cellphone'],
-			'email' => $post['collection_email']
-		);
-
-		// Check for any problems
-		if ( !$collection_address_response = $collivery->addAddress( $collection_address ) ) {
-			echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-			die();
-		} else {
-			// set the collection address and contact from the returned array
-			$collivery_from = $collection_address_response['address_id'];
-			$contact_from = $collection_address_response['contact_id'];
-		}
-	} else {
-		$collivery_from = $post['collivery_from'];
-		$contact_from = $post['contact_from'];
-	}
-
-	// Check which destination address we using and if we need to add the address to collivery api
-	if ( $post['which_destination_address'] == 'default' ) {
-		if(!is_numeric(trim($post['destination_suburb']))) {
-			$suburbs = $collivery->getSuburbs($post['destination_town']);
-			$suburb_id = array_search( $post['destination_suburb'], $suburbs );
-		} else {
-			$suburb_id = $post['destination_suburb'];
-		}
-
-		$destination_address = array(
-			'company_name' => ( $post['destination_company_name'] != "" ) ? $post['destination_company_name'] : 'Private',
-			'building' => $post['destination_building_details'],
-			'street' => $post['destination_street'],
-			'location_type' => $post['destination_location_type'],
-			'suburb_id' => $suburb_id,
-			'building' => $post['destination_building_details'],
-			'town_id' => $post['destination_town'],
-			'full_name' => $post['destination_full_name'],
-			'phone' => $post['destination_phone'],
-			'cellphone' => $post['destination_cellphone'],
-			'email' => $post['destination_email']
-		);
-
-		// Check for any problems
-		if ( !$destination_address_response = $collivery->addAddress( $destination_address ) ) {
-			echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-			die();
-		} else {
-			$collivery_to = $destination_address_response['address_id'];
-			$contact_to = $destination_address_response['contact_id'];
-		}
-	} else {
-		$collivery_to = $post['collivery_to'];
-		$contact_to = $post['contact_to'];
-	}
-
-	$data_collivery = array(
-		'collivery_from' => $collivery_from,
-		'contact_from' => $contact_from,
-		'collivery_to' => $collivery_to,
-		'contact_to' => $contact_to,
-		'collivery_type' => 2, // Package
-		'service' => $post['service'],
-		'cover' => $post['cover'],
-		'collection_time' => $post['collection_time'],
-		'parcel_count' => count( $post['parcels'] ),
-		'parcels' => $post['parcels']
-	);
-
-	// Check for any problems validating
-	if ( !$validated = $collivery->validate( $data_collivery ) ) {
-		echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-		die();
-	} else {
-		// Check for any problems adding
-		if ( !$collivery_id = $collivery->addCollivery( $validated ) ) {
-			echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-			die();
-		} else {
-			// Check for any problems accepting
-			if ( !$collivery->acceptCollivery( $collivery_id ) ) {
+			// Check for any problems
+			if (!$collection_address) {
 				echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
 				die();
 			} else {
-				// Save the results from validation into our table
-				$validated = json_encode( $validated );
-				$table_name = $wpdb->prefix . 'mds_collivery_processed';
-				$data = array(
-					'status' => 1,
-					'validation_results' => $validated,
-					'waybill' => $collivery_id
-				);
-				$rows_affected = $wpdb->insert( $table_name, $data );
+				// set the collection address and contact from the returned array
+				$collivery_from = $collection_address['address_id'];
+				$contact_from = $collection_address['contact_id'];
 			}
+		} else {
+			$collivery_from = $post['collivery_from'];
+			$contact_from = $post['contact_from'];
 		}
+
+		// Check which destination address we using and if we need to add the address to collivery api
+		if ( $post['which_destination_address'] == 'default' ) {
+			$destination_address = $mds->add_collivery_address(array(
+				'company_name' => ( $post['destination_company_name'] != "" ) ? $post['destination_company_name'] : 'Private',
+				'building' => $post['destination_building_details'],
+				'street' => $post['destination_street'],
+				'location_type' => $post['destination_location_type'],
+				'suburb' => $post['destination_suburb'],
+				'building' => $post['destination_building_details'],
+				'town' => $post['destination_town'],
+				'full_name' => $post['destination_full_name'],
+				'phone' => $post['destination_phone'],
+				'cellphone' => $post['destination_cellphone'],
+				'email' => $post['destination_email']
+			));
+
+			// Check for any problems
+			if (!$destination_address) {
+				echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
+				die();
+			} else {
+				$collivery_to = $destination_address['address_id'];
+				$contact_to = $destination_address['contact_id'];
+			}
+		} else {
+			$collivery_to = $post['collivery_to'];
+			$contact_to = $post['contact_to'];
+		}
+
+		$collivery_id = $mds->add_collivery(array(
+			'collivery_from' => $collivery_from,
+			'contact_from' => $contact_from,
+			'collivery_to' => $collivery_to,
+			'contact_to' => $contact_to,
+			'collivery_type' => 2, // Package
+			'service' => $post['service'],
+			'cover' => $post['cover'],
+			'collection_time' => $post['collection_time'],
+			'parcel_count' => count( $post['parcels'] ),
+			'parcels' => $post['parcels']
+		));
+
+		// Check for any problems validating
+		if (!$collivery_id) {
+			echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
+			die();
+		} else {
+			// Save the results from validation into our table
+			$table_name = $wpdb->prefix . 'mds_collivery_processed';
+			$data = array(
+				'status' => 1,
+				'validation_results' => json_encode($mds->return_validated_data()),
+				'waybill' => $collivery_id
+			);
+
+			$wpdb->insert( $table_name, $data );
+		}
+
+		// Update the order status
+		$order = new WC_Order( $post['order_id'] );
+		$order->update_status( 'processing', $note = 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id );
+
+		echo 'redirect|' . $post['order_id'];
+		die();
+	} catch(Exception $e) {
+		echo '<p class="mds_response">' . $e->getMessage() . '</p>';
+		die();
 	}
-
-	// Update the order status
-	$order = new WC_Order( $post['order_id'] );
-	$order->update_status( 'processing', $note = 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id );
-
-	echo 'redirect|' . $post['order_id'];
-	die();
 }
 
 /**
@@ -413,8 +392,6 @@ function mds_enqueue_admin_js() {
 
 function mds_register_collivery()
 {
-	global $woocommerce, $woocommerce_errors;
-
 	$order = new WC_Order( $_GET['post_id'] );
 	$order_id = $_GET['post_id'];
 	$custom_fields = $order->order_custom_fields;
@@ -422,7 +399,7 @@ function mds_register_collivery()
 	$mds = new WC_MDS_Collivery;
 	$collivery = $mds->get_collivery_class();
 	$settings = $mds->get_collivery_settings();
-	$parcels = $mds->get_order_content( $order->get_items() );
+	$parcels = $mds->get_order_content($order->get_items());
 	$defaults = $mds->get_default_address();
 	$addresses = $collivery->getAddresses();
 
