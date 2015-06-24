@@ -280,7 +280,24 @@ function custom_override_checkout_fields( $fields )
 	return $fields;
 }
 
-// Rename Province to Town
+/**
+ * Validate the custom fields.
+ */
+add_action('woocommerce_checkout_process', 'validate_custom_checkout_field_process');
+
+function validate_custom_checkout_field_process() {
+	if(!isset($_POST['to_town_id']) || !is_integer($_POST['to_town_id'])) {
+		wc_add_notice(__('Please select your town .'), 'error');
+	}
+
+	if(!isset($_POST['to_location_type']) || !is_integer($_POST['to_location_type'])) {
+		wc_add_notice(__('Please select your location type .'), 'error');
+	}
+}
+
+/**
+ * Rename Province to Town
+ */
 add_filter( 'woocommerce_get_country_locale', 'custom_override_state_label' );
 
 function custom_override_state_label( $locale )
