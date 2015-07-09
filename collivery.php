@@ -1,6 +1,6 @@
 <?php
 
-define('MDS_VERSION', "2.0.1");
+define('MDS_VERSION', "2.0.2");
 
 /**
  * Plugin Name: MDS Collivery
