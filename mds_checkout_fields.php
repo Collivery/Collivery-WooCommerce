@@ -5,8 +5,13 @@ add_filter( 'woocommerce_default_address_fields', 'custom_override_default_addre
 // Override the Billing and Shipping fields
 function custom_override_default_address_fields( $address_fields )
 {
-	$mds = new WC_MDS_Collivery();
-	$field = $mds->get_field_defaults();
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'no') {
+		return $address_fields;
+	}
+
+	$field = $mds->returnFieldDefaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
@@ -102,8 +107,13 @@ add_filter( 'woocommerce_checkout_fields', 'custom_override_checkout_fields' );
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields )
 {
-	$mds = new WC_MDS_Collivery();
-	$field = $mds->get_field_defaults();
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'no') {
+		return $fields;
+	}
+
+	$field = $mds->returnFieldDefaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
@@ -279,27 +289,18 @@ function custom_override_checkout_fields( $fields )
 }
 
 /**
- * Validate the custom fields.
- */
-add_action('woocommerce_checkout_process', 'validate_custom_checkout_field_process');
-
-function validate_custom_checkout_field_process() {
-	if(!isset($_POST['to_town_id']) || !is_integer($_POST['to_town_id'])) {
-		wc_add_notice(__('Please select your town .'), 'error');
-	}
-
-	if(!isset($_POST['to_location_type']) || !is_integer($_POST['to_location_type'])) {
-		wc_add_notice(__('Please select your location type .'), 'error');
-	}
-}
-
-/**
  * Rename Province to Town
  */
 add_filter( 'woocommerce_get_country_locale', 'custom_override_state_label' );
 
 function custom_override_state_label( $locale )
 {
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'no') {
+		return $locale;
+	}
+
 	$locale['ZA']['state']['label'] = __( 'Town', 'woocommerce' );
 	return $locale;
 }
@@ -310,12 +311,16 @@ function custom_override_state_label( $locale )
 add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
 
 function my_custom_checkout_field_update_order_meta( $order_id ) {
-	if(!empty($_POST['shipping_location_type'])) {
-		update_post_meta( $order_id, 'shipping_location_type', sanitize_text_field( $_POST['shipping_location_type'] ) );
-	}
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'yes') {
+		if(!empty($_POST['shipping_location_type'])) {
+			update_post_meta( $order_id, 'shipping_location_type', sanitize_text_field( $_POST['shipping_location_type'] ) );
+		}
 
-	if(!empty($_POST['billing_location_type'])) {
-		update_post_meta( $order_id, 'billing_location_type', sanitize_text_field( $_POST['billing_location_type'] ) );
+		if(!empty($_POST['billing_location_type'])) {
+			update_post_meta( $order_id, 'billing_location_type', sanitize_text_field( $_POST['billing_location_type'] ) );
+		}
 	}
 }
 
@@ -325,9 +330,14 @@ function my_custom_checkout_field_update_order_meta( $order_id ) {
 add_action('wp_ajax_add_location_type_to_session', 'add_location_type_to_session');
 add_action('wp_ajax_nopriv_add_location_type_to_session', 'add_location_type_to_session');
 function add_location_type_to_session() {
-	WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
-	WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
-	WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'yes') {
+		WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
+		WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
+		WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
+	}
+
 	echo 'done';
 	die();
 }
@@ -347,8 +357,8 @@ function generate_suburbs()
 	}
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
-		$mds = new WC_MDS_Collivery;
-		$collivery = $mds->get_collivery_class();
+		$mds = MdsColliveryService::getInstance();
+		$collivery = $mds->returnColliveryClass();
 		$town_id = array_search( $_POST['town'], $collivery->getTowns() );
 		$fields = $collivery->getSuburbs( $town_id );
 		if ( !empty( $fields ) ) {

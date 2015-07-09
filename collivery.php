@@ -10,9 +10,7 @@ define('MDS_VERSION', "2.0.1");
  * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
-
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
-
 	/**
 	 * Register Install function
 	 */
@@ -35,6 +33,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
 			`id` int(11) NOT NULL AUTO_INCREMENT,
 			`waybill` int(11) NOT NULL,
+			`order_id` int(11) NOT NULL,
 			`validation_results` TEXT NOT NULL,
 			`status` int(1) NOT NULL DEFAULT 1,
 			PRIMARY KEY (`id`)
@@ -52,14 +51,25 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	 */
 	function init_mds_collivery()
 	{
+		global $wpdb;
+
 		// Check if 'WC_Shipping_Method' class is loaded, else exit.
 		if (!class_exists('WC_Shipping_Method')) {
 			return;
 		}
 
-		require_once( 'mds_admin.php' ); // Admin scripts
-		require_once( 'mds_checkout_fields.php' ); // Checkout fields.
-		require_once( 'SupportingClasses/GithubPluginUpdater.php' ); // Auto updating class
+		// If this plugin is sub 2.0.1 then alter the mds table to include the order_id column
+		$test = (array) $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "mds_collivery_processed");
+		if(!array_key_exists('order_id', $test)) {
+	   		$wpdb->query("ALTER TABLE " . $wpdb->prefix . "mds_collivery_processed ADD order_id INT NULL AFTER id");
+		}
+
+		require_once('WC_Mds_Shipping_Method.php');
+		require_once("SupportingClasses/MdsColliveryService.php");
+		require_once('SupportingClasses/GithubPluginUpdater.php');
+
+		require_once('mds_admin.php'); // Admin scripts
+		require_once('mds_checkout_fields.php'); // Checkout fields.
 
 		/**
 		 * Load JS file throughout
@@ -75,11 +85,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		/**
 		 * Check for updates
 		 */
-		if ( is_admin() ) {
+		if(is_admin()) {
 			new GitHubPluginUpdater( __FILE__, 'Collivery', "Collivery-WooCommerce" );
 		}
-
-		require_once( 'WC_MDS_Collivery.php' );
 	}
 
 	/**
@@ -90,7 +98,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	 */
 	function add_mds_shipping_method($methods)
 	{
-		$methods[] = 'WC_MDS_Collivery';
+		$methods[] = 'WC_Mds_Shipping_Method';
 		return $methods;
 	}
 
@@ -105,16 +113,20 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	 */
 	function mds_collivery_cart_shipping_packages($packages)
 	{
-		$mds = new WC_MDS_Collivery;
-		$defaults = $mds->get_default_address();
-		$collivery = $mds->get_collivery_class();
-		$settings = $mds->get_collivery_settings();
+		$mds = MdsColliveryService::getInstance();
+		$settings = $mds->returnPluginSettings();
+		if ($settings['enabled'] == 'no') {
+			return;
+		}
+
+		$defaults = $mds->returnDefaultAddress();
+		$collivery = $mds->returnColliveryClass();
 
 		$towns = $collivery->getTowns();
 		$location_types = $collivery->getLocationTypes();
 
-		$package = $mds->build_package_from_cart();
-		$cart = $mds->get_cart_content($package);
+		$package = $mds->buildPackageFromCart();
+		$cart = $mds->getCartContent($package);
 
 		$use_location_type = WC()->session->get('use_location_type', null);
 		$location_type = [
@@ -176,23 +188,26 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 				) + $package['destination'];
 
 				// Query the API to test if this is a local delivery
-				$response = $this->collivery->getPrice($data);
+				$response = $collivery->getPrice($data);
 				if(isset($response['delivery_type']) && $response['delivery_type'] == 'local') {
-					if($mds->valid_package($package)) {
+					$package['local'] = 'yes';
+					if($mds->validPackage($package)) {
 						$packages[0] = $package;
 					} else {
 						return false;
 					}
+				} else {
+					 $package['local'] = 'no';
 				}
 			} else {
-				if($mds->valid_package($package)) {
+				if($mds->validPackage($package)) {
 					$packages[0] = $package;
 				} else {
 					return false;
 				}
 			}
 		} else {
-			if($mds->valid_package($package)) {
+			if($mds->validPackage($package)) {
 				$packages[0] = $package;
 			} else {
 				return false;
@@ -205,93 +220,43 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	add_filter('woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages');
 
 	/**
-	 * Automatically send MDS Collivery the delivery request
-	 * The accounts default address and first contact will be used and a new destination address will be added every time
+	 * Automatically send MDS Collivery the delivery request when payment gateways call $order->payment_complete()
 	 *
-	 * @param $order_status
 	 * @param $order_id
 	 * @return string
 	 */
-	function virtual_order_payment_complete_order_status($order_status, $order_id)
+	function automated_add_collivery_payment_complete($order_id)
 	{
-		$order = new WC_Order($order_id);
+		$mds = MdsColliveryService::getInstance();
+		$settings = $mds->returnPluginSettings();
 
-		if('processing' == $order_status && ('on-hold' == $order->status || 'pending' == $order->status || 'failed' == $order->status)) {
-			try {
-				$mds = new WC_MDS_Collivery;
-				$settings = $mds->get_collivery_settings();
-				$parcels = $mds->get_order_content($order->get_items());
-				$defaults = $mds->get_default_address();
-
-				$address = $mds->add_collivery_address(array(
-					'company_name' => ( $order->shipping_company != "" ) ? $order->shipping_company : 'Private',
-					'building' => $order->shipping_building_details,
-					'street' => $order->shipping_address_1 . ' ' . $order->shipping_address_2,
-					'location_type' => $order->shipping_location_type,
-					'suburb' => $order->shipping_city,
-					'town' => $order->shipping_state,
-					'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
-					'cellphone' => $order->shipping_phone,
-					'email' => $order->shipping_email
-				));
-
-				$collivery_from = $defaults['default_address_id'];
-				list($contact_from) = array_keys($defaults['contacts']);
-				$collivery_to = $address['address_id'];
-				$contact_to = $address['contact_id'];
-
-				$collivery_id = $mds->add_collivery(array(
-					'collivery_from' => $collivery_from,
-					'contact_from' => $contact_from,
-					'collivery_to' => $collivery_to,
-					'contact_to' => $contact_to,
-					'collivery_type' => 2,
-					'service' => $order->get_shipping_method(),
-					'cover' => ($settings['risk_cover'] == 'yes') ? 1 : 0,
-					'parcel_count' => count($parcels),
-					'parcels' => $parcels
-				));
-
-				if($collivery_id) {
-					$order->update_status( 'processing', 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id );
-				} else {
-					$order->update_status( 'processing', 'Order has not been sent to MDS Collivery successfully, you will need to manually process.');
-				}
-
-				// Return new order status
-				return 'completed';
-			} catch(Exception $e) {
-				$order->update_status( 'processing', 'Order has not been sent to MDS Collivery successfully, you will need to manually process. Error: ' . $e->getMessage());
-			}
+		if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
+			$mds->automatedAddCollivery($order_id);
 		}
-
-		// return original status
-		return $order_status;
 	}
 
-	add_filter('woocommerce_payment_complete_order_status', 'virtual_order_payment_complete_order_status');
+	add_action('woocommerce_payment_complete', 'automated_add_collivery_payment_complete');
 
-} elseif (defined('WOOCOMMERCE_VERSION') && version_compare(WOOCOMMERCE_VERSION, '2.1', '<')) {
-
-	wc_add_notice(sprintf(__("This plugin requires WooCommerce 2.1 or higher!", "woocommerce-mds-shipping" ), 'error'));
-
-} else {
 
 	/**
-	 * Check if WooCommerce is up and running
+	 * Automatically send MDS Collivery the delivery request when status changes to processing for cod, eft's and cheque
 	 *
-	 * @return null
+	 * @param $order_id
+	 * @return string
 	 */
-	function checkWooNotices()
+	function automated_add_collivery_status_processing($order_id)
 	{
-		if (!is_plugin_active('woocommerce/woocommerce.php')) {
-			ob_start();
-			?><div class="error">
-			<p><strong><?php _e('WARNING', 'wooExtraOptions'); ?></strong>: <?php _e('WooCommerce is not active and WooCommerce MDS Collivery Shipping Plugin will not work!', 'woocommerce-mds-shipping'); ?></p>
-			</div><?php
-			echo ob_get_clean();
+		$mds = MdsColliveryService::getInstance();
+		$settings = $mds->returnPluginSettings();
+
+		if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
+			$order = new WC_Order($order_id);
+
+			if($order->payment_method === "cod" || $order->payment_method === "cheque" || $order->payment_method === "bacs"){
+				$mds->automatedAddCollivery($order_id, true);
+			}
 		}
 	}
 
-	add_action('admin_notices', 'checkWooNotices');
+	add_action( 'woocommerce_order_status_processing', 'automated_add_collivery_status_processing' );
 }
