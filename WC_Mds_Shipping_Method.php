@@ -332,7 +332,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function calculate_shipping($package = array())
 	{
-		if($this->collivery_service->valid_package($package)) {
+		if($this->collivery_service->validPackage($package)) {
 			if(isset($package['service']) && $package['service'] == 'free') {
 				if($package['local'] == 'yes') {
 					$id = 'mds_' . $this->settings['free_local_default_service'];
@@ -378,7 +378,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'id' => 'mds_' . $id,
 								'value' => $id,
 								'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
-								'cost' => $this->collivery_service->add_markup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
+								'cost' => $this->collivery_service->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
 							);
 
 							$this->add_rate($rate);
@@ -402,7 +402,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function get_cart_content($package)
 	{
-		return $this->collivery_service->get_cart_content($package);
+		return $this->collivery_service->getCartContent($package);
 	}
 
 	/**
