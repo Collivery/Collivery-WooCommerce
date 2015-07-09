@@ -1,4 +1,4 @@
-<?php namespace Mds;
+<?php namespace SupportingClasses;
 
 use SoapClient; // Use PHP Soap Client
 use SoapFault;  // Use PHP Soap Fault
@@ -97,6 +97,7 @@ class Collivery {
 	protected function authenticate()
 	{
 		$authCache = $this->cache->get( 'collivery.auth' );
+
 		if (
 			$this->check_cache == 2 &&
 			$this->cache->has( 'collivery.auth' ) &&
@@ -111,11 +112,21 @@ class Collivery {
 
 			return true;
 		} else {
-			if ( ! $this->init() ) return false;
+			$this->makeAuthenticationRequest();
+		}
+	}
 
-			$user_email    = $this->config->user_email;
-			$user_password = $this->config->user_password;
+	/**
+	 * Make the authentication request
+	 *
+	 * @return array|bool
+	 */
+	private function makeAuthenticationRequest()
+	{
+		$user_email    = $this->config->user_email;
+		$user_password = $this->config->user_password;
 
+		if ( $this->init() ) {
 			try {
 				$authenticate = $this->client->authenticate( $user_email, $user_password, $this->token,
 					array(
@@ -125,29 +136,52 @@ class Collivery {
 						'url'     => $this->config->app_url,
 						'lang'    => 'PHP '. phpversion(),
 					) );
+
+				if ( is_array( $authenticate ) && isset( $authenticate['token'] ) ) {
+					if ( $this->check_cache != 0 ) {
+						$this->cache->put( 'collivery.auth', $authenticate, 50 );
+						$this->cache->put('settings.md5', $this->md5Config(), 0);
+					}
+
+					$this->default_address_id = $authenticate['default_address_id'];
+					$this->client_id          = $authenticate['client_id'];
+					$this->user_id            = $authenticate['user_id'];
+					$this->token              = $authenticate['token'];
+
+					return $authenticate;
+				} else {
+					if ( isset( $result['error_id'] ) ) {
+						$this->setError( $result['error_id'], $result['error'] );
+					} else {
+						$this->setError( 'result_unexpected', 'No result returned.' );
+					}
+				}
 			} catch ( SoapFault $e ) {
 				$this->catchSoapFault( $e );
-				return false;
-			}
-
-			if ( is_array( $authenticate ) && isset( $authenticate['token'] ) ) {
-				if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.auth', $authenticate, 50 );
-
-				$this->default_address_id = $authenticate['default_address_id'];
-				$this->client_id          = $authenticate['client_id'];
-				$this->user_id            = $authenticate['user_id'];
-				$this->token              = $authenticate['token'];
-
-				return true;
-			} else {
-				if ( isset( $result['error_id'] ) )
-					$this->setError( $result['error_id'], $result['error'] );
-				else
-					$this->setError( 'result_unexpected', 'No result returned.' );
-
-				return false;
 			}
 		}
+
+		return false;
+	}
+
+	/**
+	 * Returns true or false if authenticated
+	 *
+	 * @return bool
+	 */
+	public function isAuthenticated()
+	{
+		return is_array($this->makeAuthenticationRequest());
+	}
+
+	/**
+	 * Returns the md5 string of the config array
+	 *
+	 * @return string
+	 */
+	public function md5Config()
+	{
+		return md5(json_encode((array) $this->config));
 	}
 
 	/**
@@ -1035,5 +1069,4 @@ class Collivery {
 		}
 		return $this->default_address_id;
 	}
-
 }
