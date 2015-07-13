@@ -1,12 +1,12 @@
 <?php
 
-define('MDS_VERSION', "2.0.3");
+define('MDS_VERSION', "2.0.4");
 
 /**
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 2.0.3
+ * Version: 2.0.4
  * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
@@ -59,9 +59,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		}
 
 		// If this plugin is sub 2.0.1 then alter the mds table to include the order_id column
-		$test = (array) $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "mds_collivery_processed");
-		if(!array_key_exists('order_id', $test)) {
-	   		$wpdb->query("ALTER TABLE " . $wpdb->prefix . "mds_collivery_processed ADD order_id INT NULL AFTER id");
+		$testForColumn = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "mds_collivery_processed", ARRAY_A);
+		if(!empty($testForColumn) && !array_key_exists('order_id', $testForColumn)) {
+			$wpdb->query("ALTER TABLE " . $wpdb->prefix . "mds_collivery_processed ADD order_id INT NULL AFTER id");
 		}
 
 		require_once('WC_Mds_Shipping_Method.php');
