@@ -45,7 +45,7 @@ class MdsColliveryService
 		if (! self::$instance) {
 			if (is_null($settings)) {
 				global $wpdb;
-				$settings = unserialize($wpdb->get_var("SELECT `option_value` FROM `wp_options` WHERE `option_name` LIKE 'woocommerce_mds_collivery_settings' LIMIT 0 , 30"));
+				$settings = unserialize($wpdb->get_var("SELECT `option_value` FROM `" . $wpdb->prefix . "options` WHERE `option_name` LIKE 'woocommerce_mds_collivery_settings'"));
 			};
 			self::$instance = new self($settings);
 		}
