@@ -50,7 +50,7 @@ class GitHubPluginUpdater
 		// Query the GitHub API
 		$url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases";
 
-		// We need the access token for private repos
+		// We need the access token for private repositories
 		if ( ! empty( $this->accessToken ) ) {
 			$url = add_query_arg( array( "access_token" => $this->accessToken ), $url );
 		}
@@ -202,7 +202,7 @@ class GitHubPluginUpdater
 		// reponame-tagname change it to our original one:
 		global $wp_filesystem;
 		$pluginFolder = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . dirname( $this->slug );
-		$wp_filesystem->move( $result['destination'], $pluginFolder );
+		@$wp_filesystem->move( $result['destination'], $pluginFolder );
 		$result['destination'] = $pluginFolder;
 
 		// Re-activate plugin if needed

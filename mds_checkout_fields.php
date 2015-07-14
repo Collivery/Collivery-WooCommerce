@@ -5,12 +5,17 @@ add_filter( 'woocommerce_default_address_fields', 'custom_override_default_addre
 // Override the Billing and Shipping fields
 function custom_override_default_address_fields( $address_fields )
 {
-	$mds = new WC_MDS_Collivery();
-	$collivery = $mds->getColliveryClass();
-	$field = $mds->get_field_defaults();
+	$mds = MdsColliveryService::getInstance();
+	$collivery = $mds->returnColliveryClass();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'no') {
+		return $address_fields;
+	}
+
+	$field = $mds->returnFieldDefaults();
     $provinces = array( '' => 'Select Province' ) + $field['provinces'];
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
-	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
+	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
 	$address_fields = array(
         'province'  => array(
@@ -24,29 +29,29 @@ function custom_override_default_address_fields( $address_fields )
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
-			'options' => array('Select province first...'),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
+			'options' => $towns,
 			'selected' => ''
 		),
 		'city' => array(
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last' ),
+			'class' => array( 'form-row-wide' ),
 			'options' => array( 'Select town first...' )
 		),
 		'location_type' => array(
 			'type' => 'select',
 			'label' => 'Location Type',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $location_types,
 			'selected' => ''
 		),
 		'company' => array(
 			'label' => 'Company Name',
 			'placeholder' => 'Company (optional)',
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'building_details' => array(
 			'label' => 'Building Details',
@@ -60,12 +65,19 @@ function custom_override_default_address_fields( $address_fields )
 			'required' => 1,
 			'class' => array( 'form-row-first' )
 		),
+		'postcode' => array(
+			'name' => 'postcode',
+			'label' => 'Postal Code',
+			'placeholder' => 'Postal Code',
+			'required' => 0,
+			'class' => array( 'form-row-last' )
+		),
 		'address_2' => array(
 			'name' => 'billing-street',
 			'label' => 'Street Name',
 			'placeholder' => 'Street',
 			'required' => 1,
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'first_name' => array(
 			'label' => 'First Name',
@@ -79,41 +91,44 @@ function custom_override_default_address_fields( $address_fields )
 			'required' => 1,
 			'class' => array( 'form-row-last' )
 		),
-		'email' => array(
-			'validate' => array( 'email' ),
-			'label' => 'Email Address',
-			'placeholder' => 'you@yourdomain.co.za',
-			'required' => 1,
-			'class' => array( 'form-row-first' )
-		),
 		'phone' => array(
 			'validate' => array( 'phone' ),
 			'label' => 'Cell Phone',
 			'placeholder' => 'Phone number',
 			'required' => 1,
+			'class' => array( 'form-row-first' )
+		),
+		'email' => array(
+			'validate' => array( 'email' ),
+			'label' => 'Email Address',
+			'placeholder' => 'you@yourdomain.co.za',
+			'required' => 1,
 			'class' => array( 'form-row-last' )
 		),
 	);
 
-	return $address_fields;
+	return apply_filters('mds_default_address_fields', $address_fields);
 }
 
 // Hook in
 add_filter( 'woocommerce_checkout_fields', 'custom_override_checkout_fields' );
-add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
-add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
 add_action( 'wp_ajax_mds_collivery_generate_towns', 'generate_towns' );
 add_action( 'wp_ajax_nopriv_mds_collivery_generate_towns', 'generate_towns' );
 
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields )
 {
-	$mds = new WC_MDS_Collivery();
-	$collivery = $mds->getColliveryClass();
-	$field = $mds->get_field_defaults();
+	$mds = MdsColliveryService::getInstance();
+	$collivery = $mds->returnColliveryClass();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'no') {
+		return $fields;
+	}
+
+	$field = $mds->returnFieldDefaults();
     $provinces = array( '' => 'Select Province' ) + $field['provinces'];
-	$towns = array( '' => 'Select province first...' );
-	$location_types = array( '' => 'Select Premesis Type' ) + $field['location_types'];
+	$towns = array( '' => 'Select Town' ) + $field['towns'];
+	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
 	$billing_data = array(
         'billing_province'   => array(
@@ -128,7 +143,7 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
 			'selected' => ''
 		),
@@ -136,20 +151,20 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide' ),
 			'options' => array( 'Select town first...' )
 		),
 		'billing_location_type' => array(
 			'type' => 'select',
 			'label' => 'Location Type',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $location_types
 		),
 		'billing_company' => array(
 			'label' => 'Company Name',
 			'placeholder' => 'Company (optional)',
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'billing_building_details' => array(
 			'label' => 'Building Details',
@@ -163,25 +178,25 @@ function custom_override_checkout_fields( $fields )
 			'required' => 1,
 			'class' => array( 'form-row-first' )
 		),
-		'billing_address_2' => array(
-			'name' => 'billing-street',
-			'label' => 'Street Name',
-			'placeholder' => 'Street',
-			'required' => 1,
-			'class' => array( 'form-row-last' )
-		),
 		'billing_postcode' => array(
 			'name' => 'postcode',
 			'label' => 'Postal Code',
 			'placeholder' => 'Postal Code',
 			'required' => 0,
-			'class' => array( 'form-row-first' )
+			'class' => array( 'form-row-last' )
+		),
+		'billing_address_2' => array(
+			'name' => 'billing-street',
+			'label' => 'Street Name',
+			'placeholder' => 'Street',
+			'required' => 1,
+			'class' => array( 'form-row-wide' )
 		),
 		'billing_first_name' => array(
 			'label' => 'First Name',
 			'placeholder' => 'First Name',
 			'required' => 1,
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-first' )
 		),
 		'billing_last_name' => array(
 			'label' => 'Last Name',
@@ -218,7 +233,7 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Town',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
 			'selected' => ''
 		),
@@ -226,20 +241,20 @@ function custom_override_checkout_fields( $fields )
 			'type' => 'select',
 			'label' => 'Suburb',
 			'required' => 1,
-			'class' => array( 'form-row-last', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide' ),
 			'options' => array( 'Select town first...' )
 		),
 		'shipping_location_type' => array(
 			'type' => 'select',
 			'label' => 'Location Type',
 			'required' => 1,
-			'class' => array( 'form-row-first', 'update_totals_on_change' ),
+			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $location_types
 		),
 		'shipping_company' => array(
 			'label' => 'Company Name',
 			'placeholder' => 'Company (optional)',
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-wide' )
 		),
 		'shipping_building_details' => array(
 			'label' => 'Building Details',
@@ -253,25 +268,25 @@ function custom_override_checkout_fields( $fields )
 			'required' => 1,
 			'class' => array( 'form-row-first' )
 		),
-		'shipping_address_2' => array(
-			'name' => 'billing-street',
-			'label' => 'Street Name',
-			'placeholder' => 'Street',
-			'required' => 1,
-			'class' => array( 'form-row-last' )
-		),
 		'shipping_postcode' => array(
 			'name' => 'postcode',
 			'label' => 'Postal Code',
 			'placeholder' => 'Postal Code',
 			'required' => 0,
-			'class' => array( 'form-row-first' )
+			'class' => array( 'form-row-last' )
+		),
+		'shipping_address_2' => array(
+			'name' => 'billing-street',
+			'label' => 'Street Name',
+			'placeholder' => 'Street',
+			'required' => 1,
+			'class' => array( 'form-row-wide' )
 		),
 		'shipping_first_name' => array(
 			'label' => 'First Name',
 			'placeholder' => 'First Name',
 			'required' => 1,
-			'class' => array( 'form-row-last' )
+			'class' => array( 'form-row-first' )
 		),
 		'shipping_last_name' => array(
 			'label' => 'Last Name',
@@ -299,17 +314,65 @@ function custom_override_checkout_fields( $fields )
 
 	$fields['shipping'] = $shipping_data;
 
-	return $fields;
+	return apply_filters( 'mds_override_checkout_fields', $fields );
 }
 
-// Rename Province to Town
+/**
+ * Rename Province to Town
+ */
 add_filter( 'woocommerce_get_country_locale', 'custom_override_state_label' );
 
 function custom_override_state_label( $locale )
 {
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'no') {
+		return $locale;
+	}
+
 	$locale['ZA']['state']['label'] = __( 'Town', 'woocommerce' );
 	return $locale;
 }
+
+/**
+ * Update the order meta with field value
+ */
+add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
+
+function my_custom_checkout_field_update_order_meta( $order_id ) {
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'yes') {
+		if(!empty($_POST['shipping_location_type'])) {
+			update_post_meta( $order_id, 'shipping_location_type', sanitize_text_field( $_POST['shipping_location_type'] ) );
+		}
+
+		if(!empty($_POST['billing_location_type'])) {
+			update_post_meta( $order_id, 'billing_location_type', sanitize_text_field( $_POST['billing_location_type'] ) );
+		}
+	}
+}
+
+/**
+ * Add location_type to session
+ */
+add_action('wp_ajax_add_location_type_to_session', 'add_location_type_to_session');
+add_action('wp_ajax_nopriv_add_location_type_to_session', 'add_location_type_to_session');
+function add_location_type_to_session() {
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+	if ($settings['enabled'] == 'yes') {
+		WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
+		WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
+		WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
+	}
+
+	echo 'done';
+	die();
+}
+
+add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
+add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
 
 // Get the Suburbs on Town Change...
 function generate_suburbs()
@@ -326,8 +389,8 @@ function generate_suburbs()
     $selected_suburb = apply_filters( 'collivery_selected_suburb', $selected_suburb );
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
-		$mds = new WC_MDS_Collivery;
-		$collivery = $mds->getColliveryClass();
+		$mds = MdsColliveryService::getInstance();
+		$collivery = $mds->returnColliveryClass();
 		$town_id = array_search( $_POST['town'], $collivery->getTowns() );
 		$fields = $collivery->getSuburbs( $town_id );
 		if ( !empty( $fields ) ) {

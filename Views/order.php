@@ -1,7 +1,9 @@
 <p>
 	<b>Please Note:</b>
 	<ul>
-		<li><b>Allow an addition 24 hours on all services for outlying areas</b></li>
+		<li>
+			<b>Allow an addition 24 hours on all services for outlying areas. If both the collection point and delivery point are both outlying allow an addition 48 hours.</b>
+		</li>
 		<li>
 			If you make changes and accept, those changes will be sent to MDS Collivery as a collection and
 			delivery request, make sure your information is correct. If you have managed to pass incorrect information then you
@@ -41,7 +43,7 @@
 								</select>
 							</div><br />
 
-							<label for="collection_which_company">Private/Corprate</label>
+							<label for="collection_which_company">Private/Corporate</label>
 							( Private <input checked="checked" class="collection_which_company" id="collection_which_company" name="collection_which_company" type="radio" value="private"> Company <input class="collection_which_company" id="collection_which_company" name="collection_which_company" type="radio" value="company"> )
 
 							<div id="collection_hide_company" style="display:none">
@@ -120,29 +122,6 @@
 						<input type="text" name="collection_time" id="datetimepicker4" value=""/><hr />
 
 						<label for="parcels">Parcel(s)</label>
-						<!-- This is here only so that we can clone it when trying to create a new itemized -->
-						<div style="display:none">
-							<table class="itemized_package_node">
-								<thead>
-									<tr>
-										<th align="left">Length</th>
-										<th align="left">Width</th>
-										<th align="left">Height</th>
-										<th align="left">Weight</th>
-										<th align="left">&nbsp;</th>
-									</tr>
-								</thead>
-								<tbody id="package_area">
-									<tr class="package_row">
-										<td><input id="length" name="length" size="11" type="text" value=""></td>
-										<td><input id="width" name="width" size="11" type="text" value=""></td>
-										<td><input id="height" name="height" size="11" type="text" value=""></td>
-										<td><input id="weight" name="weight" size="11" type="text" value=""></td>
-										<td><a href="#">Remove</a></td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
 						<table class="package_items">
 							<thead>
 								<tr>
@@ -157,10 +136,17 @@
 								<?php $count = 1; ?>
 								<?php foreach ( $parcels as $parcel ): ?>
 									<tr class="package_row" id="item<?php echo $count; ?>">
-										<td><input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="text" value="<?php echo $parcel['length']; ?>"></td>
-										<td><input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="text" value="<?php echo $parcel['width']; ?>"></td>
-										<td><input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="text" value="<?php echo $parcel['height']; ?>"></td>
-										<td><input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="text" value="<?php echo $parcel['weight']; ?>"></td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="number" step="0.1" value="<?php echo $parcel['length']; ?>">
+										</td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="number" step="0.1" value="<?php echo $parcel['width']; ?>"></td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="number" step="0.1" value="<?php echo $parcel['height']; ?>">
+										</td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="number" step="0.1" value="<?php echo $parcel['weight']; ?>">
+										</td>
 								<?php if ( $count > 1 ): ?>
 									<td><a href="#" onclick="remove_parcel(<?php echo $count; ?>);return false;">Remove</a></td>
 								<?php endif; ?>
@@ -200,7 +186,7 @@
 								</select>
 							</div><br />
 
-							<label for="destination_which_company">Private/Corprate</label>
+							<label for="destination_which_company">Private/Corporate</label>
 							( Private <input class="destination_which_company" id="destination_which_company" name="destination_which_company" type="radio" value="private"<?php if(empty($order->shipping_company)) {echo ' checked="checked" ';} ?>> Company <input class="destination_which_company" id="destination_which_company" name="destination_which_company" type="radio" value="company"<?php if(!empty($order->shipping_company)) {echo ' checked="checked" ';} ?>> )
 
 							<div id="destination_hide_company" <?php if ( $order->shipping_company == "" ) {echo 'style="display:none"';} ?>>
@@ -264,3 +250,28 @@
 </form>
 
 <div id="api_results"></div>
+
+<!-- This is here only so that we can clone it when trying to create a new itemized -->
+<div style="display:none">
+	<table class="itemized_package_node">
+		<thead>
+		<tr>
+			<th align="left">Length</th>
+			<th align="left">Width</th>
+			<th align="left">Height</th>
+			<th align="left">Weight</th>
+			<th align="left">&nbsp;</th>
+		</tr>
+		</thead>
+		<tbody id="package_area">
+		<tr class="package_row">
+			<td><input id="length" name="length" size="11" type="number" step="0.1" value=""></td>
+			<td><input id="width" name="width" size="11" type="number" step="0.1" value=""></td>
+			<td><input id="height" name="height" size="11" type="number" step="0.1" value=""></td>
+			<td><input id="weight" name="weight" size="11" type="number" step="0.1" value=""></td>
+			<td><a href="#">Remove</a></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
