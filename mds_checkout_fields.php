@@ -6,16 +6,25 @@ add_filter( 'woocommerce_default_address_fields', 'custom_override_default_addre
 function custom_override_default_address_fields( $address_fields )
 {
 	$mds = MdsColliveryService::getInstance();
+	$collivery = $mds->returnColliveryClass();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'no') {
 		return $address_fields;
 	}
 
 	$field = $mds->returnFieldDefaults();
+    $provinces = array( '' => 'Select Province' ) + $field['provinces'];
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
 	$address_fields = array(
+        'province'  => array(
+            'type'  => 'select',
+            'label' => 'Province',
+            'required'  => 1,
+            'class'     => array( 'update_totals_on_change' ),
+            'options'   => $provinces
+        ),
 		'state' => array(
 			'type' => 'select',
 			'label' => 'Town',
@@ -98,26 +107,38 @@ function custom_override_default_address_fields( $address_fields )
 		),
 	);
 
-	return $address_fields;
+	return apply_filters('mds_default_address_fields', $address_fields);
 }
 
 // Hook in
 add_filter( 'woocommerce_checkout_fields', 'custom_override_checkout_fields' );
+add_action( 'wp_ajax_mds_collivery_generate_towns', 'generate_towns' );
+add_action( 'wp_ajax_nopriv_mds_collivery_generate_towns', 'generate_towns' );
 
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields )
 {
 	$mds = MdsColliveryService::getInstance();
+	$collivery = $mds->returnColliveryClass();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'no') {
 		return $fields;
 	}
 
 	$field = $mds->returnFieldDefaults();
+    $provinces = array( '' => 'Select Province' ) + $field['provinces'];
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
 	$billing_data = array(
+        'billing_province'   => array(
+            'type'      => 'select',
+            'label'     => 'Province',
+            'required'  => true,
+            'class'     => array( 'update_totals_on_change' ),
+            'options'   => $provinces,
+            'selected'  => '',
+        ),
 		'billing_state' => array(
 			'type' => 'select',
 			'label' => 'Town',
@@ -200,6 +221,14 @@ function custom_override_checkout_fields( $fields )
 	);
 
 	$shipping_data = array(
+        'shipping_province'   => array(
+            'type'      => 'select',
+            'label'     => 'Province',
+            'required'  => true,
+            'class'     => array( 'update_totals_on_change' ),
+            'options'   => $provinces,
+            'selected'  => '',
+        ),
 		'shipping_state' => array(
 			'type' => 'select',
 			'label' => 'Town',
@@ -285,7 +314,7 @@ function custom_override_checkout_fields( $fields )
 
 	$fields['shipping'] = $shipping_data;
 
-	return $fields;
+	return apply_filters( 'mds_override_checkout_fields', $fields );
 }
 
 /**
@@ -353,8 +382,11 @@ function generate_suburbs()
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'usermeta';
 		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id=" . WC()->session->get_customer_id() . " and meta_key='" . $_POST['type'] . "city';", OBJECT );
-		$selected_suburb = $config[0]->meta_value;
+		$selected_suburb = !empty($config) ? $config[0]->meta_value : '';
 	}
+    
+    // add filter to override selected suburb
+    $selected_suburb = apply_filters( 'collivery_selected_suburb', $selected_suburb );
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
 		$mds = MdsColliveryService::getInstance();
@@ -364,7 +396,12 @@ function generate_suburbs()
 		if ( !empty( $fields ) ) {
 			if ( count( $fields ) == 1 ) {
 				foreach ( $fields as $value ) {
-					echo '<option value="' . $value . '">' . $value . '</option>';
+                    if ( $value != $selected_suburb ) {
+                        echo '<option value="' . $value . '">' . $value . '</option>';
+                    }
+                    else {
+                        echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
+                    }
 				}
 			} else {
 				if ( isset( $selected_suburb ) ) {
@@ -389,4 +426,73 @@ function generate_suburbs()
 	}
 
 	die();
+}
+
+// Get towns on province change...
+function generate_towns() {
+    $customer_id = WC()->session->get_customer_id();
+    // Here so we can auto select the clients province
+    if ( $customer_id > 0 && $_POST['type'] ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'usermeta';
+        $config = $wpdb->get_results( "SELECT * FROM `{$table_name}` WHERE `user_id` = {$customer_id} AND `meta_key` = '{$_POST['type']}state';", OBJECT );
+        $selected_town = !empty($config) ? $config[0]->meta_value : '';
+    }
+    
+    // apply filter to $selected_town
+    $selected_town = apply_filters( 'collivery_selected_town', $selected_town );
+    
+    if ( isset( $_POST['province'] ) && $_POST['province'] != '' ) {
+        $mds = new WC_MDS_Collivery;
+        $collivery = $mds->getColliveryClass();
+        $province_code = array_search( $_POST['province'], $collivery->getProvinces() );
+        $fields = $collivery->getTowns( $country = "ZAF", $province_code );
+        if ( !empty( $fields ) ) {
+            if ( count( $fields ) == 1 ) {
+                foreach ( $fields as $value ) {
+                    if ( $value != $selected_town ) {
+                        echo '<option value="' . $value . '">' . $value . '</option>';
+                    }
+                    else {
+                        echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
+                    }
+                }
+            }
+            else {
+                if ( !empty( $selected_town ) ) {
+                    foreach ( $fields as $value ) {
+                        if ( $value != $selected_town ) {
+                            echo '<option value="' . $value . '">' . $value . '</option>';
+                        }
+                        else {
+                            echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
+                        }
+                    }
+                }
+                else {
+                    echo '<option value="" selected="selected">Select Town</option>';
+                    foreach ( $fields as $value ) {
+                        echo '<option value="' . $value . '">' . $value . '</option>';
+                    }
+                }
+            }
+        }
+        else {
+            echo '<option value="">Error retrieving data from server. Please try again later...</option>';
+        }
+    }
+    else {
+        echo '<option value="">First Select Province...</option>';
+    }
+    
+    die();
+}
+
+// store province in woocommerce customer
+add_action( 'woocommerce_checkout_update_order_review', 'collivery_add_checkout_province' );
+function collivery_add_checkout_province( $post_data ) {
+    
+    parse_str($post_data, $post_data_arr);
+    WC()->customer->shipping_province = $post_data_arr['shipping_province'];
+    
 }

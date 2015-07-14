@@ -11,7 +11,7 @@ class MdsColliveryService
 	private static $instance;
 
 	/**
-	 * @type
+	 * @var \SupportingClasses\Collivery
 	 */
 	var $collivery;
 
@@ -605,15 +605,20 @@ class MdsColliveryService
 	 */
 	public function returnFieldDefaults()
 	{
+        $provinces = $this->collivery->getProvinces();
 		$towns = $this->collivery->getTowns();
 		$location_types = $this->collivery->getLocationTypes();
-		return array('towns' => array_combine($towns, $towns), 'location_types' => array_combine($location_types, $location_types));
+		return array(
+            'provinces'         => array_combine($provinces, $provinces),
+            'towns'             => array_combine($towns, $towns),
+            'location_types'    => array_combine($location_types, $location_types),
+        );
 	}
 
 	/**
 	 * Returns the MDS Collivery class
 	 *
-	 * @return \Mds\Collivery
+	 * @return \SupportingClasses\Collivery
 	 */
 	public function returnColliveryClass()
 	{
@@ -623,7 +628,7 @@ class MdsColliveryService
 	/**
 	 * Returns the MDS Cache class
 	 *
-	 * @return \Mds\Cache
+	 * @return \SupportingClasses\Cache
 	 */
 	public function returnCacheClass()
 	{
