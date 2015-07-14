@@ -306,7 +306,7 @@ class MdsColliveryService
 	 * @param bool $accept
 	 * @return bool
 	 */
-	public function addCollivery(array $array, $accept=false)
+	public function addCollivery(array $array, $accept=true)
 	{
 		$this->validated_data = $this->validateCollivery($array);
 
