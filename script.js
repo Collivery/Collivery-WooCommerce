@@ -17,17 +17,21 @@ jQuery(document).ready(function($) {
         if (mds_ajax_billing_province) {
             mds_ajax_billing_province.abort();
         }
+
+        // cache some elements for performance
+        var $billingState = jQuery('#billing_state');
+        var $billingProvince = jQuery('#billing_province');
         
         // if no province is selected, empty the town selection (state override)
-        jQuery('#billing_state').empty();
-        if (jQuery('#billing_province').val() === '') {
-            jQuery('#billing_state').append('<option value="">Select a province first...</option>');
+        $billingState.empty();
+        if ($billingProvince.val() === '') {
+            $billingState.append('<option value="">Select a province first...</option>');
         }
         // load towns from billing selection
         else {
-            jQuery('#billing_state').append('<option value="">Loading...</option>');
+            $billingState.append('<option value="">Loading...</option>');
             
-            var province = jQuery('#billing_province').val();
+            var province = $billingProvince.val();
             var type = 'billing_';
             
             var data = {
@@ -42,9 +46,14 @@ jQuery(document).ready(function($) {
                 url: woocommerce_params.ajax_url,
                 data: data,
                 success: function(my_response) {
-                    jQuery('#billing_state').empty();
-                    jQuery('#billing_state').append('<option value="">Select town...</option>');
-                    jQuery('#billing_state').append(my_response);
+                    $billingState.empty();
+                    $billingState.append('<option value="">Select town...</option>');
+                    $billingState.append(my_response);
+
+                    // if a value is pre-selected, trigger update_billing_subs as well
+                    if ( $billingState.val() !== '' ) {
+                        update_billing_subs();
+                    }
                 }
             });
         }
@@ -54,17 +63,20 @@ jQuery(document).ready(function($) {
         if (mds_ajax_shipping_province) {
             mds_ajax_shipping_province.abort();
         }
+
+        var $shippingState = jQuery('#shipping_state');
+        var $shippingProvince = jQuery('#shipping_province');
         
         // if no province is selected, empty the town selection (state override)
-        jQuery('#shipping_state').empty();
-        if (jQuery('#shipping_province').val() === '') {
-            jQuery('#shipping_state').append('<option value="">Select a province first...</option>');
+        $shippingState.empty();
+        if ($shippingProvince.val() === '') {
+            $shippingState.append('<option value="">Select a province first...</option>');
         }
         // load towns from shipping selection
         else {
-            jQuery('#shipping_state').append('<option value="">Loading...</option>');
+            $shippingState.append('<option value="">Loading...</option>');
             
-            var province = jQuery('#shipping_province').val();
+            var province = $shippingProvince.val();
             var type = 'shipping_';
             
             var data = {
@@ -79,12 +91,12 @@ jQuery(document).ready(function($) {
                 url: woocommerce_params.ajax_url,
                 data: data,
                 success: function(my_response) {
-                    jQuery('#shipping_state').empty();
-                    jQuery('#shipping_state').append('<option value="">Select town...</option>');
-                    jQuery('#shipping_state').append(my_response);
+                    $shippingState.empty();
+                    $shippingState.append('<option value="">Select town...</option>');
+                    $shippingState.append(my_response);
                     
-                    // if a value is pre-selected, trigger update_billing_surbs as well
-                    if ( jQuery('#shipping_state').val() !== '' ) {
+                    // if a value is pre-selected, trigger update_shipping_subs as well
+                    if ( $shippingState.val() !== '' ) {
                         update_shipping_subs();
                     }
                 }
@@ -96,16 +108,20 @@ jQuery(document).ready(function($) {
 		if (mds_ajax_billing_state)
 			mds_ajax_billing_state.abort();
 
-		if (jQuery('#billing_state').val() === '') {
+        // cache some elements
+        var $billingState = jQuery('#billing_state');
+        var $billingCity = jQuery('#billing_city');
 
-			jQuery('#billing_city').empty();
-			jQuery('#billing_city').append('<option value="">Select a city first...</option>');
+		if ($billingState.val() === '') {
+
+			$billingCity.empty();
+			$billingCity.append('<option value="">Select a city first...</option>');
 		} else {
 
-			jQuery('#billing_city').empty();
-			jQuery('#billing_city').append('<option value="">Loading...</option>');
+			$billingCity.empty();
+			$billingCity.append('<option value="">Loading...</option>');
 
-			var town = jQuery('#billing_state').val();
+			var town = $billingState.val();
 			var type = 'billing_';
 
 			var data = {
@@ -120,9 +136,9 @@ jQuery(document).ready(function($) {
 				url: woocommerce_params.ajax_url,
 				data: data,
 				success: function(my_response) {
-					jQuery('#billing_city').empty();
-                    jQuery('#billing_city').append('<option value="">Select suburb...</option>');
-					jQuery('#billing_city').append(my_response);
+					$billingCity.empty();
+                    $billingCity.append('<option value="">Select suburb...</option>');
+					$billingCity.append(my_response);
 				}
 			});
 		}
