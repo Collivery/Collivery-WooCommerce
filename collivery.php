@@ -160,9 +160,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			$to_town_type = $location_type[$use_location_type];
 		}
 
-		$package['cart'] = $cart;
-		$package['method_free'] = $settings["method_free"];
-		$package['free_min_total'] = $settings["free_min_total"];
+		$package['cart']            = $cart;
+		$package['method_free']     = $settings["method_free"];
+		$package['free_min_total']  = $settings["free_min_total"];
 		$package['free_local_only'] = $settings["free_local_only"];
 
 		$package['destination'] = array(
@@ -178,7 +178,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			'address_2' => WC()->customer->get_shipping_address_2()
 		);
 
-		if ($settings["method_free"] == 'yes' && $cart['total'] >= $settings["free_min_total"]) {
+		if (isset($settings['method_free']) && $settings["method_free"] == 'yes' && $cart['total'] >= $settings["free_min_total"]) {
 			$package['service'] = 'free';
 			if($settings["free_local_only"] == 'yes') {
 				$data = array(

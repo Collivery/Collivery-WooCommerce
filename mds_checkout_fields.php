@@ -435,7 +435,7 @@ function generate_towns() {
     if ( $customer_id > 0 && $_POST['type'] ) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'usermeta';
-        $config = $wpdb->get_results( "SELECT * FROM `{$table_name}` WHERE `user_id` = {$customer_id} AND `meta_key` = '{$_POST['type']}state';", OBJECT );
+        $config = $wpdb->get_results( "SELECT * FROM `{$table_name}` WHERE `user_id` = '{$customer_id}' AND `meta_key` = '{$_POST['type']}state';", OBJECT );
         $selected_town = !empty($config) ? $config[0]->meta_value : '';
     }
     
@@ -443,8 +443,8 @@ function generate_towns() {
     $selected_town = apply_filters( 'collivery_selected_town', $selected_town );
     
     if ( isset( $_POST['province'] ) && $_POST['province'] != '' ) {
-        $mds = new WC_MDS_Collivery;
-        $collivery = $mds->getColliveryClass();
+        $mds = MdsColliveryService::getInstance();
+        $collivery = $mds->returnColliveryClass();
         $province_code = array_search( $_POST['province'], $collivery->getProvinces() );
         $fields = $collivery->getTowns( $country = "ZAF", $province_code );
         if ( !empty( $fields ) ) {

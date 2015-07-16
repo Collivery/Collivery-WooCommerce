@@ -230,10 +230,10 @@ class MdsColliveryService
 				$product = $item['data'];
 
 				$package['contents'][$item['product_id']] = [
-					'data' => $item['data'],
-					'quantity' => $item['quantity'],
-					'line_subtotal' => $item['ine_subtotal'],
-					'weight' => $product->get_weight() * $item['quantity']
+					'data'          => $item['data'],
+					'quantity'      => $item['quantity'],
+					'line_subtotal' => $item['line_subtotal'],
+					'weight'        => $product->get_weight() * $item['quantity']
 				];
 			}
 		}
