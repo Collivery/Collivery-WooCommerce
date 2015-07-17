@@ -209,8 +209,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		} else {
 			if($mds->validPackage($package)) {
 				$packages[0] = $package;
-			} else {
-				return false;
 			}
 		}
 

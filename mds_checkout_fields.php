@@ -361,10 +361,17 @@ add_action('wp_ajax_nopriv_add_location_type_to_session', 'add_location_type_to_
 function add_location_type_to_session() {
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
+
+    // check if variables posted
+    $use_location_type      = !empty($_POST['use_location_type']) ? $_POST['use_location_type'] : '';
+    $shipping_location_type = !empty($_POST['shipping_location_type']) ? $_POST['shipping_location_type'] : '';
+    $billing_location_type  = !empty($_POST['billing_location_type']) ? $_POST['billing_location_type'] : '';
+
+    // set session vars
 	if ($settings['enabled'] == 'yes') {
-		WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
-		WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
-		WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
+		WC()->session->set('use_location_type',         esc_attr($use_location_type));
+		WC()->session->set('shipping_location_type',    esc_attr($shipping_location_type));
+		WC()->session->set('billing_location_type',     esc_attr($billing_location_type));
 	}
 
 	echo 'done';
@@ -381,7 +388,7 @@ function generate_suburbs()
 	if ( WC()->session->get_customer_id() > 0 && $_POST['type'] ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'usermeta';
-		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id=" . WC()->session->get_customer_id() . " and meta_key='" . $_POST['type'] . "city';", OBJECT );
+		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id='" . WC()->session->get_customer_id() . "' and meta_key='" . $_POST['type'] . "city';", OBJECT );
 		$selected_suburb = !empty($config) ? $config[0]->meta_value : '';
 	}
     

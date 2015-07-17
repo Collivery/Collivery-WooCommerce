@@ -323,7 +323,7 @@ class MdsColliveryService
 			$reason = preg_replace('|collivery|i', 'delivery', $reason);
 			$reason = preg_replace('|The delivery time has been CHANGED to|i', 'the approximate delivery day is', $reason);
 
-			wc_add_notice(sprintf(__($reason, "woocommerce-mds-shipping")));
+			//wc_add_notice(sprintf(__($reason, "woocommerce-mds-shipping")));
 		}
 
 		$collivery_id = $this->collivery->addCollivery($this->validated_data);
