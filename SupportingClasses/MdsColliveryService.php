@@ -229,12 +229,12 @@ class MdsColliveryService
 			foreach($cart as $item) {
 				$product = $item['data'];
 
-				$package['contents'][$item['product_id']] = [
+				$package['contents'][$item['product_id']] = array(
 					'data' => $item['data'],
 					'quantity' => $item['quantity'],
 					'line_subtotal' => $item['ine_subtotal'],
 					'weight' => $product->get_weight() * $item['quantity']
-				];
+				);
 			}
 		}
 

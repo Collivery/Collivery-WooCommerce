@@ -129,10 +129,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$cart = $mds->getCartContent($package);
 
 		$use_location_type = WC()->session->get('use_location_type', null);
-		$location_type = [
+		$location_type = array(
 			'shipping_location_type' => WC()->session->get('shipping_location_type', null),
 			'billing_location_type' => WC()->session->get('billing_location_type', null),
-		];
+		);
 
 		if(!is_array($cart) || !isset($cart['total'])) {
 			return false;
