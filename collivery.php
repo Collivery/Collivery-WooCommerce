@@ -1,12 +1,12 @@
 <?php
 
-define('MDS_VERSION', "2.0.6");
+define('MDS_VERSION', "2.0.7");
 
 /**
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 2.0.6
+ * Version: 2.0.7
  * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
