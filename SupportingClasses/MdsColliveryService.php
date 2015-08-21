@@ -534,13 +534,13 @@ class MdsColliveryService
 			'full_name' => $array['full_name'],
 			'phone' => (!empty($array['phone'])) ? $array['phone'] : '',
 			'cellphone' => $array['cellphone'],
-			'custom_id' => 'new_test_custom_id',
+			'custom_id' => $array['custom_id'],
 			'email' => $array['email'],
 		);
 
 		// Before adding an address lets search MDS and see if we have already added this address
 		$searchAddresses = $this->searchAndMatchAddress([
-			'custom_id' => 'new_test_custom_id',
+			'custom_id' => $array['custom_id'],
 			'suburb_id' => $suburb_id,
 			'town_id' => $town_id,
 		], $newAddress);
