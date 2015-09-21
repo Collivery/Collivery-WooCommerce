@@ -23,7 +23,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	{
 		// We have to check what php version we have before anything is installed.
 		if (version_compare(PHP_VERSION, '5.3.0') < 0) {
-			die('Your PHP version is not able to run this plugin, update to the latest version before installing this plugin.');
+			$admin_settings = new WC_Admin_Settings();
+			$admin_settings->add_error('Your PHP version is not able to run this plugin.', "woocommerce-mds-shipping");
 		}
 
 		global $wpdb;
