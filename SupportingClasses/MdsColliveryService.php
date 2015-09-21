@@ -613,7 +613,7 @@ class MdsColliveryService
 	/**
 	 * Returns the MDS Collivery class
 	 *
-	 * @return \Mds\Collivery
+	 * @return \SupportingClasses\Collivery
 	 */
 	public function returnColliveryClass()
 	{
@@ -623,7 +623,7 @@ class MdsColliveryService
 	/**
 	 * Returns the MDS Cache class
 	 *
-	 * @return \Mds\Cache
+	 * @return \SupportingClasses\Cache
 	 */
 	public function returnCacheClass()
 	{
