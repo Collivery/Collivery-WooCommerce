@@ -66,6 +66,16 @@ class MdsColliveryService
 		$this->cache = new \SupportingClasses\Cache();
 
 		$this->initMdsCollivery($this->settings);
+
+		if(!$this->collivery->isAuthenticated()) {
+			$errors = $this->collivery->getErrors();
+			$errorString = !empty($errors) ? ', error returned by the API: ' . implode(', ', $errors) : '';
+
+			$admin_settings = new WC_Admin_Settings();
+			$admin_settings->add_error(
+				'Your plugin is unable to connect to the MDS API, this will cause problems on your front end' . $errorString, "woocommerce-mds-shipping"
+			);
+		}
 	}
 
 	/**

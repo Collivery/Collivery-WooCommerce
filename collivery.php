@@ -83,15 +83,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		if(is_admin()) {
 			new GitHubPluginUpdater( __FILE__, 'Collivery', "Collivery-WooCommerce" );
 		}
-
-		// We have to check what php version we have before anything is installed.
-		if (version_compare(PHP_VERSION, '5.3.0') < 0) {
-			$admin_settings = new WC_Admin_Settings();
-			$admin_settings->add_error(
-				'Your PHP version is not able to run the MDS Collivery plugin, please update you PHP version to 5.3 or above.', "woocommerce-mds-shipping"
-			);
-		}
-
 	}
 
 	/**
@@ -240,7 +231,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	}
 
 	add_action('woocommerce_payment_complete', 'automated_add_collivery_payment_complete');
-
 
 	/**
 	 * Automatically send MDS Collivery the delivery request when status changes to processing for cod, eft's and cheque
