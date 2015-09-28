@@ -95,7 +95,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	public function valid_account_details()
 	{
 		if(!$this->collivery->isAuthenticated()) {
-			$this->cache->clear( [ 'address', 'contact', 'pod', 'parcel_image', 'status' ] );
+			$this->cache->clear(array('address', 'contact', 'pod', 'parcel_image', 'status'));
 
 			$this->admin_add_error("Your MDS account details are incorrect, new settings have been discarded.");
 
