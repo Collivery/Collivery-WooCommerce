@@ -1,6 +1,8 @@
 <?php
 
+define('_MDS_DIR_', __DIR__);
 define('MDS_VERSION', "2.0.8");
+include('autoload.php');
 
 /**
  * Plugin Name: MDS Collivery
@@ -60,8 +62,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		}
 
 		require_once('WC_Mds_Shipping_Method.php');
-		require_once("SupportingClasses/MdsColliveryService.php");
-		require_once('SupportingClasses/GithubPluginUpdater.php');
 
 		require_once('mds_admin.php'); // Admin scripts
 		require_once('mds_checkout_fields.php'); // Checkout fields.
