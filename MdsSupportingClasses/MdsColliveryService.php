@@ -1,5 +1,9 @@
 <?php namespace MdsSupportingClasses;
 
+use WC_Order;
+use WC_Product;
+use WC_Admin_Settings;
+
 /**
  * MdsColliveryService
  */
