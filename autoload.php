@@ -16,7 +16,9 @@ class MdsColliveryAutoLoader
 		$classParts = explode('\\', $class);
 		$vendor = array_shift($classParts);
 		if ($vendor === 'MdsSupportingClasses') {
-			require _MDS_DIR_ . '/MdsSupportingClasses/' . implode('/', $classParts) . '.php';
+			if(file_exists(_MDS_DIR_ . '/MdsSupportingClasses/' . implode('/', $classParts) . '.php')) {
+				require _MDS_DIR_ . '/MdsSupportingClasses/' . implode('/', $classParts) . '.php';
+			}
 		} elseif (array_key_exists($class, self::$classMap)) {
 			class_alias(self::$classMap[$class], $class);
 		}
