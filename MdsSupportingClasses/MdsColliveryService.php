@@ -560,7 +560,7 @@ class MdsColliveryService
 		if(is_array($searchAddresses)) {
 			return $searchAddresses;
 		} else {
-			$this->cache->clear(['addresses', 'contacts']);
+			$this->cache->clear(array('addresses', 'contacts'));
 			return $this->collivery->addAddress($newAddress);
 		}
 	}
