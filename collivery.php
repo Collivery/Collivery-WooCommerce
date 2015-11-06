@@ -119,7 +119,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$towns = $collivery->getTowns();
 		$location_types = $collivery->getLocationTypes();
 
-		$package = $mds->buildPackageFromCart();
+		$package = $mds->buildPackageFromCart(WC()->cart->get_cart());
+
 		$cart = $mds->getCartContent($package);
 
 		$use_location_type = WC()->session->get('use_location_type', null);

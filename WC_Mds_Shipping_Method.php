@@ -316,9 +316,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	{
 		if($this->collivery_service->validPackage($package)) {
 			if(isset($package['service']) && $package['service'] == 'free') {
-				if($package['local'] == 'yes') {
+
+				if(isset($package['local']) && $package['local'] == 'yes') {
 					$id = 'mds_' . $this->settings['free_local_default_service'];
-				} elseif($package['local'] == 'no') {
+				} else {
 					$id = 'mds_' . $this->settings['free_default_service'];
 				}
 
