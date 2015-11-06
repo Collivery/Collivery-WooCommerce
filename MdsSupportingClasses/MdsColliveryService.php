@@ -218,10 +218,9 @@ class MdsColliveryService
 	 *
 	 * @return array
 	 */
-	function buildPackageFromCart()
+	function buildPackageFromCart($cart)
 	{
 		$package = array();
-		$cart = WC()->cart->get_cart();
 
 		if(!empty($cart)) {
 			foreach($cart as $item) {
@@ -230,7 +229,8 @@ class MdsColliveryService
 				$package['contents'][$item['product_id']] = array(
 					'data' => $item['data'],
 					'quantity' => $item['quantity'],
-					'line_subtotal' => $item['ine_subtotal'],
+					'price' => $this->format($product->get_price()),
+					'line_subtotal' => $this->format($product->get_price() * $item['quantity']),
 					'weight' => $product->get_weight() * $item['quantity']
 				);
 			}
