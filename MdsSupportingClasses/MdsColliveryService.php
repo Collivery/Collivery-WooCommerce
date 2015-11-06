@@ -1,5 +1,6 @@
 <?php namespace MdsSupportingClasses;
 
+use WC;
 use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
@@ -17,29 +18,24 @@ class MdsColliveryService
 	private static $instance;
 
 	/**
-	 * @type
+	 * @type Collivery
 	 */
 	var $collivery;
 
 	/**
-	 * @type
+	 * @type MdsCache
 	 */
 	var $cache;
 
 	/**
-	 * @type
+	 * @type array
 	 */
 	var $validated_data;
 
 	/**
-	 * @type
+	 * @type array
 	 */
 	var $settings;
-
-	/**
-	 * @type
-	 */
-	var $WC_MDS_Collivery;
 
 	/**
 	 * @param null $settings
@@ -590,7 +586,7 @@ class MdsColliveryService
 						$contacts = $this->collivery->getContacts($address['address_id']);
 						list($contact_id) = array_keys($contacts);
 						$address['contact_id'] = $contact_id;
-					},
+					}
 
 					return $address;
 				}
@@ -604,18 +600,25 @@ class MdsColliveryService
 
 	/**
 	 * Get Town and Location Types for Checkout selects from MDS
+	 *
+	 * @return array|bool
 	 */
 	public function returnFieldDefaults()
 	{
 		$towns = $this->collivery->getTowns();
 		$location_types = $this->collivery->getLocationTypes();
+
+		if(!is_array($towns) || !is_array($location_types)) {
+			return false;
+		}
+
 		return array('towns' => array_combine($towns, $towns), 'location_types' => array_combine($location_types, $location_types));
 	}
 
 	/**
 	 * Returns the MDS Collivery class
 	 *
-	 * @return \SupportingClasses\Collivery
+	 * @return Collivery
 	 */
 	public function returnColliveryClass()
 	{
@@ -625,7 +628,7 @@ class MdsColliveryService
 	/**
 	 * Returns the MDS Cache class
 	 *
-	 * @return \SupportingClasses\Cache
+	 * @return MdsCache
 	 */
 	public function returnCacheClass()
 	{
@@ -655,16 +658,21 @@ class MdsColliveryService
 	/**
 	 * Gets default address of the MDS Account
 	 *
-	 * @return array
+	 * @return array|bool
 	 */
 	public function returnDefaultAddress()
 	{
 		$default_address_id = $this->collivery->getDefaultAddressId();
+		if(!$default_address = $this->collivery->getAddress($default_address_id)) {
+			return false;
+		}
+
 		$data = array(
-			'address' => $this->collivery->getAddress($default_address_id),
+			'address' => $default_address,
 			'default_address_id' => $default_address_id,
 			'contacts' => $this->collivery->getContacts($default_address_id)
 		);
+
 		return $data;
 	}
 

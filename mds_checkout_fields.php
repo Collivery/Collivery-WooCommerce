@@ -7,11 +7,10 @@ function custom_override_default_address_fields( $address_fields )
 {
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
-	if ($settings['enabled'] == 'no') {
+	if ($settings['enabled'] == 'no' || !$field = $mds->returnFieldDefaults()) {
 		return $address_fields;
 	}
 
-	$field = $mds->returnFieldDefaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 
@@ -109,11 +108,10 @@ function custom_override_checkout_fields( $fields )
 {
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
-	if ($settings['enabled'] == 'no') {
+	if ($settings['enabled'] == 'no' || !$field = $mds->returnFieldDefaults()) {
 		return $fields;
 	}
 
-	$field = $mds->returnFieldDefaults();
 	$towns = array( '' => 'Select Town' ) + $field['towns'];
 	$location_types = array( '' => 'Select Premises Type' ) + $field['location_types'];
 

@@ -110,11 +110,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	{
 		$mds = MdsColliveryService::getInstance();
 		$settings = $mds->returnPluginSettings();
-		if ($settings['enabled'] == 'no') {
-			return;
+		if ($settings['enabled'] == 'no' || !$defaults = $mds->returnDefaultAddress()) {
+			return false;
 		}
 
-		$defaults = $mds->returnDefaultAddress();
 		$collivery = $mds->returnColliveryClass();
 
 		$towns = $collivery->getTowns();
