@@ -103,32 +103,38 @@ class Collivery {
 			$this->cache->has( 'collivery.auth' ) &&
 			$authCache['user_email'] == $this->config->user_email
 		) {
-			$authenticate = $this->cache->get( 'collivery.auth' );
-
-			$this->default_address_id = $authenticate['default_address_id'];
-			$this->client_id          = $authenticate['client_id'];
-			$this->user_id            = $authenticate['user_id'];
-			$this->token              = $authenticate['token'];
+			$this->default_address_id = $authCache['default_address_id'];
+			$this->client_id          = $authCache['client_id'];
+			$this->user_id            = $authCache['user_id'];
+			$this->token              = $authCache['token'];
 
 			return true;
 		} else {
-			$this->makeAuthenticationRequest();
+			return $this->makeAuthenticationRequest();
 		}
 	}
 
 	/**
 	 * Make the authentication request
 	 *
+	 * @param null|array $settings
 	 * @return array|bool
 	 */
-	private function makeAuthenticationRequest()
+	private function makeAuthenticationRequest($settings=null)
 	{
-		$user_email    = $this->config->user_email;
-		$user_password = $this->config->user_password;
+		if($settings) {
+			$user_email    = $settings['email'];
+			$user_password = $settings['password'];
+			$token = null;
+		} else {
+			$user_email    = $this->config->user_email;
+			$user_password = $this->config->user_password;
+			$token = $this->token;
+		}
 
 		if ( $this->init() ) {
 			try {
-				$authenticate = $this->client->authenticate( $user_email, $user_password, $this->token,
+				$authenticate = $this->client->authenticate( $user_email, $user_password, $token,
 					array(
 						'name'    => $this->config->app_name . ' mds/collivery/class',
 						'version' => $this->config->app_version,
@@ -140,13 +146,14 @@ class Collivery {
 				if ( is_array( $authenticate ) && isset( $authenticate['token'] ) ) {
 					if ( $this->check_cache != 0 ) {
 						$this->cache->put( 'collivery.auth', $authenticate, 50 );
-						$this->cache->put('settings.md5', $this->md5Config(), 0);
 					}
 
-					$this->default_address_id = $authenticate['default_address_id'];
-					$this->client_id          = $authenticate['client_id'];
-					$this->user_id            = $authenticate['user_id'];
-					$this->token              = $authenticate['token'];
+					if(!$settings && $this->check_cache != 0) {
+						$this->default_address_id = $authenticate['default_address_id'];
+						$this->client_id          = $authenticate['client_id'];
+						$this->user_id            = $authenticate['user_id'];
+						$this->token              = $authenticate['token'];
+					}
 
 					return $authenticate;
 				} else {
@@ -165,13 +172,44 @@ class Collivery {
 	}
 
 	/**
-	 * Returns true or false if authenticated
+	 * Returns true or false if authenticated by making a new authentication request
+	 *
+	 * @param array $settings
+	 * @return bool
+	 */
+	public function isNewInstanceAuthenticated(array $settings)
+	{
+		$check_cache = $this->temporarilyDisableCaching();
+		$authenticationRequest = $this->makeAuthenticationRequest($settings);
+		$this->check_cache = $check_cache;
+
+		return is_array($authenticationRequest);
+	}
+
+	/**
+	 * Returns true or false if current instance authenticated
 	 *
 	 * @return bool
 	 */
-	public function isAuthenticated()
+	public function isCurrentInstanceAuthenticated()
 	{
-		return is_array($this->makeAuthenticationRequest());
+		$authCache = $this->cache->get( 'collivery.auth' );
+
+		if (
+			$this->check_cache == 2 &&
+			$this->cache->has( 'collivery.auth' ) &&
+			$authCache['user_email'] == $this->config->user_email
+		) {
+			$this->check_cache = 1;
+			$parcelTypes = $this->getParcelTypes();
+			$this->check_cache = 1;
+
+			if($parcelTypes) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -1058,6 +1096,18 @@ class Collivery {
 	}
 
 	/**
+	 * Temporarily Disables Caching and returns the old cache setting
+	 *
+	 * @return int
+	 */
+	protected function temporarilyDisableCaching()
+	{
+		$currentCacheSetting = $this->check_cache;
+		$this->disableCache();
+		return $currentCacheSetting;
+	}
+
+	/**
 	 * Returns the clients default address
 	 *
 	 * @return int Address ID
@@ -1068,5 +1118,18 @@ class Collivery {
 			$this->authenticate();
 		}
 		return $this->default_address_id;
+	}
+
+	/**
+	 * Returns the current users username and password
+	 *
+	 * @return array
+	 */
+	public function getCurrentUsernameAndPassword()
+	{
+		return array(
+			'email' => $this->config->user_email,
+			'password' => $this->config->user_password
+		);
 	}
 }
