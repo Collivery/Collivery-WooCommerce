@@ -9,6 +9,7 @@ class GitHubPluginUpdater
 	private $pluginFile; // __FILE__ of our plugin
 	private $githubAPIResult; // holds data from GitHub
 	private $accessToken; // GitHub private repo token
+	private $wasActivated; // Was the plugin active before updating
 
 	/**
 	 * @param $pluginFile
@@ -18,14 +19,14 @@ class GitHubPluginUpdater
 	 */
 	function __construct($pluginFile, $gitHubUsername, $gitHubProjectName, $accessToken = '')
 	{
-		add_filter("pre_set_site_transient_update_plugins", array($this, "setTransitent"));
-		add_filter("plugins_api", array($this, "setPluginInfo"), 10, 3);
-		add_filter("upgrader_post_install", array($this, "postInstall"), 10, 3);
-
 		$this->pluginFile = $pluginFile;
 		$this->username = $gitHubUsername;
 		$this->repo = $gitHubProjectName;
 		$this->accessToken = $accessToken;
+
+		add_filter("pre_set_site_transient_update_plugins", array($this, "setTransitent"));
+		add_filter("plugins_api", array($this, "setPluginInfo"), 10, 3);
+		add_filter("upgrader_post_install", array($this, "postInstall"), 10, 3);
 	}
 
 	/**
@@ -35,6 +36,7 @@ class GitHubPluginUpdater
 	{
 		$this->slug = plugin_basename( $this->pluginFile );
 		$this->pluginData = get_plugin_data( $this->pluginFile );
+		$this->wasActivated = is_plugin_active( $this->slug );
 	}
 
 	/**
@@ -195,9 +197,6 @@ class GitHubPluginUpdater
 		// Get plugin information
 		$this->initPluginData();
 
-		// Remember if our plugin was previously activated
-		$wasActivated = is_plugin_active( $this->slug );
-
 		// Since we are hosted in GitHub, our plugin folder would have a dirname of
 		// reponame-tagname change it to our original one:
 		global $wp_filesystem;
@@ -206,8 +205,8 @@ class GitHubPluginUpdater
 		$result['destination'] = $pluginFolder;
 
 		// Re-activate plugin if needed
-		if ( $wasActivated ) {
-			$activate = activate_plugin( $this->slug );
+		if ( $this->wasActivated ) {
+			activate_plugin( $this->slug );
 		}
 
 		return $result;
