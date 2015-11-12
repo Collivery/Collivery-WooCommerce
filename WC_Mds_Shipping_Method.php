@@ -287,13 +287,20 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			}
 		}
 
-		$settings = $this->sanitized_fields;
+		$currentSettings = $this->settings;
+		$newSettings = $this->sanitized_fields;
 
-		$currentSettings = $this->collivery->getCurrentUsernameAndPassword();
-		if($currentSettings['email'] != $settings['mds_user'] || $currentSettings['password'] != $settings['mds_pass']) {
+		if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
+			if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
+				$this->admin_add_error("The current MDS account details were incorrect, account details have been reset to the test account.");
+				$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
+				$this->sanitized_fields['mds_pass'] = 'api123';
+				return true;
+			}
+		} elseif($currentSettings['mds_user'] != $newSettings['mds_user'] || $currentSettings['mds_pass'] != $newSettings['mds_pass']) {
 			$newAuthentication = $this->collivery->isNewInstanceAuthenticated(array(
-				'email' => $settings['mds_user'],
-				'password' => $currentSettings['password']
+				'email' => $newSettings['mds_user'],
+				'password' => $newSettings['mds_pass']
 			));
 
 			if(!$newAuthentication) {

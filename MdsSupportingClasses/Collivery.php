@@ -193,20 +193,8 @@ class Collivery {
 	 */
 	public function isCurrentInstanceAuthenticated()
 	{
-		$authCache = $this->cache->get( 'collivery.auth' );
-
-		if (
-			$this->check_cache == 2 &&
-			$this->cache->has( 'collivery.auth' ) &&
-			$authCache['user_email'] == $this->config->user_email
-		) {
-			$this->check_cache = 1;
-			$parcelTypes = $this->getParcelTypes();
-			$this->check_cache = 1;
-
-			if($parcelTypes) {
-				return true;
-			}
+		if($this->getParcelTypes()) {
+			return true;
 		}
 
 		return false;
@@ -567,7 +555,7 @@ class Collivery {
 				else
 					if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.pod.'. $this->client_id .'.'. $collivery_id, $result['pod'], 60*24 );
 
-					return $result['pod'];
+				return $result['pod'];
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
@@ -603,7 +591,7 @@ class Collivery {
 				else
 					if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.parcel_image_list.'. $this->client_id .'.'. $collivery_id, $result['images'], 60*12 );
 
-					return $result['images'];
+				return $result['images'];
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
@@ -643,7 +631,7 @@ class Collivery {
 				else
 					if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.parcel_image.'. $this->client_id .'.'. $parcel_id, $result['image'], 60*24 );
 
-					return $result['image'];
+				return $result['image'];
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
@@ -682,7 +670,7 @@ class Collivery {
 				else
 					if ( $this->check_cache != 0 ) $this->cache->put( 'collivery.status.'. $this->client_id .'.'. $collivery_id, $result, 60*12 );
 
-					return $result;
+				return $result;
 			} else {
 				if ( isset( $result['error_id'] ) )
 					$this->setError( $result['error_id'], $result['error'] );
