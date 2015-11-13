@@ -298,8 +298,10 @@ function accept_admin_callback()
 
 				// Check for any problems
 				if (!$collection_address) {
-					echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-					die();
+					wp_send_json(array(
+						'redirect' => false,
+						'message' => '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>'
+					));
 				} else {
 					// set the collection address and contact from the returned array
 					$collivery_from = $collection_address['address_id'];
@@ -329,8 +331,10 @@ function accept_admin_callback()
 
 				// Check for any problems
 				if (!$destination_address) {
-					echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-					die();
+					wp_send_json(array(
+						'redirect' => false,
+						'message' => '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>'
+					));
 				} else {
 					$collivery_to = $destination_address['address_id'];
 					$contact_to = $destination_address['contact_id'];
@@ -353,31 +357,46 @@ function accept_admin_callback()
 					'parcel_count' => count( $post['parcels'] ),
 					'parcels' => $post['parcels']
 				));
+
+				// Check for any problems validating
+				if (!$collivery_id) {
+					$mds->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process.', true, 'processing');
+
+					wp_send_json(array(
+						'redirect' => false,
+						'message' => '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>'
+					));
+				} else {
+					$validatedData = $mds->returnColliveryValidatedData();
+					$collection_time = (isset($validatedData['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $validatedData['collection_time'])  : '';
+
+					// Save the results from validation into our table
+					$mds->addColliveryToProcessedTable($collivery_id, $order->id);
+					$message = 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.';
+					$mds->updateStatusOrAddNote($order, $message, false, 'completed');
+
+					wp_send_json(array(
+						'redirect' => true,
+						'message' => '<p class="mds_response">' . $message . ' You will be redirect to your order in 5 seconds.</p>'
+					));
+				}
 			} catch(RejectedColliveryException $e) {
-				echo '<p class="mds_response">' . $e->getMessage() . '</p>';
-				die();
+				wp_send_json(array(
+					'redirect' => false,
+					'message' => '<p class="mds_response">' . $e->getMessage() . '</p>'
+				));
 			}
-
-			// Check for any problems validating
-			if (!$collivery_id) {
-				echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-				die();
-			} else {
-				// Save the results from validation into our table
-				$mds->addColliveryToProcessedTable($collivery_id, $order->id);
-			}
-
-			// Update the order status
-			$order->update_status( 'processing', $note = 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id );
-
-			echo 'redirect|' . $post['order_id'];
-			die();
-		} else{
-			throw new Exception('<p class="mds_response">Sorry, this order has already been processed.</p>');
+		} else {
+			wp_send_json(array(
+				'redirect' => false,
+				'message' => '<p class="mds_response">Sorry, this order has already been processed.</p>'
+			));
 		}
 	} catch(Exception $e) {
-		echo '<p class="mds_response">' . $e->getMessage() . '</p>';
-		die();
+		wp_send_json(array(
+			'redirect' => false,
+			'message' => '<p class="mds_response">' . $e->getMessage() . '</p>'
+		));
 	}
 }
 

@@ -152,21 +152,16 @@ jQuery(document).ready(function () {
 				url: ajaxurl,
 				data: 'action=accept_admin&' + datastring,
 				success: function (data) {
-					if (data.match(/\bredirect/)) {
-						var redirect = data.split("|");
-						var order_id = redirect[1];
-						var redirect_url = '/wordpress/wp-admin/post.php?post=' + order_id + '&action=edit';
-						jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Delivery has been processed and sent through to MDS Collivery. You will be redirect to your order in 5 seconds.</div>');
+					jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">' + data.message + '</div>');
+
+					if (data.redirect == 1) {
 						setTimeout(function () {
-							window.location.href = redirect_url;
+							window.location.href = jQuery("#api_quote").attr('action');
 						}, 5000);
-					}
-					else {
-						jQuery("#api_results").html(data);
 					}
 				},
 				error: function (data) {
-					jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Error: Check if your session has expired and if so log back in.</div>');
+					jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">There was an error with the ajax request, please refresh the page and try again and if the problem is not rectified please report the problem to integration@collivery.co.za</div>');
 				},
 				beforeSend: function () {
 					jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
