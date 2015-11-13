@@ -100,18 +100,18 @@
 
 						<label for="service">Service</label>
 
+						<?php $shipping_method = $order->get_shipping_method();?>
 						<select id="service" name="service">
-							<?php $shipping_method = $order->get_shipping_method();?>
 							<option value="" <?php if ( empty($shipping_method) ) {echo ' selected="selected" ';} ?>></option>
 							<?php foreach ( $collivery->getServices() as $service_id => $service ): ?>
-							<?php
+								<?php
 								if($service_id == 1 || $service_id == 2) {
 									$new_service = $service . ', additional 24 hours on outlying areas';
 								} else {
 									$new_service = $service;
 								}
-							?>
-							<option value="<?php echo $service_id; ?>" <?php if ( $new_service == $shipping_method ) {echo 'selected="selected" ';} ?>><?php echo $service; ?></option>
+								?>
+								<option value="<?php echo $service_id; ?>" <?php if ( $service == $shipping_method ) {echo 'selected="selected" ';} ?>><?php echo $service; ?></option>
 							<?php endforeach; ?>
 						</select><br />
 
