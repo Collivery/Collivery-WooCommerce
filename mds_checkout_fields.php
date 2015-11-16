@@ -17,7 +17,7 @@ function custom_override_default_address_fields( $address_fields )
 	$address_fields = array(
 		'state' => array(
 			'type' => 'select',
-			'label' => 'Town',
+			'label' => 'City/Town',
 			'required' => 1,
 			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
