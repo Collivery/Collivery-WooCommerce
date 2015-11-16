@@ -283,6 +283,29 @@ class MdsColliveryService
 	}
 
 	/**
+	 * Goes through and order and checks if all products are in stock
+	 *
+	 * @param $items
+	 * @return bool
+	 */
+	public function isOrderInStock($items, $order)
+	{
+		foreach ($items as $item_id => $item) {
+			$qty = $item['item_meta']['_qty'][0];
+			$product = new WC_Product($item['product_id']);
+			$stock = $product->get_total_stock();
+
+			if($stock != '') {
+				if($stock == 0 || $stock < $qty) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * @param WC_Order $order
 	 * @param $message
 	 * @param $processing
@@ -378,8 +401,11 @@ class MdsColliveryService
 	}
 
 	/**
+	 * Auto process to send collection requests to MDS
+	 *
 	 * @param $order_id
 	 * @param bool $processing
+	 * @return bool|null
 	 */
 	public function automatedAddCollivery($order_id, $processing = false)
 	{
@@ -392,6 +418,11 @@ class MdsColliveryService
 		if($colliveries == 0) {
 			try {
 				$this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
+
+				if(!$this->isOrderInStock($order->get_items())) {
+					$this->updateStatusOrAddNote($order, 'There are products in the order that are not in stock, auto processing aborted.', $processing, 'processing');
+					return false;
+				}
 
 				$parcels = $this->getOrderContent($order->get_items());
 				$defaults = $this->returnDefaultAddress();
