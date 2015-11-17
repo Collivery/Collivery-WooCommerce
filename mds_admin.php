@@ -350,6 +350,7 @@ function accept_admin_callback()
 					'contact_from' => $contact_from,
 					'collivery_to' => $collivery_to,
 					'contact_to' => $contact_to,
+					'cust_ref' => $post['instructions'],
 					'collivery_type' => 2, // Package
 					'service' => $post['service'],
 					'cover' => $post['cover'],
