@@ -151,6 +151,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 				$to_town_type = $_POST['shipping_location_type'];
 			}
 		} elseif(isset($packages[0]['destination'])) {
+			if(!isset($location_type[$use_location_type])) {
+				return false;
+			}
+
 			$to_town_id = $packages[0]['destination']['state'];
 			$to_town_type = $location_type[$use_location_type];
 		}
