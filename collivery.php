@@ -1,14 +1,14 @@
 <?php
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', "2.2.0");
+define('MDS_VERSION', "2.2.1");
 include('autoload.php');
 
 /**
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 2.2.0
+ * Version: 2.2.1
  * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
@@ -108,6 +108,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	 */
 	function mds_collivery_cart_shipping_packages($packages)
 	{
+		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 		$mds = MdsColliveryService::getInstance();
 		$settings = $mds->returnPluginSettings();
 		if ($settings['enabled'] == 'no' || !$defaults = $mds->returnDefaultAddress()) {
@@ -226,6 +227,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	 */
 	function automated_add_collivery_payment_complete($order_id)
 	{
+		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 		$mds = MdsColliveryService::getInstance();
 		$settings = $mds->returnPluginSettings();
 
@@ -244,6 +246,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	 */
 	function automated_add_collivery_status_processing($order_id)
 	{
+		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 		$mds = MdsColliveryService::getInstance();
 		$settings = $mds->returnPluginSettings();
 

@@ -18,7 +18,7 @@
 	<div class="parallel">
 		<table width="100%">
 			<tr>
-				<td style="width:31%;">
+				<td style="width:30%;">
 					<fieldset class="parallel_target">
 						<legend>Collection Details:</legend>
 
@@ -94,7 +94,7 @@
 						</div>
 					</fieldset>
 				</td>
-				<td style="width:38%;">
+				<td style="width:40%;">
 					<fieldset class="parallel_target">
 						<legend>Parcel's / Instructions / Service:</legend>
 
@@ -129,6 +129,10 @@
 									<th align="left">Width</th>
 									<th align="left">Height</th>
 									<th align="left">Weight</th>
+									<th align="left">Quantity</th>
+									<?php if($settings['include_product_titles']):?>
+										<th align="left">Description</th>
+									<?php endif;?>
 									<th align="left">&nbsp;</th>
 								</tr>
 							</thead>
@@ -137,16 +141,24 @@
 								<?php foreach ( $parcels as $parcel ): ?>
 									<tr class="package_row" id="item<?php echo $count; ?>">
 										<td>
-											<input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="number" step="0.1" value="<?php echo $parcel['length']; ?>">
+											<input id="parcels[<?php echo $count; ?>][length]" name="parcels[<?php echo $count; ?>][length]" size="11" type="number" step="0.1" value="<?php echo $parcel['length']; ?>" style="width:80px;">
 										</td>
 										<td>
-											<input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="number" step="0.1" value="<?php echo $parcel['width']; ?>"></td>
+											<input id="parcels[<?php echo $count; ?>][width]" name="parcels[<?php echo $count; ?>][width]" size="11" type="number" step="0.1" value="<?php echo $parcel['width']; ?>" style="width:80px;"></td>
 										<td>
-											<input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="number" step="0.1" value="<?php echo $parcel['height']; ?>">
+											<input id="parcels[<?php echo $count; ?>][height]" name="parcels[<?php echo $count; ?>][height]" size="11" type="number" step="0.1" value="<?php echo $parcel['height']; ?>" style="width:80px;">
 										</td>
 										<td>
-											<input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="number" step="0.1" value="<?php echo $parcel['weight']; ?>">
+											<input id="parcels[<?php echo $count; ?>][weight]" name="parcels[<?php echo $count; ?>][weight]" size="11" type="number" step="0.1" value="<?php echo $parcel['weight']; ?>" style="width:80px;">
 										</td>
+										<td>
+											<input id="parcels[<?php echo $count; ?>][quantity]" name="parcels[<?php echo $count; ?>][quantity]" size="3" type="number" step="1" value="<?php echo $parcel['quantity']; ?>" style="width:60px;">
+										</td>
+										<?php if($settings['include_product_titles']):?>
+											<td>
+												<input id="parcels[<?php echo $count; ?>][description]" name="parcels[<?php echo $count; ?>][description]" size="25" type="text" value="<?php echo $parcel['description']; ?>">
+											</td>
+										<?php endif;?>
 								<?php if ( $count > 1 ): ?>
 									<td><a href="#" onclick="remove_parcel(<?php echo $count; ?>);return false;">Remove</a></td>
 								<?php endif; ?>
@@ -161,7 +173,7 @@
 						<textarea cols="50" name="instructions" rows="7"></textarea>
 					</fieldset>
 				</td>
-				<td style="width:31%;">
+				<td style="width:30%;">
 					<fieldset class="parallel_target">
 						<legend>Destination Details:</legend>
 						<label for="which_destination_address">Which Address:</label>

@@ -114,7 +114,7 @@ class MdsColliveryService
 
 			foreach ($package['contents'] as $item_id => $values) {
 				$_product = $values['data']; // = WC_Product class
-				$qty = $values['quantity'];
+				$parcel['quantity'] = $values['quantity'];
 
 				$cart['count'] += $qty;
 				$cart['total'] += $values['line_subtotal'];
@@ -129,32 +129,27 @@ class MdsColliveryService
 					$cart['max_weight'] += $_product->get_weight() * $qty;
 				}
 
-				for ($i = 0; $i < $qty; $i++) {
-					// Length conversion, mds collivery only accepts cm
-					if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
-						$length = $this->converter->convert($_product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-						$width = $this->converter->convert($_product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-						$height = $this->converter->convert($_product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-					} else {
-						$length = $_product->length;
-						$width = $_product->width;
-						$height = $_product->height;
-					}
-
-					// Weight conversion, mds collivery only accepts kg
-					if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
-						$weight = $this->converter->convert($_product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
-					} else {
-						$weight = $_product->get_weight();
-					}
-
-					$cart['products'][] = array(
-						'length' => $length,
-						'width' => $width,
-						'height' => $height,
-						'weight' => $weight
-					);
+				// Length conversion, mds collivery only accepts cm
+				if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
+					$parcel['length'] = $this->converter->convert($_product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+					$parcel['width'] = $this->converter->convert($_product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+					$parcel['height'] = $this->converter->convert($_product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+				} else {
+					$parcel['length'] = $_product->length;
+					$parcel['width'] = $_product->width;
+					$parcel['height'] = $_product->height;
 				}
+
+				// Weight conversion, mds collivery only accepts kg
+				if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
+					$parcel['weight'] = $this->converter->convert($_product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
+				} else {
+					$parcel['weight'] = $_product->get_weight();
+				}
+
+				$parcel['description'] = $_product->get_title();
+
+				$cart['products'][] = $parcel;
 			}
 
 			return $cart;
@@ -250,35 +245,31 @@ class MdsColliveryService
 		$parcels = array();
 		foreach ($items as $item_id => $item) {
 			$product = new WC_Product($item['product_id']);
-			$qty = $item['item_meta']['_qty'][0];
+			$parcel['quantity'] = $item['item_meta']['_qty'][0];
 
-			for ($i = 0; $i < $qty; $i++) {
-				// Length conversion, mds collivery only accepts cm
-				if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
-					$length = $this->converter->convert($product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-					$width = $this->converter->convert($product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-					$height = $this->converter->convert($product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-				} else {
-					$length = $product->length;
-					$width = $product->width;
-					$height = $product->height;
-				}
-
-				// Weight conversion, mds collivery only accepts kg
-				if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
-					$weight = $this->converter->convert($product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
-				} else {
-					$weight = $product->get_weight();
-				}
-
-				$parcels[] = array(
-					'length' => (empty($length)) ? (0) : ($length),
-					'width' => (empty($width)) ? (0) : ($width),
-					'height' => (empty($height)) ? (0) : ($height),
-					'weight' => (empty($weight)) ? (0) : ($weight)
-				);
+			// Length conversion, mds collivery only accepts cm
+			if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
+				$parcel['length'] = $this->converter->convert($product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+				$parcel['width'] = $this->converter->convert($product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+				$parcel['height'] = $this->converter->convert($product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+			} else {
+				$parcel['length'] = $product->length;
+				$parcel['width'] = $product->width;
+				$parcel['height'] = $product->height;
 			}
+
+			// Weight conversion, mds collivery only accepts kg
+			if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
+				$parcel['weight'] = $this->converter->convert($product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
+			} else {
+				$parcel['weight'] = $product->get_weight();
+			}
+
+			$parcel['description'] = $product->get_title();
+
+			$parcels[] = $parcel;
 		}
+
 		return $parcels;
 	}
 
@@ -288,7 +279,7 @@ class MdsColliveryService
 	 * @param $items
 	 * @return bool
 	 */
-	public function isOrderInStock($items, $order)
+	public function isOrderInStock($items)
 	{
 		foreach ($items as $item_id => $item) {
 			$qty = $item['item_meta']['_qty'][0];
@@ -457,6 +448,7 @@ class MdsColliveryService
 					'contact_from' => (int) $contact_from,
 					'collivery_to' => (int) $collivery_to,
 					'contact_to' => (int) $contact_to,
+					'cust_ref' => "Order number: " . $order_id,
 					'collivery_type' => 2,
 					'service' => (int) $service_id,
 					'cover' => ($this->settings['risk_cover'] == 'yes') ? 1 : 0,

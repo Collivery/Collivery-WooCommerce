@@ -5,6 +5,7 @@ add_filter( 'woocommerce_default_address_fields', 'custom_override_default_addre
 // Override the Billing and Shipping fields
 function custom_override_default_address_fields( $address_fields )
 {
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'no' || !$field = $mds->returnFieldDefaults()) {
@@ -106,6 +107,7 @@ add_filter( 'woocommerce_checkout_fields', 'custom_override_checkout_fields' );
 // Override the Billing and Shipping fields in Checkout
 function custom_override_checkout_fields( $fields )
 {
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'no' || !$field = $mds->returnFieldDefaults()) {
@@ -293,6 +295,7 @@ add_filter( 'woocommerce_get_country_locale', 'custom_override_state_label' );
 
 function custom_override_state_label( $locale )
 {
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'no') {
@@ -309,6 +312,7 @@ function custom_override_state_label( $locale )
 add_action( 'woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta' );
 
 function my_custom_checkout_field_update_order_meta( $order_id ) {
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'yes') {
@@ -328,6 +332,7 @@ function my_custom_checkout_field_update_order_meta( $order_id ) {
 add_action('wp_ajax_add_location_type_to_session', 'add_location_type_to_session');
 add_action('wp_ajax_nopriv_add_location_type_to_session', 'add_location_type_to_session');
 function add_location_type_to_session() {
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
 	if ($settings['enabled'] == 'yes') {
@@ -355,6 +360,7 @@ function generate_suburbs()
 	}
 
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
+		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 		$mds = MdsColliveryService::getInstance();
 		$collivery = $mds->returnColliveryClass();
 		$town_id = array_search( $_POST['town'], $collivery->getTowns() );

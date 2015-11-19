@@ -38,6 +38,7 @@ function mds_confirmed_orders()
 		$colliveries = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE status=" . $status . " ORDER BY id DESC;", OBJECT );
 	}
 
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$collivery = $mds->returnColliveryClass();
 	include 'Views/index.php';
@@ -55,6 +56,8 @@ function mds_confirmed_order()
 	$table_name = $wpdb->prefix . 'mds_collivery_processed';
 	$data_ = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE waybill=" . $_GET['waybill'] . ";", OBJECT );
 	$data = $data_[0];
+
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$collivery = $mds->returnColliveryClass();
 	$directory = getcwd() . '/cache/mds_collivery/waybills/' . $data->waybill;
@@ -148,6 +151,7 @@ add_action( 'wp_ajax_suburbs_admin', 'suburbs_admin_callback' );
 function suburbs_admin_callback()
 {
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
+		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 		$mds = MdsColliveryService::getInstance();
 		$collivery = $mds->returnColliveryClass();
 		$fields = $collivery->getSuburbs( $_POST['town'] );
@@ -215,6 +219,7 @@ add_action( 'wp_ajax_quote_admin', 'quote_admin_callback' );
  */
 function quote_admin_callback()
 {
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$collivery = $mds->returnColliveryClass();
 	$services = $collivery->getServices();
@@ -270,6 +275,7 @@ add_action( 'wp_ajax_accept_admin', 'accept_admin_callback' );
 function accept_admin_callback()
 {
 	global $wpdb;
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$collivery = $mds->returnColliveryClass();
 	$post = $_POST;
@@ -451,6 +457,7 @@ function mds_register_collivery()
 	$order_id = $_GET['post_id'];
 	$custom_fields = $order->order_custom_fields;
 
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$collivery = $mds->returnColliveryClass();
 	$settings = $mds->returnPluginSettings();
