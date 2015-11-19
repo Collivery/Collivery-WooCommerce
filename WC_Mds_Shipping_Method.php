@@ -130,6 +130,13 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$fields = $this->form_fields;
 		$services = $this->collivery->getServices();
 
+		$fields['include_product_titles'] = array(
+			'title' => __('Include product titles', 'woocommerce-mds-shipping'),
+			'type' => 'checkbox',
+			'description' => __('Includes product titles in the delivery instructions, max 4096 characters', 'woocommerce-mds-shipping'),
+			'default' => 'no',
+		);
+
 		$fields['risk_cover'] = array(
 			'title' => "MDS " . __('Risk Cover', 'woocommerce-mds-shipping'),
 			'type' => 'checkbox',

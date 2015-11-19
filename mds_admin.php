@@ -465,5 +465,18 @@ function mds_register_collivery()
 	$defaults = $mds->returnDefaultAddress();
 	$addresses = $collivery->getAddresses();
 
+	$instructions = "Order number: " . $order_id;
+	if(isset($settings['include_product_titles']) && $settings['include_product_titles'] == "yes") {
+		$count = 1;
+		$instructions .= ': ';
+		foreach($parcels as $parcel) {
+			if(isset($parcel['description'])) {
+				$ending = ($count == count($parcels)) ? '' : ', ';
+				$instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
+				$count++;
+			}
+		}
+	}
+
 	include 'Views/order.php'; // Include our admin page
 }

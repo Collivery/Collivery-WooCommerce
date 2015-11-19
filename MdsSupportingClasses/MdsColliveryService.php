@@ -443,12 +443,25 @@ class MdsColliveryService
 
 				$service_id = array_search($order->get_shipping_method(), $services);
 
+				$instructions = "Order number: " . $order_id;
+				if(isset($this->settings['include_product_titles']) && $this->settings['include_product_titles'] == "yes") {
+					$count = 1;
+					$instructions .= ': ';
+					foreach($parcels as $parcel) {
+						if(isset($parcel['description'])) {
+							$ending = ($count == count($parcels)) ? '' : ', ';
+							$instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
+							$count++;
+						}
+					}
+				}
+
 				$collivery_id = $this->addCollivery(array(
 					'collivery_from' => (int) $collivery_from,
 					'contact_from' => (int) $contact_from,
 					'collivery_to' => (int) $collivery_to,
 					'contact_to' => (int) $contact_to,
-					'cust_ref' => "Order number: " . $order_id,
+					'cust_ref' => $instructions,
 					'collivery_type' => 2,
 					'service' => (int) $service_id,
 					'cover' => ($this->settings['risk_cover'] == 'yes') ? 1 : 0,

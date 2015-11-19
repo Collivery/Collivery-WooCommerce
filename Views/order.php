@@ -170,7 +170,7 @@
 
 						<a href="#" id="create_fields" onclick="return false;">Add Package</a><hr />
 						<label for="instructions">Instructions:</label>
-						<textarea cols="50" name="instructions" rows="7"></textarea>
+						<textarea cols="50" name="instructions" rows="7"><?php echo $instructions;?></textarea>
 					</fieldset>
 				</td>
 				<td style="width:30%;">
