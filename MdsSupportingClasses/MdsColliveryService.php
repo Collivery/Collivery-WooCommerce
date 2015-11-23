@@ -114,7 +114,8 @@ class MdsColliveryService
 
 			foreach ($package['contents'] as $item_id => $values) {
 				$_product = $values['data']; // = WC_Product class
-				$parcel['quantity'] = $values['quantity'];
+				$qty = $values['quantity'];
+				$parcel['quantity'] = $qty;
 
 				$cart['count'] += $qty;
 				$cart['total'] += $values['line_subtotal'];
