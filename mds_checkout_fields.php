@@ -120,7 +120,7 @@ function custom_override_checkout_fields( $fields )
 	$billing_data = array(
 		'billing_state' => array(
 			'type' => 'select',
-			'label' => 'Town',
+			'label' => 'City/Town',
 			'required' => 1,
 			'class' => array( 'form-row-wide', 'update_totals_on_change' ),
 			'options' => $towns,
@@ -131,7 +131,7 @@ function custom_override_checkout_fields( $fields )
 			'label' => 'Suburb',
 			'required' => 1,
 			'class' => array( 'form-row-wide' ),
-			'options' => array( 'Select town first...' )
+			'options' => array( 'Select city/town first...' )
 		),
 		'billing_location_type' => array(
 			'type' => 'select',
