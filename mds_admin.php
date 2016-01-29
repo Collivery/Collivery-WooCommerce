@@ -297,8 +297,8 @@ function accept_admin_callback()
 					'building' => $post['collection_building_details'],
 					'town' => $post['collection_town'],
 					'full_name' => $post['collection_full_name'],
-					'phone' => $post['collection_phone'],
-					'cellphone' => $post['collection_cellphone'],
+					'phone' => str_replace('-', '', str_replace(' ', '', $post['collection_phone'])),
+					'cellphone' => str_replace('-', '', str_replace(' ', '', $post['collection_cellphone'])),
 					'email' => $post['collection_email']
 				));
 
@@ -329,8 +329,8 @@ function accept_admin_callback()
 					'building' => $post['destination_building_details'],
 					'town' => $post['destination_town'],
 					'full_name' => $post['destination_full_name'],
-					'phone' => $post['destination_phone'],
-					'cellphone' => $post['destination_cellphone'],
+					'phone' => str_replace('-', '', str_replace(' ', '', $post['destination_phone'])),
+					'cellphone' => str_replace('-', '', str_replace(' ', '', $post['destination_cellphone'])),
 					'email' => $post['destination_email'],
 					'custom_id' => $order->user_id
 				));

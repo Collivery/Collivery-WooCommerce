@@ -431,8 +431,8 @@ class MdsColliveryService
 					'suburb' => $order->shipping_city,
 					'town' => $order->shipping_state,
 					'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
-					'cellphone' => $order->shipping_phone,
-					'email' => $order->shipping_email,
+					'cellphone' => str_replace('-', '', str_replace(' ', '', $order->shipping_phone)),
+					'email' => str_replace(' ', '', $order->shipping_email),
 					'custom_id' => $order->user_id
 				));
 
@@ -568,8 +568,8 @@ class MdsColliveryService
 			'suburb_id' => $suburb_id,
 			'town_id' => $town_id,
 			'full_name' => $array['full_name'],
-			'phone' => (!empty($array['phone'])) ? $array['phone'] : '',
-			'cellphone' => $array['cellphone'],
+			'phone' => (!empty($array['phone'])) ? str_replace('-', '', str_replace(' ', '', $array['phone'])) : '',
+			'cellphone' => str_replace('-', '', str_replace(' ', '', $array['cellphone'])),
 			'custom_id' => $array['custom_id'],
 			'email' => $array['email'],
 		);
