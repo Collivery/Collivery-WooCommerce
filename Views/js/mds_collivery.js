@@ -8,10 +8,7 @@ jQuery(document).ready(function () {
 
 		// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 		jQuery.post(ajaxurl, data, function (result) {
-			jQuery("#collection_suburb_chzn").remove();
-			jQuery("#collection_suburb").removeAttr("style", "").removeClass("chzn-done").data("chosen", null).next().remove();
 			jQuery('#collection_suburb').html(result);
-			jQuery('#collection_suburb').chosen();
 		});
 	});
 
@@ -23,10 +20,7 @@ jQuery(document).ready(function () {
 
 		// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 		jQuery.post(ajaxurl, data, function (result) {
-			jQuery("#destination_suburb_chzn").remove();
-			jQuery("#destination_suburb").removeAttr("style", "").removeClass("chzn-done").data("chosen", null).next().remove();
 			jQuery('#destination_suburb').html(result);
-			jQuery('#destination_suburb').chosen();
 		});
 	});
 
@@ -98,10 +92,7 @@ jQuery(document).ready(function () {
 
 		// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 		jQuery.post(ajaxurl, data, function (result) {
-			jQuery("#contact_to_chzn").remove();
-			jQuery("#contact_to").removeAttr("style", "").removeClass("chzn-done").data("chosen", null).next().remove();
 			jQuery('#contact_to').html(result);
-			jQuery('#contact_to').chosen();
 		});
 	});
 
@@ -113,10 +104,7 @@ jQuery(document).ready(function () {
 
 		// since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 		jQuery.post(ajaxurl, data, function (result) {
-			jQuery("#contact_from_chzn").remove();
-			jQuery("#contact_from").removeAttr("style", "").removeClass("chzn-done").data("chosen", null).next().remove();
 			jQuery('#contact_from').html(result);
-			jQuery('#contact_from').chosen();
 		});
 	});
 
@@ -218,7 +206,6 @@ jQuery(document).ready(function () {
 });
 
 jQuery(window).load(function () {
-//    jQuery('select').trigger('chosen:updated');
 	// Create item fields
 	jQuery('#create_fields').click(function () {
 		var item = jQuery(".itemized_package_node tr:last");
