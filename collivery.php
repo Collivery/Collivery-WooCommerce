@@ -156,18 +156,35 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$package['free_min_total'] = $settings["free_min_total"];
 		$package['free_local_only'] = $settings["free_local_only"];
 
-		$package['destination'] = array(
-			"from_town_id" => (int) $defaults['address']['town_id'],
-			"from_location_type" => (int) $defaults['address']['location_type'],
-			"to_town_id" => (int) array_search($to_town_id, $towns),
-			"to_location_type" => (int) array_search($to_town_type, $location_types),
-			'country' => WC()->customer->get_shipping_country(),
-			'state' => WC()->customer->get_shipping_state(),
-			'postcode' => WC()->customer->get_shipping_postcode(),
-			'city' => WC()->customer->get_shipping_city(),
-			'address' => WC()->customer->get_shipping_address(),
-			'address_2' => WC()->customer->get_shipping_address_2()
-		);
+		if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
+
+			$package['destination'] = array(
+				"from_town_id" => (int) $defaults['address']['town_id'],
+				"from_location_type" => (int) $defaults['address']['location_type'],
+				"to_town_id" => (int) array_search($to_town_id, $towns),
+				"to_location_type" => (int) array_search($to_town_type, $location_types),
+				'country' => WC()->customer->get_country(),
+				'state' => WC()->customer->get_state(),
+				'postcode' => WC()->customer->get_postcode(),
+				'city' => WC()->customer->get_city(),
+				'address' => WC()->customer->get_address(),
+				'address_2' => WC()->customer->get_address_2()
+			);
+
+		} else {
+			$package['destination'] = array(
+				"from_town_id" => (int) $defaults['address']['town_id'],
+				"from_location_type" => (int) $defaults['address']['location_type'],
+				"to_town_id" => (int) array_search($to_town_id, $towns),
+				"to_location_type" => (int) array_search($_POST['shipping_location_type'], $location_types),
+				'country' => WC()->customer->get_shipping_country(),
+				'state' => WC()->customer->get_shipping_state(),
+				'postcode' => WC()->customer->get_shipping_postcode(),
+				'city' => WC()->customer->get_shipping_city(),
+				'address' => WC()->customer->get_shipping_address(),
+				'address_2' => WC()->customer->get_shipping_address_2()
+			);
+		}
 
 		if ($settings["method_free"] == 'yes' && $cart['total'] >= $settings["free_min_total"]) {
 			$package['service'] = 'free';
