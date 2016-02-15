@@ -124,12 +124,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 		$cart = $mds->getCartContent($package);
 
-		$use_location_type = WC()->session->get('use_location_type', null);
-		$location_type = array(
-			'shipping_location_type' => WC()->session->get('shipping_location_type', null),
-			'billing_location_type' => WC()->session->get('billing_location_type', null),
-		);
-
 		if(!is_array($cart) || !isset($cart['total'])) {
 			return false;
 		}
@@ -154,7 +148,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		} elseif(isset($packages[0]['destination'])) {
 
 			$to_town_id = $packages[0]['destination']['state'];
-			$to_town_type = $location_type[$use_location_type];
+
 		}
 
 		$package['cart'] = $cart;
