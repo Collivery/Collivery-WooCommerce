@@ -124,12 +124,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 		$cart = $mds->getCartContent($package);
 
-		$use_location_type = WC()->session->get('use_location_type', null);
-		$location_type = array(
-			'shipping_location_type' => WC()->session->get('shipping_location_type', null),
-			'billing_location_type' => WC()->session->get('billing_location_type', null),
-		);
-
 		if(!is_array($cart) || !isset($cart['total'])) {
 			return false;
 		}
@@ -152,12 +146,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 				$to_town_type = $_POST['shipping_location_type'];
 			}
 		} elseif(isset($packages[0]['destination'])) {
-			if(!isset($location_type[$use_location_type])) {
-				return false;
-			}
 
 			$to_town_id = $packages[0]['destination']['state'];
-			$to_town_type = $location_type[$use_location_type];
+
+			if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
+				$to_town_type = $_POST['billing_location_type'];
+			}else {
+				$to_town_type = $_POST['shipping_location_type'];
+			}
 		}
 
 		$package['cart'] = $cart;
@@ -165,27 +161,44 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$package['free_min_total'] = $settings["free_min_total"];
 		$package['free_local_only'] = $settings["free_local_only"];
 
-		$package['destination'] = array(
-			"from_town_id" => (int) $defaults['address']['town_id'],
-			"from_location_type" => (int) $defaults['address']['location_type'],
-			"to_town_id" => (int) array_search($to_town_id, $towns),
-			"to_location_type" => (int) array_search($to_town_type, $location_types),
-			'country' => WC()->customer->get_shipping_country(),
-			'state' => WC()->customer->get_shipping_state(),
-			'postcode' => WC()->customer->get_shipping_postcode(),
-			'city' => WC()->customer->get_shipping_city(),
-			'address' => WC()->customer->get_shipping_address(),
-			'address_2' => WC()->customer->get_shipping_address_2()
-		);
+		if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
+
+			$package['destination'] = array(
+				"from_town_id" => (int) $defaults['address']['town_id'],
+				"from_location_type" => (int) $defaults['address']['location_type'],
+				"to_town_id" => (int) array_search($to_town_id, $towns),
+				"to_location_type" => (int) array_search($to_town_type, $location_types),
+				'country' => WC()->customer->get_country(),
+				'state' => WC()->customer->get_state(),
+				'postcode' => WC()->customer->get_postcode(),
+				'city' => WC()->customer->get_city(),
+				'address' => WC()->customer->get_address(),
+				'address_2' => WC()->customer->get_address_2()
+			);
+
+		} else {
+			$package['destination'] = array(
+				"from_town_id" => (int) $defaults['address']['town_id'],
+				"from_location_type" => (int) $defaults['address']['location_type'],
+				"to_town_id" => (int) array_search($to_town_id, $towns),
+				"to_location_type" => (int) array_search($_POST['shipping_location_type'], $location_types),
+				'country' => WC()->customer->get_shipping_country(),
+				'state' => WC()->customer->get_shipping_state(),
+				'postcode' => WC()->customer->get_shipping_postcode(),
+				'city' => WC()->customer->get_shipping_city(),
+				'address' => WC()->customer->get_shipping_address(),
+				'address_2' => WC()->customer->get_shipping_address_2()
+			);
+		}
 
 		if ($settings["method_free"] == 'yes' && $cart['total'] >= $settings["free_min_total"]) {
 			$package['service'] = 'free';
 			if($settings["free_local_only"] == 'yes') {
 				$data = array(
-					"num_package" => 1,
-					"service" => 2,
-					"exclude_weekend" => 1,
-				) + $package['destination'];
+						"num_package" => 1,
+						"service" => 2,
+						"exclude_weekend" => 1,
+					) + $package['destination'];
 
 				// Query the API to test if this is a local delivery
 				$response = $collivery->getPrice($data);
@@ -193,24 +206,18 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 					$package['local'] = 'yes';
 					if($mds->validPackage($package)) {
 						$packages[0] = $package;
-					} else {
-						return false;
 					}
 				} else {
-					 $package['local'] = 'no';
+					$package['local'] = 'no';
 				}
 			} else {
 				if($mds->validPackage($package)) {
 					$packages[0] = $package;
-				} else {
-					return false;
 				}
 			}
 		} else {
 			if($mds->validPackage($package)) {
 				$packages[0] = $package;
-			} else {
-				return false;
 			}
 		}
 

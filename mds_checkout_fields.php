@@ -326,25 +326,6 @@ function my_custom_checkout_field_update_order_meta( $order_id ) {
 	}
 }
 
-/**
- * Add location_type to session
- */
-add_action('wp_ajax_add_location_type_to_session', 'add_location_type_to_session');
-add_action('wp_ajax_nopriv_add_location_type_to_session', 'add_location_type_to_session');
-function add_location_type_to_session() {
-	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
-	$mds = MdsColliveryService::getInstance();
-	$settings = $mds->returnPluginSettings();
-	if ($settings['enabled'] == 'yes' && !empty($_POST['use_location_type'])) {
-		WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
-		WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
-		WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
-	}
-
-	echo 'done';
-	die();
-}
-
 add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
 add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
 
