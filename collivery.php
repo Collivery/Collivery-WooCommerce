@@ -112,7 +112,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$mds = MdsColliveryService::getInstance();
 		$settings = $mds->returnPluginSettings();
 		if ($settings['enabled'] == 'no' || !$defaults = $mds->returnDefaultAddress()) {
-			return false;
+			return $packages;
 		}
 
 		$collivery = $mds->returnColliveryClass();
@@ -125,7 +125,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$cart = $mds->getCartContent($package);
 
 		if(!is_array($cart) || !isset($cart['total'])) {
-			return false;
+
+			return $packages;
 		}
 
 		if(isset($_POST['post_data'])) {
