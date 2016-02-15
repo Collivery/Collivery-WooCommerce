@@ -149,6 +149,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 			$to_town_id = $packages[0]['destination']['state'];
 
+			if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
+				$to_town_type = $_POST['billing_location_type'];
+			}else {
+				$to_town_type = $_POST['shipping_location_type'];
+			}
 		}
 
 		$package['cart'] = $cart;
@@ -190,10 +195,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			$package['service'] = 'free';
 			if($settings["free_local_only"] == 'yes') {
 				$data = array(
-					"num_package" => 1,
-					"service" => 2,
-					"exclude_weekend" => 1,
-				) + $package['destination'];
+						"num_package" => 1,
+						"service" => 2,
+						"exclude_weekend" => 1,
+					) + $package['destination'];
 
 				// Query the API to test if this is a local delivery
 				$response = $collivery->getPrice($data);
@@ -203,7 +208,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 						$packages[0] = $package;
 					}
 				} else {
-					 $package['local'] = 'no';
+					$package['local'] = 'no';
 				}
 			} else {
 				if($mds->validPackage($package)) {
