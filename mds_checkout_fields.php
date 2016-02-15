@@ -335,7 +335,7 @@ function add_location_type_to_session() {
 	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
-	if ($settings['enabled'] == 'yes') {
+	if ($settings['enabled'] == 'yes' && !empty($_POST['use_location_type'])) {
 		WC()->session->set('use_location_type', esc_attr($_POST['use_location_type']));
 		WC()->session->set('shipping_location_type', esc_attr($_POST['shipping_location_type']));
 		WC()->session->set('billing_location_type', esc_attr($_POST['billing_location_type']));
