@@ -116,16 +116,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		}
 
 		$collivery = $mds->returnColliveryClass();
-
 		$towns = $collivery->getTowns();
 		$location_types = $collivery->getLocationTypes();
-
 		$package = $mds->buildPackageFromCart(WC()->cart->get_cart());
-
 		$cart = $mds->getCartContent($package);
 
 		if(!is_array($cart) || !isset($cart['total'])) {
-
 			return $packages;
 		}
 
@@ -147,13 +143,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 				$to_town_type = $_POST['shipping_location_type'];
 			}
 		} elseif(isset($packages[0]['destination'])) {
-
 			$to_town_id = $packages[0]['destination']['state'];
-
 			if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
-				$to_town_type = $_POST['billing_location_type'];
+				if(isset($_POST['billing_location_type'])) {
+					$to_town_type = $_POST['billing_location_type'];
+				} else {
+					return $packages;
+				}
 			}else {
-				$to_town_type = $_POST['shipping_location_type'];
+				if(isset($_POST['shipping_location_type'])) {
+					$to_town_type = $_POST['shipping_location_type'];
+				} else {
+					return $packages;
+				}
 			}
 		}
 
