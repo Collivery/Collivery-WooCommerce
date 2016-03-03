@@ -336,7 +336,7 @@ function generate_suburbs()
 	if ( WC()->session->get_customer_id() > 0 && $_POST['type'] ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'usermeta';
-		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id=" . WC()->session->get_customer_id() . " and meta_key='" . $_POST['type'] . "city';", OBJECT );
+		$config = $wpdb->get_results( "SELECT * FROM `" . $table_name . "` WHERE user_id='" . WC()->session->get_customer_id() . "' and meta_key='" . $_POST['type'] . "city'", OBJECT );
 		$selected_suburb = $config[0]->meta_value;
 	}
 
