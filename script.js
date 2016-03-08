@@ -1,7 +1,5 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function() {
 
-	var timer_update_billing_location_type;
-	var timer_update_shipping_location_type;
 	var timer_update_billing_subs;
 	var timer_update_shipping_subs;
 	var mds_ajax_billing_state;
@@ -76,24 +74,6 @@ jQuery(document).ready(function($) {
 		}
 	}
 
-	jQuery('#shipping_location_type').on('keydown', function(e) {
-		var keyCode = e.keyCode || e.which;
-
-		if (keyCode != 9) {
-			clearTimeout(timer_update_shipping_location_type);
-			timer_update_billing_subs = setTimeout(add_location_type_to_session, '2000');
-		}
-	});
-
-	jQuery('#billing_location_type').on('keydown', function(e) {
-		var keyCode = e.keyCode || e.which;
-
-		if (keyCode != 9) {
-			clearTimeout(timer_update_billing_location_type);
-			timer_update_billing_subs = setTimeout(add_location_type_to_session, '2000');
-		}
-	});
-
 	jQuery('#billing_state').on('keydown', function(e) {
 		var keyCode = e.keyCode || e.which;
 
@@ -110,16 +90,6 @@ jQuery(document).ready(function($) {
 			clearTimeout(timer_update_shipping_subs);
 			timer_update_shipping_subs = setTimeout(update_shipping_subs, '2000');
 		}
-	});
-
-	jQuery('#shipping_location_type').on('change', function() {
-		clearTimeout(timer_update_shipping_location_type);
-		add_location_type_to_session();
-	});
-
-	jQuery('#billing_location_type').on('change', function() {
-		clearTimeout(timer_update_billing_location_type);
-		add_location_type_to_session();
 	});
 
 	jQuery('#billing_state').on('change', function() {
