@@ -1,14 +1,14 @@
 <?php
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', "2.3.1");
+define('MDS_VERSION', "2.3.2");
 include('autoload.php');
 
 /**
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 2.3.1
+ * Version: 2.3.2
  * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
@@ -263,7 +263,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
 			$order = new WC_Order($order_id);
 
-			if($order->payment_method === "cod" || $order->payment_method === "cheque" || $order->payment_method === "bacs"){
+			if(in_array($order->payment_method, ['payfast', 'bacs', 'paypal'])){
 				$mds->automatedAddCollivery($order_id, true);
 			}
 		}
