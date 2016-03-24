@@ -263,7 +263,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
 			$order = new WC_Order($order_id);
 
-			if(in_array($order->payment_method, ['payfast', 'bacs', 'paypal'])){
+			if(in_array($order->payment_method, array('payfast', 'bacs', 'paypal'))){
 				$mds->automatedAddCollivery($order_id, true);
 			}
 		}
