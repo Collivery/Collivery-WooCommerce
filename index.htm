@@ -145,7 +145,7 @@
 			<h2><a name="automated" href="#automated">Automated system to send delivery requests through to MDS</a></h2>
 		</header>
 		<p>
-			This new feature runs when ever a payment gateway calls the woocommerce payment_complete() function or a payment method of COD is used and if the payment method chosen is either EFT or Cheuqe then this process will only run when you change the status to processing. As soon as this new automated process begins, it will check if the order has been already been processed and if not we it will send the request to MDS and capture this in woocommerce order notes. Some things to keep in mind with this feature, the collection address used will always be the default address linked to your MDS account and if your client changes any details to their address a new address for them will be created in MDS, this could fill up the MDS address list fairly quickly.
+			This new feature runs when ever a payment gateway calls the woocommerce payment_complete() function or a payment method of either EFT or Cheque is used and you manually change the status to processing. As soon as this automated process begins, it will check if the order has already been processed and if not we will send the request to MDS. Some things to keep in mind with this feature, the collection address used will always be the default address linked to your MDS account. Also if your client changes any details to their address a new address will be created in MDS system so this automated process might fill up your list of addresses.
 		</p>
 	</section>
 </div>
