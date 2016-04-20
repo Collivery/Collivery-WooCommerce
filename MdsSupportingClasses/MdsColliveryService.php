@@ -485,6 +485,8 @@ class MdsColliveryService
 			} catch(Exception $e) {
 				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
 			}
+		} else {
+			$order->add_order_note("MDS Collivery automated system did not fire, order already sent to MDS.");
 		}
 	}
 
