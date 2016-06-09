@@ -149,7 +149,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'type' => 'decimal',
 			'description' => __('The minimum price of cart items to enable') . ' MDS ' . __('risk cover<br><strong>Please read the <a href="https://collivery.net/terms" target="_blank">terms and conditions</a> on our website</strong>'),
 			'default' => 0.00
-        );
+		);
 
 		$fields['round'] = array(
 			'title' => "MDS " . __('Round Price', 'woocommerce-mds-shipping'),
@@ -358,11 +358,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
 						// Now lets get the price for
-                        $riskCover = 0;
-                        $cartTotal = $package['cart']['total'];
-                        if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
-                            $riskCover = 1;
-                        }
+						$riskCover = 0;
+						$cartTotal = $package['cart']['total'];
+						if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
+							$riskCover = 1;
+						}
 
 						$data = array(
 							"to_town_id" => $package['destination']['to_town_id'],
