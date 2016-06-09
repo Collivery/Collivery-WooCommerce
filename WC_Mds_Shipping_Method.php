@@ -144,6 +144,13 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'default' => 'yes',
 		);
 
+		$fields['risk_cover_threshold'] = array(
+			'title' => __('Risk cover minimum'),
+			'type' => 'decimal',
+			'description' => __('The minimum price of cart items to enable') . ' MDS ' . __('risk cover'),
+			'default' => 0.00
+        );
+
 		$fields['round'] = array(
 			'title' => "MDS " . __('Round Price', 'woocommerce-mds-shipping'),
 			'type' => 'checkbox',
@@ -351,12 +358,18 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
 						// Now lets get the price for
+                        $riskCover = 0;
+                        $cartTotal = $package['cart']['total'];
+                        if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
+                            $riskCover = 1;
+                        }
+
 						$data = array(
 							"to_town_id" => $package['destination']['to_town_id'],
 							"from_town_id" => $package['destination']['from_town_id'],
 							"to_location_type" => $package['destination']['to_location_type'],
 							"from_location_type" => $package['destination']['from_location_type'],
-							"cover" => ($this->settings['risk_cover'] == 'yes') ? (1) : (0),
+							"cover" => $riskCover,
 							"weight" => $package['cart']['max_weight'],
 							"num_package" => $package['cart']['count'],
 							"parcels" => $package['cart']['products'],
