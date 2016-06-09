@@ -147,7 +147,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$fields['risk_cover_threshold'] = array(
 			'title' => __('Risk cover minimum'),
 			'type' => 'decimal',
-			'description' => __('The minimum price of cart items to enable') . ' MDS ' . __('risk cover'),
+			'description' => __('The minimum price of cart items to enable') . ' MDS ' . __('risk cover<br><strong>Please read the <a href="https://collivery.net/terms" target="_blank">terms and conditions</a> on our website</strong>'),
 			'default' => 0.00
         );
 
