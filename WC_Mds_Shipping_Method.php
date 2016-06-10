@@ -232,7 +232,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$fields['toggle_automatic_mds_processing'] = array(
 			'title' => __('Automatic MDS Processing', 'woocommerce-mds-shipping'),
 			'type' => 'checkbox',
-			'description' => __('When enabled deliveries for an order will be automatically processed. Please reffer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>', 'woocommerce-mds-shipping'),
+			'description' => __('When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>', 'woocommerce-mds-shipping'),
 			'default' => 'no',
 		);
 
