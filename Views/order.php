@@ -115,7 +115,7 @@
 							<?php endforeach; ?>
 						</select><br />
 
-						<label for="cover">Insurance Cover</label>
+						<label for="cover">Risk Cover</label>
 						(&nbsp;&nbsp;Up to R5000&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="1"<?php if ( $settings['risk_cover'] == 'yes' ) {echo ' checked="checked" ';} ?>> |&nbsp;&nbsp;No Cover&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="0"<?php if ( $settings['risk_cover'] == 'no' ) {echo ' checked="checked" ';} ?>> )<br />
 
 						<label for="service">Collection Time:</label>
