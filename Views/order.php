@@ -114,9 +114,13 @@
 								<option value="<?php echo $service_id; ?>" <?php if ( $service == $shipping_method ) {echo 'selected="selected" ';} ?>><?php echo $service; ?></option>
 							<?php endforeach; ?>
 						</select><br />
-
+						<?php
+							//cart total - incl tax
+							$total = $order->get_subtotal() + $order->get_cart_tax();
+							$defaultCover = ($settings['risk_cover_threshold'] > 0 & $settings['risk_cover'] == 'no') & ($total < $settings['risk_cover_threshold']);
+						?>
 						<label for="cover">Risk Cover</label>
-						(&nbsp;&nbsp;Up to R5000&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="1"<?php if ( $settings['risk_cover'] == 'yes' ) {echo ' checked="checked" ';} ?>> |&nbsp;&nbsp;No Cover&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="0"<?php if ( $settings['risk_cover'] == 'no' ) {echo ' checked="checked" ';} ?>> )<br />
+						Up to R10,000&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="1" <?= !$defaultCover ? 'checked="checked"' : '' ?>> |&nbsp;&nbsp;Up to 1000 - default&nbsp;&nbsp;<input id="cover" name="cover" type="radio" value="0" <?= $defaultCover ? 'checked="checked"' : '' ?>> <br />
 
 						<label for="service">Collection Time:</label>
 						<input type="text" name="collection_time" id="datetimepicker4" value=""/><hr />
