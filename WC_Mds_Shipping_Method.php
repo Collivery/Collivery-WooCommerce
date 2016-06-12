@@ -144,6 +144,13 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'default' => 'yes',
 		);
 
+		$fields['risk_cover_threshold'] = array(
+			'title' => __('Risk cover minimum'),
+			'type' => 'decimal',
+			'description' => __('The minimum price of cart items to enable') . ' MDS ' . __('risk cover<br><strong>Please read the <a href="https://collivery.net/terms" target="_blank">terms and conditions</a> on our website</strong>'),
+			'default' => 0.00
+		);
+
 		$fields['round'] = array(
 			'title' => "MDS " . __('Round Price', 'woocommerce-mds-shipping'),
 			'type' => 'checkbox',
@@ -225,7 +232,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$fields['toggle_automatic_mds_processing'] = array(
 			'title' => __('Automatic MDS Processing', 'woocommerce-mds-shipping'),
 			'type' => 'checkbox',
-			'description' => __('When enabled deliveries for an order will be automatically processed. Please reffer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>', 'woocommerce-mds-shipping'),
+			'description' => __('When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>', 'woocommerce-mds-shipping'),
 			'default' => 'no',
 		);
 
@@ -351,12 +358,18 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
 						// Now lets get the price for
+						$riskCover = 0;
+						$cartTotal = $package['cart']['total'];
+						if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
+							$riskCover = 1;
+						}
+
 						$data = array(
 							"to_town_id" => $package['destination']['to_town_id'],
 							"from_town_id" => $package['destination']['from_town_id'],
 							"to_location_type" => $package['destination']['to_location_type'],
 							"from_location_type" => $package['destination']['from_location_type'],
-							"cover" => ($this->settings['risk_cover'] == 'yes') ? (1) : (0),
+							"cover" => $riskCover,
 							"weight" => $package['cart']['max_weight'],
 							"num_package" => $package['cart']['count'],
 							"parcels" => $package['cart']['products'],

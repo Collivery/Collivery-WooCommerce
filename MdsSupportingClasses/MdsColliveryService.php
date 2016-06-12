@@ -458,20 +458,23 @@ class MdsColliveryService
 						}
 					}
 				}
-
-				$collivery_id = $this->addCollivery(array(
-					'collivery_from' => (int) $collivery_from,
-					'contact_from' => (int) $contact_from,
-					'collivery_to' => (int) $collivery_to,
-					'contact_to' => (int) $contact_to,
+				//order total price of items incl tax - exl shipping
+				$orderTotal = $order->get_subtotal() + $order->get_cart_tax();
+				$riskCover = ($this->settings['risk_cover']  == 'yes') & ($orderTotal > $this->settings['risk_cover_threshold']);
+				$colliveryOptions = array(
+					'collivery_from' => (int)$collivery_from,
+					'contact_from' => (int)$contact_from,
+					'collivery_to' => (int)$collivery_to,
+					'contact_to' => (int)$contact_to,
 					'cust_ref' => "Order number: " . $order_id,
 					'instructions' => $instructions,
 					'collivery_type' => 2,
-					'service' => (int) $service_id,
-					'cover' => ($this->settings['risk_cover'] == 'yes') ? 1 : 0,
+					'service' => (int)$service_id,
+					'cover' => $riskCover ? 1 : 0,
 					'parcel_count' => count($parcels),
 					'parcels' => $parcels
-				));
+				);
+				$collivery_id = $this->addCollivery($colliveryOptions);
 
 				$collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time'])  : '';
 
