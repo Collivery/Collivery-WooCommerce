@@ -419,6 +419,7 @@ function mds_add_options()
 	add_action( 'load-' . $submenu, 'mds_load_admin_js' );
 }
 
+add_action('admin_enqueue_scripts', 'mds_enqueue_admin_js' );
 /**
  * this action is only called on the register page load
  */
