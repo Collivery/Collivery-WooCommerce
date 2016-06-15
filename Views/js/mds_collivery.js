@@ -412,3 +412,38 @@ function form_validate() {
 function remove_parcel(id) {
 	jQuery('#item' + id).remove();
 }
+
+jQuery(function(){
+
+	(function($){
+		$.fn.hideParent = function(parent, hide){
+			if(hide === true)
+				this.parents(parent).fadeOut('fast');
+			else
+				this.parents(parent).fadeIn('fast');
+
+			this.css({border:'1px solid #FFFF00'});
+			return this;
+		};
+
+	})(jQuery);
+
+	var shippingMode = jQuery('select[name="woocommerce_mds_collivery_method_free"]');
+	var percentageDiscount = jQuery('input[name="woocommerce_mds_collivery_shipping_discount_percentage"]');
+
+	shippingMode.change(function(){
+		var mode = shippingMode.val();
+		switch(mode){
+			case 'no':
+			case 'yes':
+				percentageDiscount.hideParent('tr', true);
+				break;
+			case 'discount':
+				percentageDiscount.hideParent('tr', false);
+				break;
+			default:
+		}
+	});
+
+	shippingMode.change();
+});
