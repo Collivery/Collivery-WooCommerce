@@ -140,7 +140,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$fields['risk_cover'] = array(
 			'title' => "MDS " . __('Risk Cover', 'woocommerce-mds-shipping'),
 			'type' => 'checkbox',
-			'description' => __('Risk cover, up to a maximum of R5000.', 'woocommerce-mds-shipping'),
+			'description' => __('Risk cover, up to a maximum of R10 000.', 'woocommerce-mds-shipping'),
 			'default' => 'yes',
 		);
 
