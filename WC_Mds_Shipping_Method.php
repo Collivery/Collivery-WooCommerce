@@ -354,6 +354,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				$services = $this->collivery->getServices();
 
+				require_once 'DiscountCalculator.php';
+
+				$discountCalculator = new DiscountCalculator($this->settings);
+				$discount = max(0, $discountCalculator->start($package)->calculate()->getResult());
 				// Get pricing for each service
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
@@ -388,9 +392,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'id' => 'mds_' . $id,
 								'value' => $id,
 								'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
-								'cost' => $this->collivery_service->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
+								'cost' => $this->collivery_service->addMarkup($response['price']['inc_vat'] - $discount, $this->settings['markup_' . $id]),
 							);
-
 							$this->add_rate($rate);
 						}
 					}
