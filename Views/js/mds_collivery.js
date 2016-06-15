@@ -422,7 +422,6 @@ jQuery(function(){
 			else
 				this.parents(parent).fadeIn('fast');
 
-			this.css({border:'1px solid #FFFF00'});
 			return this;
 		};
 
