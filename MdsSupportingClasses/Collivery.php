@@ -568,6 +568,32 @@ class Collivery {
 	}
 
 	/**
+	 * Returns the Waybill PDF image(base_64 encoded) for a given Waybill Number.
+	 *
+	 * @param int     $collivery_id Collivery waybill number
+	 * @return array
+	 */
+	public function getWaybill( $collivery_id )
+	{
+		try {
+			$result = $this->client()->get_waybill($collivery_id, $this->token);
+		} catch (SoapFault $e) {
+			$this->catchSoapFault($e);
+			return false;
+		}
+
+		if (isset($result['waybill'])) {
+			return $result['waybill'];
+		} else {
+			if (isset($result['error_id']))
+				$this->setError($result['error_id'], $result['error']);
+			else
+				$this->setError('result_unexpected', 'No result returned.');
+			return false;
+		}
+	}
+
+	/**
 	 * Returns a list of avaibale parcel images for a given Waybill Number.
 	 *
 	 * @param int     $collivery_id Collivery waybill number

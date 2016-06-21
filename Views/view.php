@@ -10,7 +10,7 @@
 			<legend style="font-size:large; font-weight:bold;">Status Information:</legend>
 			<table>
 				<?php
-				echo '<tr><td>Waybill <a href="' . $view_waybill . '" target="blank" rel="wrapped_waybill" class="show_waybill">' . $data->waybill . '</a></td></tr>' . '<tr><td>Status: ' . $tracking['status_text'] . '</td></tr>';
+				echo '<tr><td>Waybill <a href="' . get_site_url() . '/wp-admin/admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=waybill" rel="wrapped_waybill" class="show_waybill">' . $data->waybill . '--<i>View pdf</i>' . '</a></td></tr>' . '<tr><td>Status: ' . $tracking['status_text'] . '</td></tr>';
 				echo '<tr><td>Status last updated:' . $tracking['updated_time'] . ' on the ' . date( "d/M/Y", strtotime( $tracking['updated_date'] ) ) . '</td></tr>';
 				if ( isset( $tracking['delivered_at'] ) ) {
 					echo '<tr><td>Delivered at ' . date( "H:i:s", strtotime( $tracking['delivered_at'] ) ) . ' on the ' . date( "d/M/Y", strtotime( $tracking['delivered_at'] ) );
@@ -32,13 +32,11 @@
 				<?php echo '<tr><td>Quoted Weight: ' . number_format( $validation_results->weight, 2, '.', '' ) . ' | Actual Weight: ' . number_format( $tracking['weight'], 2, '.', '' ) . '</td></tr>'; ?>
 				<?php echo '<tr><td>Quoted Vol Weight: ' . number_format( $validation_results->vol_weight, 2, '.', '' ) . ' | Actual Vol Weight: ' . number_format( $tracking['vol_weight'], 2, '.', '' ) . '</td></tr>'; ?>
 				<?php echo '<tr><td>Quoted Price: R' . number_format( $validation_results->price->inc_vat, 2, '.', '' ) . ' | Actual Price: R' . number_format( $tracking['total_price'] * 1.14, 2, '.', '' ) . '</td></tr>'; ?>
-				<?php if ( !empty( $pod ) ): ?>
 					<tr>
 					<td>
-						Proof of delivery: <a href="<?php echo 'https://quote.collivery.co.za/viewpod.php?id=' . $data->waybill; ?>" target="blank" rel="wrapped_pod" class="show_pod">View POD</a>
+						Proof of delivery: <?= '<a href="' . get_site_url() . '/wp-admin/admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=pod" rel="wrapped_waybill" class="show_waybill">' . 'View POD' . '</a>' ?>
 					</td>
 					</tr>
-				<?php endif; ?>
 				<?php if ( !empty( $image_list ) ): ?>
 					<tr>
 					<td>
