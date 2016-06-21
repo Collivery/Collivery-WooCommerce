@@ -360,6 +360,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		return true;
 	}
 
+	private function getDiscount($package){
+		$discountCalculator = new DiscountCalculator($this->settings);
+		return $discountCalculator->start($package)->calculate()->getResult();
+	}
 	/**
 	 * Function used by Woocommerce to fetch shipping price
 	 *
@@ -387,10 +391,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				$services = $this->collivery->getServices();
 
-				require_once 'DiscountCalculator.php';
 
-				$discountCalculator = new DiscountCalculator($this->settings);
-				$discount = max(0, $discountCalculator->start($package)->calculate()->getResult());
+				$discount = $this->getDiscount($package);
 				// Get pricing for each service
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {

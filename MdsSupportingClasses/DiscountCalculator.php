@@ -1,5 +1,5 @@
 <?php
-
+namespace MdsSupportingClasses;
 /**
  * Created by PhpStorm.
  * User: peter
