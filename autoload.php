@@ -9,6 +9,7 @@ class MdsColliveryAutoLoader
 		'MdsColliveryService' => '\MdsSupportingClasses\MdsColliveryService',
 		'ParseDown' => '\MdsSupportingClasses\ParseDown',
 		'UnitConverter' => '\MdsSupportingClasses\UnitConverter',
+		'DiscountCalculator' => '\MdsSupportingClasses\DiscountCalculator',
 	);
 
 	public static function autoload($class)
