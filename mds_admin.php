@@ -135,6 +135,7 @@ function mds_confirmed_order_view_pdf()
 	}
 
 	if ($collivery->getErrors()) {
+		wp_redirect(get_admin_url() . '/admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number);
 		wp_redirect(get_site_url() . '/wp-admin/admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number);
 		exit;
 	}
@@ -151,6 +152,7 @@ function mds_confirmed_order_view_pdf()
 function mds_confirmed_order_no_pdf()
 {
 	$waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
+	$url = get_admin_url() . '/admin.php?page=mds_confirmed&waybill=' . $waybill_number;
 	$url = get_site_url() . '/wp-admin/admin.php?page=mds_confirmed&waybill=' . $waybill_number;
 	require_once 'Views/document_not_found.php';
 }
