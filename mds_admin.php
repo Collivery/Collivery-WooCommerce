@@ -139,12 +139,9 @@ function mds_confirmed_order_view_pdf()
 		wp_redirect(get_site_url() . '/wp-admin/admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number);
 		exit;
 	}
-	ob_start();
 	header('Content-Type: application/pdf');
 //	header('Content-Disposition: attachment; filename="' . $pod['filename'] . '"');
 	header('Content-Length: ' . $file['size']);
-	ob_clean();
-	flush();
 	echo base64_decode($file['file']);
 	exit;
 }
