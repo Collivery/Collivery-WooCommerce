@@ -140,7 +140,6 @@ function mds_confirmed_order_view_pdf()
 		exit;
 	}
 	header('Content-Type: application/pdf');
-//	header('Content-Disposition: attachment; filename="' . $pod['filename'] . '"');
 	header('Content-Length: ' . $file['size']);
 	echo base64_decode($file['file']);
 	exit;
