@@ -9,6 +9,11 @@
  */
 add_action( 'admin_menu', 'mds_admin_menu' );
 
+if (is_admin()) {
+	if (isset($_GET['page']) && $_GET['page'] == 'mds-confirmed-order-view-pdf') {
+		add_action('wp_loaded', 'mds_confirmed_order_view_pdf');
+	}
+}
 /**
  * Add plugin admin menu items
  */
@@ -16,6 +21,7 @@ function mds_admin_menu()
 {
 	$first_page = add_submenu_page( 'woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mds_confirmed_orders' );
 	add_submenu_page( $first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mds_confirmed_order' );
+	add_submenu_page($first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed_no_pdf', 'mds_confirmed_order_no_pdf');
 }
 
 /**
@@ -107,6 +113,43 @@ function mds_confirmed_order()
 	$image_list = glob( $directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE );
 	$view_waybill = 'https://quote.collivery.co.za/waybillpdf.php?wb=' . base64_encode( $data->waybill ) . '&output=I';
 	include 'Views/view.php';
+}
+
+function mds_confirmed_order_view_pdf()
+{
+	if (!current_user_can('manage_options'))
+		return;
+
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
+	$collivery = MdsColliveryService::getInstance()->collivery;
+	$waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
+
+	if (isset($_GET['type'])) {
+		if ($_GET['type'] === 'pod') {
+			$file = $collivery->getPod($waybill_number);
+		} else if ($_GET['type'] === 'waybill') {
+			$file = $collivery->getWaybill($waybill_number);
+		} else {
+			$collivery->setError('invalid_argument', 'Invalid option');
+		}
+	}
+
+	if ($collivery->getErrors()) {
+		wp_redirect(get_admin_url() . '/admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number);
+		wp_redirect(get_site_url() . '/wp-admin/admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number);
+		exit;
+	}
+	header('Content-Type: application/pdf');
+	header('Content-Length: ' . $file['size']);
+	echo base64_decode($file['file']);
+	exit;
+}
+
+function mds_confirmed_order_no_pdf()
+{
+	$waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
+	$url = get_admin_url() . '/admin.php?page=mds_confirmed&waybill=' . $waybill_number;
+	require_once 'Views/document_not_found.php';
 }
 
 /**
@@ -419,6 +462,7 @@ function mds_add_options()
 	add_action( 'load-' . $submenu, 'mds_load_admin_js' );
 }
 
+add_action('admin_enqueue_scripts', 'mds_enqueue_admin_js' );
 /**
  * this action is only called on the register page load
  */

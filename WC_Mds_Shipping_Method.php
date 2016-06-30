@@ -183,17 +183,41 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		}
 
 		$fields['method_free'] = array(
-			'title' => __('Free Delivery', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery mode', 'woocommerce-mds-shipping'),
 			'label' => __('Free Delivery: Enabled', 'woocommerce-mds-shipping'),
-			'type' => 'checkbox',
-			'default' => 'yes',
+			'type' => 'select',
+			'default' => 'no',
+			'options' => array(
+				'no' => __('No free deliveries'),
+				'yes' => __('Free delivery'),
+				'discount' => _('Discount on deliveries')
+			),
+			'custom_attributes' => array(
+				'title' => 'Choose shipping mode'
+			)
+		);
+
+		$fields['shipping_discount_percentage'] = array(
+			'title' => __('Percentage discount for shipping'),
+			'type' => 'number',
+			'description' => __('The percentage discount that users get when their cart total exceeds <strong>"Free Delivery Min Total"</strong>'),
+			'default' => 10,
+			'custom_attributes' => array(
+				'min' => 2,
+				'max' => 100,
+				'step' => 0.1
+			)
 		);
 
 		$fields['wording_free'] = array(
 			'title' => __('Free Delivery Wording', 'woocommerce-mds-shipping'),
 			'type' => 'text',
 			'default' => 'Free Delivery',
+			'custom_attributes' => array(
+				'data-type' => 'free-delivery-item'
+			),
 		);
+
 
 		$fields['free_min_total'] = array(
 			'title' => __('Free Delivery Min Total', 'woocommerce-mds-shipping'),
@@ -201,8 +225,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'description' => __('Min order total before free delivery is included, amount is including vat.', 'woocommerce-mds-shipping'),
 			'default' => '1000.00',
 			'custom_attributes' => array(
-				'step' 	=> 'any',
-				'min'	=> '0'
+				'step' 	=> .1,
+				'min'	=> 0
 			)
 		);
 
@@ -211,6 +235,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'type' => 'checkbox',
 			'description' => __('Only allow free delivery for local deliveries only. ', 'woocommerce-mds-shipping'),
 			'default' => 'no',
+			'custom_attributes' => array(
+				'data-type' => 'free-delivery-item'
+			),
 		);
 
 		$fields['free_default_service'] = array(
@@ -219,6 +246,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'options' => $services,
 			'default' => 5,
 			'description' => __('When free delivery is enabled, which default service do we use.', 'woocommerce-mds-shipping'),
+			'custom_attributes' => array(
+				'data-type' => 'free-delivery-item'
+			),
 		);
 
 		$fields['free_local_default_service'] = array(
@@ -227,6 +257,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'options' => $services,
 			'default' => 2,
 			'description' => __('When free local only delivery is enabled, which default service do we use.', 'woocommerce-mds-shipping'),
+			'custom_attributes' => array(
+				'data-type' => 'free-delivery-item'
+			),
 		);
 
 		$fields['toggle_automatic_mds_processing'] = array(
@@ -327,6 +360,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		return true;
 	}
 
+	private function getDiscount($package){
+		$discountCalculator = new DiscountCalculator($this->settings);
+		return $discountCalculator->start($package)->calculate()->getResult();
+	}
 	/**
 	 * Function used by Woocommerce to fetch shipping price
 	 *
@@ -354,6 +391,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				$services = $this->collivery->getServices();
 
+
+				$discount = $this->getDiscount($package);
 				// Get pricing for each service
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
@@ -388,9 +427,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'id' => 'mds_' . $id,
 								'value' => $id,
 								'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
-								'cost' => $this->collivery_service->addMarkup($response['price']['inc_vat'], $this->settings['markup_' . $id]),
+								'cost' => $this->collivery_service->addMarkup($response['price']['inc_vat'] - $discount, $this->settings['markup_' . $id]),
 							);
-
 							$this->add_rate($rate);
 						}
 					}
