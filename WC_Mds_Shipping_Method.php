@@ -311,27 +311,16 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		$this->sanitized_fields = array();
 
-		foreach ( $form_fields as $k => $v ) {
-
-			if ( empty( $v['type'] ) ) {
-				$v['type'] = 'text'; // Default to "text" field type.
-			}
-
-			// Look for a validate_FIELDID_field method for special handling
-			if ( method_exists( $this, 'validate_' . $k . '_field' ) ) {
-				$field = $this->{'validate_' . $k . '_field'}( $k );
-				$this->sanitized_fields[ $k ] = $field;
-
-				// Look for a validate_FIELDTYPE_field method
-			} elseif ( method_exists( $this, 'validate_' . $v['type'] . '_field' ) ) {
-				$field = $this->{'validate_' . $v['type'] . '_field'}( $k );
-				$this->sanitized_fields[ $k ] = $field;
-
-				// Default to text
+		foreach ($form_fields as $fieldKey => $field) {
+			if (method_exists($this, 'get_field_value')) {
+				// WooCommerce 2.6 Method
+				$fieldValue = $this->get_field_value($fieldKey, $field);
 			} else {
-				$field = $this->{'validate_text_field'}( $k );
-				$this->sanitized_fields[ $k ] = $field;
+				// Pre-WooCommerce 2.6 method
+				$fieldValue = $this->getFieldValueForBackwardsCompatibility($fieldKey, $field);
 			}
+
+			$this->sanitized_fields[$fieldKey] = $fieldValue;
 		}
 
 		$currentSettings = $this->settings;
@@ -462,5 +451,26 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	{
 		$admin_settings = new WC_Admin_Settings();
 		$admin_settings->add_error($message, "woocommerce-mds-shipping");
+	}
+
+	/**
+	 * This function adds support for clients using WooCommerce < 2.6
+	 *
+	 * @param $key
+	 * @param $field
+	 *
+	 * @return array
+	 */
+	protected function getFieldValueForBackwardsCompatibility($key, $field)
+	{
+		$type = empty($field['type']) ? 'text' : $field['type'];
+
+		if (method_exists($this, 'validate_' . $key . '_field')) {
+			return $this->{'validate_' . $key . '_field'}($key);
+		} elseif (method_exists($this, 'validate_' . $type . '_field')) {
+			return $this->{'validate_' . $type . '_field'}($key);
+		}
+
+		return $this->validate_text_field($key);
 	}
 }
