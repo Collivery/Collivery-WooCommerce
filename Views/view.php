@@ -1,5 +1,5 @@
 <h1>Viewing Waybill: <?php echo $data->waybill; ?></h1>
-<span>Back to </span><a href="<?php echo get_admin_url() . '/admin.php?page=mds-already-confirmed'; ?>">MDS Confirmed</a><br />
+<span>Back to </span><a href="<?php echo get_admin_url() . 'admin.php?page=mds-already-confirmed'; ?>">MDS Confirmed</a><br />
 <br />
 <div class="parallel">
 	<table width="100%">
@@ -10,7 +10,7 @@
 			<legend style="font-size:large; font-weight:bold;">Status Information:</legend>
 			<table>
 				<?php
-				echo '<tr><td>Waybill <a href="' . get_admin_url() . '/admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=waybill" rel="wrapped_waybill" class="show_waybill">' . $data->waybill . '--<i>View pdf</i>' . '</a></td></tr>' . '<tr><td>Status: ' . $tracking['status_text'] . '</td></tr>';
+				echo '<tr><td>Waybill <a href="' . get_admin_url() . 'admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=waybill" rel="wrapped_waybill" class="show_waybill">' . $data->waybill . '--<i>View pdf</i>' . '</a></td></tr>' . '<tr><td>Status: ' . $tracking['status_text'] . '</td></tr>';
 				echo '<tr><td>Status last updated:' . $tracking['updated_time'] . ' on the ' . date( "d/M/Y", strtotime( $tracking['updated_date'] ) ) . '</td></tr>';
 				if ( isset( $tracking['delivered_at'] ) ) {
 					echo '<tr><td>Delivered at ' . date( "H:i:s", strtotime( $tracking['delivered_at'] ) ) . ' on the ' . date( "d/M/Y", strtotime( $tracking['delivered_at'] ) );
@@ -34,7 +34,7 @@
 				<?php echo '<tr><td>Quoted Price: R' . number_format( $validation_results->price->inc_vat, 2, '.', '' ) . ' | Actual Price: R' . number_format( $tracking['total_price'] * 1.14, 2, '.', '' ) . '</td></tr>'; ?>
 					<tr>
 					<td>
-						Proof of delivery: <?= '<a href="' . get_admin_url() . '/admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=pod" rel="wrapped_waybill" class="show_waybill">' . 'View POD' . '</a>' ?>
+						Proof of delivery: <?= '<a href="' . get_admin_url() . 'admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=pod" rel="wrapped_waybill" class="show_waybill">' . 'View POD' . '</a>' ?>
 					</td>
 					</tr>
 				<?php if ( !empty( $image_list ) ): ?>

@@ -34,8 +34,7 @@
 				?>
 				<tr <?php if ( $count % 2 == 0 ) echo ' class="alt" '; ?>>
 					<td><?php echo $order->id; ?></td>
-					<td><a href="<?php echo get_admin_url() . '/admin.php?page=mds_confirmed&waybill=' . $order->waybill; ?>"><?php echo $order->waybill; ?></a></td>
-					<td><a href="<?php echo get_site_url() . '/wp-admin/admin.php?page=mds_confirmed&waybill=' . $order->waybill; ?>"><?php echo $order->waybill; ?></a></td>
+					<td><a href="<?php echo get_admin_url() . 'admin.php?page=mds_confirmed&waybill=' . $order->waybill; ?>"><?php echo $order->waybill; ?></a></td>
 					<td><?php echo $services[ $validation_results->service ]; ?></td>
 					<td><?php echo date( "Y-m-d H:m", $validation_results->collection_time ); ?></td>
 				</tr>
