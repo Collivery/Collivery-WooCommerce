@@ -81,7 +81,7 @@ class DiscountCalculator
 
 		$discount = $this->discount;
 		$this->reset();
-		return max(0, $discount);
+		return $discount;
 	}
 
 	private function reset(){

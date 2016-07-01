@@ -427,7 +427,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'id' => 'mds_' . $id,
 								'value' => $id,
 								'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
-								'cost' => $this->collivery_service->addMarkup($response['price']['inc_vat'] - $discount, $this->settings['markup_' . $id]),
+								'cost' => $this->collivery_service->addMarkup(max(0, $response['price']['inc_vat'] - $discount), $this->settings['markup_' . $id]),
 							);
 							$this->add_rate($rate);
 						}
