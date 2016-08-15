@@ -261,13 +261,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 		$settings = $mds->returnPluginSettings();
 
 		if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
-			$order = new WC_Order($order_id);
-
-			if(in_array($order->payment_method, array('payfast', 'bacs', 'paypal'))){
-				$mds->automatedAddCollivery($order_id, true);
-			} else {
-				$order->add_order_note("MDS Collivery automated system did not run as payment method " . $order->payment_method . " is not included as an allowed payment method.", 0);
-			}
+			$mds->automatedAddCollivery($order_id, true);
 		}
 	}
 
