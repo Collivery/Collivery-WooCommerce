@@ -412,13 +412,19 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								$title = $title . ', additional 24 hours on outlying areas';
 							}
 
-							$rate = array(
+							$quotedPrice = $this->collivery_service->addMarkup(max(0, $response['price']['inc_vat'] - $discount), $this->settings['markup_' . $id]);
+							$label = (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title;
+
+							if(!$quotedPrice) {
+								$label .= ' - FREE!';
+							}
+
+							$this->add_rate(array(
 								'id' => 'mds_' . $id,
 								'value' => $id,
-								'label' => (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title,
-								'cost' => $this->collivery_service->addMarkup(max(0, $response['price']['inc_vat'] - $discount), $this->settings['markup_' . $id]),
-							);
-							$this->add_rate($rate);
+								'label' => $label,
+								'cost' => $quotedPrice,
+							));
 						}
 					}
 				}
