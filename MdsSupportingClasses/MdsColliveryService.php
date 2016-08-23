@@ -5,7 +5,8 @@ use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
 
-use Exception;
+use InvalidAddressDataException;
+use InvalidColliveryDataException;
 
 /**
  * MdsColliveryService
