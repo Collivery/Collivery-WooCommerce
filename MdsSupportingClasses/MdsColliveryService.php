@@ -354,41 +354,41 @@ class MdsColliveryService
 	 * Validate delivery request before adding the request to MDS Collivery
 	 *
 	 * @param array $array
-	 * @throws Exception
+	 * @throws InvalidColliveryDataException
 	 * @return bool|array
 	 */
 	public function validateCollivery(array $array)
 	{
 		if(empty($array['collivery_from'])) {
-			throw new Exception("Invalid collection address");
+			throw new InvalidColliveryDataException($array, "Invalid collection address");
 		}
 
 		if(empty($array['collivery_to'])) {
-			throw new Exception("Invalid destination address");
+			throw new InvalidColliveryDataException($array, "Invalid destination address");
 		}
 
 		if(empty($array['contact_from'])) {
-			throw new Exception("Invalid collection contact");
+			throw new InvalidColliveryDataException($array, "Invalid collection contact");
 		}
 
 		if(empty($array['contact_to'])) {
-			throw new Exception("Invalid destination contact");
+			throw new InvalidColliveryDataException($array, "Invalid destination contact");
 		}
 
 		if(empty($array['collivery_type'])) {
-			throw new Exception("Invalid parcel type");
+			throw new InvalidColliveryDataException($array, "Invalid parcel type");
 		}
 
 		if(empty($array['service'])) {
-			throw new Exception("Invalid service");
+			throw new InvalidColliveryDataException($array, "Invalid service");
 		}
 
 		if($array['cover'] != 1 && $array['cover'] != 0) {
-			throw new Exception("Invalid risk cover option");
+			throw new InvalidColliveryDataException($array, "Invalid risk cover option");
 		}
 
 		if(empty($array['parcels']) || !is_array($array['parcels'])) {
-			throw new Exception("Invalid parcels");
+			throw new InvalidColliveryDataException($array, "Invalid parcels");
 		}
 
 		return $this->collivery->validate($array);
@@ -520,7 +520,7 @@ class MdsColliveryService
 	 *
 	 * @param array $array
 	 * @return array
-	 * @throws Exception
+	 * @throws InvalidAddressDataException
 	 */
 	public function addColliveryAddress(array $array)
 	{
@@ -548,23 +548,23 @@ class MdsColliveryService
 		}
 
 		if(empty($array['location_type']) || !isset($location_types[$location_type_id])) {
-			throw new Exception("Invalid location type");
+			throw new InvalidAddressDataException($array, "Invalid location type");
 		}
 
 		if(empty($array['town']) || !isset($towns[$town_id])) {
-			throw new Exception("Invalid town");
+			throw new InvalidAddressDataException($array, "Invalid town");
 		}
 
 		if(empty($array['suburb']) || !isset($suburbs[$suburb_id])) {
-			throw new Exception("Invalid suburb");
+			throw new InvalidAddressDataException($array, "Invalid suburb");
 		}
 
 		if(empty($array['cellphone']) || !is_numeric($array['cellphone'])) {
-			throw new Exception("Invalid cellphone number");
+			throw new InvalidAddressDataException($array, "Invalid cellphone number");
 		}
 
 		if(empty($array['email']) || !filter_var($array['email'], FILTER_VALIDATE_EMAIL)) {
-			throw new Exception("Invalid email address");
+			throw new InvalidAddressDataException($array, "Invalid email address");
 		}
 
 		$newAddress = array(
