@@ -765,6 +765,26 @@ class MdsColliveryService
 	}
 
 	/**
+	 * @param $function
+	 * @param $error
+	 * @param $data
+	 */
+	private function logWarning($function, $error, $data)
+	{
+		$this->logger->error($function, $error, $this->settings, $data);
+	}
+
+	/**
+	 * @param $function
+	 * @param $error
+	 * @param array $data
+	 */
+	private function logError($function, $error, $data = [])
+	{
+		$this->logger->error($function, $error, $this->settings, $data);
+	}
+
+	/**
 	 * This function is here so we can get WooCommerce version number to pass on to the API for logs
 	 */
 	private function returnWoocommerceVersionNumber()
