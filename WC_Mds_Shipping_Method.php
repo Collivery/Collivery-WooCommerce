@@ -406,7 +406,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 						);
 
 						// query the API for our prices
-						$response = $this->collivery->getPrice($data);
+						$response = $this->collivery_service->getPrice($data);
 						if (isset($response['price']['inc_vat'])) {
 							if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
 								$title = $title . ', additional 24 hours on outlying areas';

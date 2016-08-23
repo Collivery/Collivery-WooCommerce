@@ -313,6 +313,19 @@ class MdsColliveryService
 	}
 
 	/**
+	 * @param array $array
+	 * @return array
+	 */
+	public function getPrice(array $array)
+	{
+		if(!$result = $this->collivery->getPrice($array)) {
+			$this->logError('MdsCollivery::getPrice', $this->collivery->getErrors(), $array);
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Adds the delivery request to MDS Collivery
 	 *
 	 * @param array $array
