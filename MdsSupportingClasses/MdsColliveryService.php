@@ -29,6 +29,11 @@ class MdsColliveryService
 	var $cache;
 
 	/**
+	 * @type MdsLogger
+	 */
+	var $logger;
+
+	/**
 	 * @type array
 	 */
 	var $validated_data;
@@ -63,8 +68,10 @@ class MdsColliveryService
 		$this->converter = new UnitConverter();
 
 		$this->cache = new MdsCache();
+		$this->logger = new MdsLogger();
 
 		$this->initMdsCollivery($this->settings);
+		$this->logError('MdsCollivery::getPrice', 'testing');
 	}
 
 	/**
@@ -172,37 +179,46 @@ class MdsColliveryService
 		}
 
 		if(!isset($package['destination'])) {
+			$this->logError('MdsColliveryService::validPackage', 'destination not set', $package);
 			return false;
 		} else {
 			if(!isset($package['destination']['to_town_id']) || !is_integer($package['destination']['to_town_id']) || $package['destination']['to_town_id'] == 0) {
+				$this->logError('MdsColliveryService::validPackage', 'destination to_town_id not set or not an integer', $package);
 				return false;
 			}
 
 			if(!isset($package['destination']['from_town_id']) || !is_integer($package['destination']['from_town_id']) || $package['destination']['from_town_id'] == 0) {
+				$this->logError('MdsColliveryService::validPackage', 'destination from_town_id not set or not an integer', $package);
 				return false;
 			}
 
 			if(!isset($package['destination']['to_location_type']) || !is_integer($package['destination']['to_location_type']) || $package['destination']['to_location_type'] == 0) {
+				$this->logError('MdsColliveryService::validPackage', 'destination to_location_type not set or not an integer', $package);
 				return false;
 			}
 
 			if(!isset($package['destination']['from_location_type']) || !is_integer($package['destination']['from_location_type']) || $package['destination']['from_location_type'] == 0) {
+				$this->logError('MdsColliveryService::validPackage', 'destination from_location_type not set or not an integer', $package);
 				return false;
 			}
 		}
 
 		if(!isset($package['cart'])) {
+			$this->logError('MdsColliveryService::validPackage', 'cart not set', $package);
 			return false;
 		} else {
 			if(!isset($package['cart']['max_weight']) || !is_numeric($package['cart']['max_weight'])) {
+				$this->logError('MdsColliveryService::validPackage', 'cart max_weight not set or is not numeric', $package);
 				return false;
 			}
 
 			if(!isset($package['cart']['count']) || !is_numeric($package['cart']['count'])) {
+				$this->logError('MdsColliveryService::validPackage', 'cart count not set or is not numeric', $package);
 				return false;
 			}
 
 			if(!isset($package['cart']['products']) || !is_array($package['cart']['products'])) {
+				$this->logError('MdsColliveryService::validPackage', 'cart products not set or is not an array', $package);
 				return false;
 			}
 		}
@@ -290,6 +306,7 @@ class MdsColliveryService
 
 			if($stock != '') {
 				if($stock == 0 || $stock < $qty) {
+					$this->logWarning('MdsColliveryService::isOrderInStock', $product->get_formatted_name() . ' is out of stock', ['product_id' => $item['product_id']]);
 					return false;
 				}
 			}
@@ -349,6 +366,7 @@ class MdsColliveryService
 
 			$reason = preg_replace('|collivery|i', 'delivery', $reason);
 			$reason = preg_replace('|The delivery time has been CHANGED to|i', 'the approximate delivery day is', $reason);
+			$this->logWarning('MdsColliveryService::addCollivery', $reason, $array);
 
 			if(function_exists('wc_add_notice')) {
 				wc_add_notice(sprintf(__($reason, "woocommerce-mds-shipping")));
@@ -497,9 +515,14 @@ class MdsColliveryService
 					$this->addColliveryToProcessedTable($collivery_id, $order->id);
 					$this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
 				} else {
+					$this->logError('MdsServiceClass::automatedAddCollivery', 'no collivery id returned after calling addCollivery', $colliveryOptions);
 					$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process.', $processing, 'processing');
 				}
-			} catch(Exception $e) {
+			} catch(InvalidColliveryDataException $e) {
+				$this->logError('MdsServiceClass::automatedAddCollivery', $e->getMessage(), $e->getColliveryDataUsed());
+				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
+			} catch(InvalidAddressDataException $e) {
+				$this->logError('MdsServiceClass::automatedAddCollivery', $e->getMessage(), $e->getAddressDataUsed());
 				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
 			}
 		} else {
