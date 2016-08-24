@@ -1,5 +1,7 @@
 <?php namespace MdsSupportingClasses;
 
+use ZipArchive;
+
 class MdsLogger
 {
 	/**
@@ -68,15 +70,19 @@ class MdsLogger
 	}
 
 	/**
-	 * Loads a specific log file else creates the log directory
+	 * Gets a specific cache files contents
 	 *
 	 * @param $name
-	 * @return mixed
+	 * @return null
 	 */
-	protected function load($name)
+	public function get($name)
 	{
-		if (file_exists($this->log_dir . $name) && $content = file_get_contents($this->log_dir . $name)) {
-			return $content;
+		if ($log = $this->has($name)) {
+			return json_decode($log);
+		}
+
+		return null;
+	}
 
 	/**
 	 * @return bool|string
@@ -115,18 +121,18 @@ class MdsLogger
 	}
 
 	/**
-	 * Gets a specific cache files contents
+	 * Loads a specific log file else creates the log directory
 	 *
 	 * @param $name
-	 * @return null
+	 * @return mixed
 	 */
-	public function get($name)
+	protected function load($name)
 	{
-		if ($log = $this->has($name)) {
-			return json_decode($log);
+		if (file_exists($this->log_dir . $name) && $content = file_get_contents($this->log_dir . $name)) {
+			return $content;
+		} else {
+			$this->create_dir($this->log_dir);
 		}
-
-		return null;
 	}
 
 	/**
@@ -138,8 +144,8 @@ class MdsLogger
 	 */
 	protected function put($name, $value)
 	{
-		if(file_exists($this->log_dir . $name)) {
-			if(filemtime($this->log_dir . $name) < strtotime(date('Y-m-d') . ' 00:00:00')) {
+		if (file_exists($this->log_dir . $name)) {
+			if (filemtime($this->log_dir . $name) < strtotime(date('Y-m-d') . ' 00:00:00')) {
 				unlink($this->log_dir . $name);
 			}
 		}
