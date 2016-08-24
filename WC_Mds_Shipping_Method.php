@@ -328,6 +328,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
 			if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
+				$this->collivery_service->logError('WC_Mds_Shipping_Method::validate_settings_fields', 'Incorrect MDS account details');
 				$this->admin_add_error("The current MDS account details were incorrect, account details have been reset to the test account.");
 				$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
 				$this->sanitized_fields['mds_pass'] = 'api123';
@@ -340,6 +341,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			));
 
 			if(!$newAuthentication) {
+				$this->collivery_service->logError('WC_Mds_Shipping_Method::validate_settings_fields', 'Incorrect MDS account details');
 				$this->admin_add_error("Your MDS account details are incorrect, new settings have been discarded.");
 				$this->errors[] = "Your MDS account details are incorrect, new settings have been discarded.";
 				return false;
