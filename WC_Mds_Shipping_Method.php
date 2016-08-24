@@ -328,6 +328,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
 			if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
+				$this->collivery_service->logError('WC_Mds_Shipping_Method::validate_settings_fields', 'Incorrect MDS account details');
 				$this->admin_add_error("The current MDS account details were incorrect, account details have been reset to the test account.");
 				$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
 				$this->sanitized_fields['mds_pass'] = 'api123';
@@ -340,6 +341,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			));
 
 			if(!$newAuthentication) {
+				$this->collivery_service->logError('WC_Mds_Shipping_Method::validate_settings_fields', 'Incorrect MDS account details');
 				$this->admin_add_error("Your MDS account details are incorrect, new settings have been discarded.");
 				$this->errors[] = "Your MDS account details are incorrect, new settings have been discarded.";
 				return false;
@@ -349,10 +351,16 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		return true;
 	}
 
-	private function getDiscount($package){
+	/**
+	 * @param $package
+	 * @return mixed
+	 */
+	private function getDiscount($package)
+	{
 		$discountCalculator = new DiscountCalculator($this->settings);
 		return $discountCalculator->start($package)->calculate()->getResult();
 	}
+
 	/**
 	 * Function used by Woocommerce to fetch shipping price
 	 *
@@ -406,7 +414,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 						);
 
 						// query the API for our prices
-						$response = $this->collivery->getPrice($data);
+						$response = $this->collivery_service->getPrice($data);
 						if (isset($response['price']['inc_vat'])) {
 							if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
 								$title = $title . ', additional 24 hours on outlying areas';

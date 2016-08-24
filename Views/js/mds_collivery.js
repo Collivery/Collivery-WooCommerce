@@ -414,6 +414,15 @@ function remove_parcel(id) {
 }
 
 jQuery(function(){
+    var downloadSetting = jQuery("#woocommerce_mds_collivery_downloadLogs");
+    if(downloadSetting.length > 0) {
+        var url = downloadSetting.attr('placeholder');
+        var downloadButton = document.createElement('a');
+        downloadButton.setAttribute('href', url);
+        downloadButton.setAttribute('class', 'button-primary');
+        downloadButton.innerHTML = 'Download Error Logs';
+        downloadSetting.replaceWith(downloadButton);
+    }
 
 	(function($){
 		$.fn.hideParent = function(parent, hide){
