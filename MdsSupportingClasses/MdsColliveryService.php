@@ -46,7 +46,6 @@ class MdsColliveryService
 	/**
 	 * @param null $settings
 	 * @return MdsColliveryService
-	 * @throws Exception
 	 */
 	public static function getInstance($settings = null)
 	{
@@ -61,44 +60,34 @@ class MdsColliveryService
 		return self::$instance;
 	}
 
+	/**
+	 * MdsColliveryService constructor.
+	 * @param $settings
+	 */
 	private function __construct($settings)
 	{
 		$this->settings = $settings;
-
 		$this->converter = new UnitConverter();
+		$this->cache = new MdsCache(ABSPATH . 'cache/mds_collivery/');
+		$this->logger = new MdsLogger(ABSPATH . 'cache/mds_collivery/');
+		$this->enviroment = new EnvironmentInformationBag($this->settings);
 
-		$this->cache = new MdsCache();
-		$this->logger = new MdsLogger();
-
-		$this->initMdsCollivery($this->settings);
-		$this->logError('MdsCollivery::getPrice', 'testing');
+		$this->initMdsCollivery();
 	}
 
 	/**
 	 * Instantiates the MDS Collivery class
-	 *
-	 * @param null|array $settings
 	 */
-	public function initMdsCollivery($settings=null)
+	public function initMdsCollivery()
 	{
-		global $wp_version;
-
-		if($settings) {
-			$username = $settings['mds_user'];
-			$password = $settings['mds_pass'];
-		} else {
-			$username = $this->settings['mds_user'];
-			$password = $this->settings['mds_pass'];
-		}
-
 		$this->collivery = new Collivery(array(
-			'app_name' => 'WooCommerce MDS Shipping Plugin', // Application Name
-			'app_version' => MDS_VERSION, // Plugin Version
-			'app_host' => 'Wordpress: ' . $wp_version . ' - WooCommerce: ' . $this->returnWoocommerceVersionNumber(), // Framework/CMS name and version, eg 'Wordpress 3.8.1 WooCommerce 2.0.20' / ''
-			'app_url' => get_site_url(), // URL your site is hosted on
-			'user_email' => $username, // Your Mds account
-			'user_password' => $password // Your Mds account password
-		));
+			'app_name' => $this->enviroment->appName,
+			'app_version' => $this->enviroment->appVersion,
+			'app_host' => $this->enviroment->appHost,
+			'app_url' => $this->enviroment->appUrl,
+			'user_email' => $this->settings['mds_user'],
+			'user_password' => $this->settings['mds_pass']
+		), $this->cache);
 	}
 
 	/**
@@ -806,9 +795,9 @@ class MdsColliveryService
 	 * @param $error
 	 * @param $data
 	 */
-	private function logWarning($function, $error, $data)
+	public function logWarning($function, $error, $data)
 	{
-		$this->logger->error($function, $error, $this->settings, $data);
+		$this->logger->error($function, $error, $this->enviroment->loggerFormat(), $data);
 	}
 
 	/**
@@ -816,9 +805,9 @@ class MdsColliveryService
 	 * @param $error
 	 * @param array $data
 	 */
-	private function logError($function, $error, $data = [])
+	public function logError($function, $error, $data = [])
 	{
-		$this->logger->error($function, $error, $this->settings, $data);
+		$this->logger->error($function, $error, $this->enviroment->loggerFormat(), $data);
 	}
 
 	/**
