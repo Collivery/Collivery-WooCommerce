@@ -349,10 +349,16 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		return true;
 	}
 
-	private function getDiscount($package){
+	/**
+	 * @param $package
+	 * @return mixed
+	 */
+	private function getDiscount($package)
+	{
 		$discountCalculator = new DiscountCalculator($this->settings);
 		return $discountCalculator->start($package)->calculate()->getResult();
 	}
+
 	/**
 	 * Function used by Woocommerce to fetch shipping price
 	 *
