@@ -93,6 +93,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	function init_form_fields()
 	{
 		$fields = array(
+			'downloadLogs' => array(
+				'title' => __('Download Error Logs?', 'woocommerce-mds-shipping'),
+				'type' => 'text',
+				'description' => __('If you have any errors with the MDS plugin, you can use these files to email to integration@collivery.co.za for support', 'woocommerce-mds-shipping'),
+				'placeholder' => admin_url() . 'admin.php?page=mds_download_log_files',
+			),
 			'enabled' => array(
 				'title' => __('Enabled?', 'woocommerce-mds-shipping'),
 				'type' => 'checkbox',
