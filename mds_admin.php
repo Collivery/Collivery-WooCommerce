@@ -10,10 +10,15 @@
 add_action( 'admin_menu', 'mds_admin_menu' );
 
 if (is_admin()) {
-	if (isset($_GET['page']) && $_GET['page'] == 'mds-confirmed-order-view-pdf') {
-		add_action('wp_loaded', 'mds_confirmed_order_view_pdf');
+	if(isset($_GET['page'])) {
+		if ($_GET['page'] == 'mds-confirmed-order-view-pdf') {
+			add_action('wp_loaded', 'mds_confirmed_order_view_pdf');
+		} elseif($_GET['page'] == 'mds_download_log_files') {
+			add_action('wp_loaded', 'mds_download_log_files');
+		}
 	}
 }
+
 /**
  * Add plugin admin menu items
  */
@@ -22,6 +27,24 @@ function mds_admin_menu()
 	$first_page = add_submenu_page( 'woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mds_confirmed_orders' );
 	add_submenu_page( $first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mds_confirmed_order' );
 	add_submenu_page($first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed_no_pdf', 'mds_confirmed_order_no_pdf');
+	add_submenu_page( 'woocommerce', 'Download Logs', 'Download Logs', 'manage_options', 'mds_logs', 'mds_download_log_files' );
+}
+
+function mds_download_log_files()
+{
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
+	$mds = MdsColliveryService::getInstance();
+	if($zipFile = $mds->downloadLogFiles()) {
+		$file_name = basename($zipFile);
+		header("Content-Type: application/zip");
+		header("Content-Disposition: attachment; filename=$file_name");
+		header("Content-Length: " . filesize($zipFile));
+
+		readfile($zipFile);
+		exit;
+	} else {
+		wp_redirect(get_admin_url() . 'admin.php?page=wc-setting&tab=shipping&section=mds_collivery');
+	}
 }
 
 /**
