@@ -77,9 +77,41 @@ class MdsLogger
 	{
 		if (file_exists($this->log_dir . $name) && $content = file_get_contents($this->log_dir . $name)) {
 			return $content;
-		} else {
-			$this->create_dir($this->log_dir);
+
+	/**
+	 * @return bool|string
+	 */
+	public function zipLogFiles()
+	{
+		$files = array();
+
+		foreach (array('warning', 'error') as $name) {
+			if (file_exists($this->log_dir . $name)) {
+				$files[] = $this->log_dir . $name;
+			}
 		}
+
+		$zip = new ZipArchive();
+		$zip_name = 'mdsWoocommerceLogs.zip';
+		$zip_path = $this->log_dir . $zip_name;
+		if (file_exists($zip_path)) {
+			unlink($zip_path);
+		}
+
+		if ($zip->open($zip_path, ZipArchive::CREATE) === TRUE) {
+			foreach ($files as $file) {
+				$path_parts = pathinfo($file);
+				$zip->addFile($file, $path_parts['basename']);
+			}
+
+			$zip->close();
+
+			return $zip_path;
+		} else {
+			$this->error('MdsLogger:zipLogFiles', 'Unable to create zip file', array());
+		}
+
+		return false;
 	}
 
 	/**
