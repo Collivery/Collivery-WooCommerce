@@ -172,42 +172,34 @@ class MdsColliveryService
 			return false;
 		} else {
 			if(!isset($package['destination']['to_town_id']) || !is_integer($package['destination']['to_town_id']) || $package['destination']['to_town_id'] == 0) {
-				$this->logError('MdsColliveryService::validPackage', 'destination to_town_id not set or not an integer', $package);
 				return false;
 			}
 
 			if(!isset($package['destination']['from_town_id']) || !is_integer($package['destination']['from_town_id']) || $package['destination']['from_town_id'] == 0) {
-				$this->logError('MdsColliveryService::validPackage', 'destination from_town_id not set or not an integer', $package);
 				return false;
 			}
 
 			if(!isset($package['destination']['to_location_type']) || !is_integer($package['destination']['to_location_type']) || $package['destination']['to_location_type'] == 0) {
-				$this->logError('MdsColliveryService::validPackage', 'destination to_location_type not set or not an integer', $package);
 				return false;
 			}
 
 			if(!isset($package['destination']['from_location_type']) || !is_integer($package['destination']['from_location_type']) || $package['destination']['from_location_type'] == 0) {
-				$this->logError('MdsColliveryService::validPackage', 'destination from_location_type not set or not an integer', $package);
 				return false;
 			}
 		}
 
 		if(!isset($package['cart'])) {
-			$this->logError('MdsColliveryService::validPackage', 'cart not set', $package);
 			return false;
 		} else {
 			if(!isset($package['cart']['max_weight']) || !is_numeric($package['cart']['max_weight'])) {
-				$this->logError('MdsColliveryService::validPackage', 'cart max_weight not set or is not numeric', $package);
 				return false;
 			}
 
 			if(!isset($package['cart']['count']) || !is_numeric($package['cart']['count'])) {
-				$this->logError('MdsColliveryService::validPackage', 'cart count not set or is not numeric', $package);
 				return false;
 			}
 
 			if(!isset($package['cart']['products']) || !is_array($package['cart']['products'])) {
-				$this->logError('MdsColliveryService::validPackage', 'cart products not set or is not an array', $package);
 				return false;
 			}
 		}
