@@ -168,7 +168,6 @@ class MdsColliveryService
 		}
 
 		if(!isset($package['destination'])) {
-			$this->logError('MdsColliveryService::validPackage', 'destination not set', $package);
 			return false;
 		} else {
 			if(!isset($package['destination']['to_town_id']) || !is_integer($package['destination']['to_town_id']) || $package['destination']['to_town_id'] == 0) {
@@ -793,7 +792,7 @@ class MdsColliveryService
 	 */
 	public function logWarning($function, $error, $data)
 	{
-		$this->logger->error($function, $error, $this->enviroment->loggerFormat(), $data);
+		$this->logger->warning($function, $error, $this->enviroment->loggerFormat(), $data);
 	}
 
 	/**
