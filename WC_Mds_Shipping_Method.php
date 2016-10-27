@@ -358,16 +358,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	}
 
 	/**
-	 * @param $package
-	 * @return mixed
-	 */
-	private function getDiscount($package)
-	{
-		$discountCalculator = new DiscountCalculator($this->settings);
-		return $discountCalculator->start($package)->calculate()->getResult();
-	}
-
-	/**
 	 * Function used by Woocommerce to fetch shipping price
 	 *
 	 * @param array $package
@@ -394,8 +384,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				$services = $this->collivery->getServices();
 
-
-				$discount = $this->getDiscount($package);
 				// Get pricing for each service
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
@@ -419,17 +407,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 							"service" => $id,
 						);
 
-						// query the API for our prices
-						$response = $this->collivery_service->getPrice($data);
-						if (isset($response['price']['inc_vat'])) {
+						try {
+							$price = $this->collivery_service->getPrice($data, $id, $package['cart']['total']);
+
 							if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
 								$title = $title . ', additional 24 hours on outlying areas';
 							}
 
-							$quotedPrice = $this->collivery_service->addMarkup(max(0, $response['price']['inc_vat'] - $discount), $this->settings['markup_' . $id]);
 							$label = (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title;
 
-							if(!$quotedPrice) {
+							if($price <= 0) {
+								$price = 0.00;
 								$label .= ' - FREE!';
 							}
 
@@ -437,9 +425,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'id' => 'mds_' . $id,
 								'value' => $id,
 								'label' => $label,
-								'cost' => $quotedPrice,
+								'cost' => $price,
 							));
-						}
+						} catch(\MdsExceptions\InvalidColliveryDataException $e) {}
 					}
 				}
 			} else {
