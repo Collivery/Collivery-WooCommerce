@@ -24,7 +24,7 @@ class MdsCheckoutFields
 	/**
 	 * @var array
 	 */
-	protected $defaultFields = [];
+	protected $defaultFields = array();
 
 	/**
 	 * CheckoutFields constructor.
@@ -58,8 +58,8 @@ class MdsCheckoutFields
 
 		try {
 			$resources = $this->getResources();
-			$towns = ['' => 'Select Town'] + $resources['towns'];
-			$location_types = ['' => 'Select Premises Type'] + $resources['location_types'];
+			$towns = array('' => 'Select Town') + $resources['towns'];
+			$location_types = array('' => 'Select Premises Type') + $resources['location_types'];
 
 			return array(
 				$prefix . 'country' => array(

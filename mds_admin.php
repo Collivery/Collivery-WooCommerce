@@ -29,8 +29,6 @@ function mds_admin_menu()
 {
 	$first_page = add_submenu_page( 'woocommerce', 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds-already-confirmed', 'mds_confirmed_orders' );
 	add_submenu_page( $first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed', 'mds_confirmed_order' );
-	add_submenu_page($first_page, 'MDS Confirmed', 'MDS Confirmed', 'manage_options', 'mds_confirmed_no_pdf', 'mds_confirmed_order_no_pdf');
-	add_submenu_page( 'woocommerce', 'Download Logs', 'Download Logs', 'manage_options', 'mds_logs', 'mds_download_log_files' );
 }
 
 /**
@@ -49,7 +47,7 @@ function mds_download_log_files()
 		readfile($file);
 		exit;
 	} else {
-		wp_redirect(get_admin_url() . 'admin.php?page=wc-setting&tab=shipping&section=mds_collivery');
+		echo View::make('document_not_found', array('url' => get_admin_url() . 'admin.php?page=wc-settings&tab=shipping&section=mds_collivery', 'urlText' => 'Back to MDS Settings Page'));
 	}
 }
 
@@ -167,9 +165,10 @@ function mds_confirmed_order_view_pdf()
 	}
 
 	if ($collivery->getErrors()) {
-		wp_redirect(get_admin_url() . 'admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number);
+		echo View::make('document_not_found', array('url' => get_admin_url() . 'admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number, 'urlText' => 'Back to MDS Confirmed Page'));
 		exit;
 	}
+
 	header('Content-Type: application/pdf');
 	header('Content-Length: ' . $file['size']);
 	echo base64_decode($file['file']);
@@ -320,7 +319,7 @@ function quote_admin_callback()
 		$data['contact_from'] = $post['contact_from'];
 	}
 
-	// Check which destination address we using
+	// Check which delivery address we using
 	if ( $post['which_delivery_address'] == 'default' ) {
 		$data['to_town_id'] = $post['delivery_town'];
 		$data['to_location_type'] = $post['delivery_location_type'];
@@ -394,31 +393,31 @@ function accept_admin_callback()
 				$contact_from = $post['contact_from'];
 			}
 
-			// Check which destination address we using and if we need to add the address to collivery api
-			if ( $post['which_destination_address'] == 'default' ) {
-				$destination_address = $mds->addColliveryAddress(array(
-					'company_name' => ( $post['destination_company_name'] != "" ) ? $post['destination_company_name'] : 'Private',
-					'building' => $post['destination_building_details'],
-					'street' => $post['destination_street'],
-					'location_type' => $post['destination_location_type'],
-					'suburb' => $post['destination_suburb'],
-					'town' => $post['destination_town'],
-					'full_name' => $post['destination_full_name'],
-					'phone' => preg_replace("/[^0-9]/", "", $post['destination_phone']),
-					'cellphone' => preg_replace("/[^0-9]/", "", $post['destination_cellphone']),
-					'email' => $post['destination_email'],
+			// Check which delivery address we using and if we need to add the address to collivery api
+			if ( $post['which_delivery_address'] == 'default' ) {
+				$delivery_address = $mds->addColliveryAddress(array(
+					'company_name' => ( $post['delivery_company_name'] != "" ) ? $post['delivery_company_name'] : 'Private',
+					'building' => $post['delivery_building_details'],
+					'street' => $post['delivery_street'],
+					'location_type' => $post['delivery_location_type'],
+					'suburb' => $post['delivery_suburb'],
+					'town' => $post['delivery_town'],
+					'full_name' => $post['delivery_full_name'],
+					'phone' => preg_replace("/[^0-9]/", "", $post['delivery_phone']),
+					'cellphone' => preg_replace("/[^0-9]/", "", $post['delivery_cellphone']),
+					'email' => $post['delivery_email'],
 					'custom_id' => $order->user_id
 				));
 
 				// Check for any problems
-				if (!$destination_address) {
+				if (!$delivery_address) {
 					wp_send_json(array(
 						'redirect' => false,
 						'message' => '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>'
 					));
 				} else {
-					$collivery_to = $destination_address['address_id'];
-					$contact_to = $destination_address['contact_id'];
+					$collivery_to = $delivery_address['address_id'];
+					$contact_to = $delivery_address['contact_id'];
 				}
 			} else {
 				$collivery_to = $post['collivery_to'];
