@@ -502,8 +502,8 @@ function mds_load_admin_js() {
  */
 function mds_enqueue_admin_js() {
 
-	wp_register_script( 'jquery.datetimepicker_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.datetimepicker.js' );
-	wp_enqueue_script( 'jquery.datetimepicker_js' );
+	wp_register_script( 'jquery.datetimepicker.min_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.datetimepicker.min.js' );
+	wp_enqueue_script( 'jquery.datetimepicker.min_js' );
 	wp_register_script( 'mds_collivery_js', plugin_dir_url( __FILE__ ) . '/Views/js/mds_collivery.js' );
 	wp_enqueue_script( 'mds_collivery_js' );
 	wp_register_script( 'jquery.validate.min_js', plugin_dir_url( __FILE__ ) . '/Views/js/jquery.validate.min.js' );
