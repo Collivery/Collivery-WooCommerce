@@ -544,7 +544,6 @@ function mds_register_collivery()
 	$parcels = $mds->getOrderContent($order->get_items());
 	$defaults = $mds->returnDefaultAddress();
 	$addresses = $collivery->getAddresses();
-	$shipping_method = $order->get_shipping_method();
 	$total = $order->get_subtotal() + $order->get_cart_tax();
 
 	$instructions = "Order number: " . $order_id;
@@ -566,6 +565,13 @@ function mds_register_collivery()
 	$location_types = $collivery->getLocationTypes();
 	$suburbs = array('' => 'Select Town');
 	$populatedSuburbs = $suburbs + $collivery->getSuburbs(array_search($order->shipping_state, $collivery->getTowns() ));
+
+	$shipping_method = null;
+	foreach($services as $id => $value) {
+		if($order->has_shipping_method('mds_' . $id)) {
+			$shipping_method = $id;
+		}
+	}
 
 	echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'custom_fields', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs','services'));
 }
