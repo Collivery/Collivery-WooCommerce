@@ -1,5 +1,8 @@
 <?php
 
+use MdsExceptions\InvalidColliveryDataException;
+use MdsSupportingClasses\View;
+
 /*******************************************************************************
  * This file contains all the functions used for the admin side of the plugin. *
  *******************************************************************************/
@@ -141,6 +144,9 @@ function mds_confirmed_order()
 	include 'Views/view.php';
 }
 
+/**
+ * View Waybill in PDF format
+ */
 function mds_confirmed_order_view_pdf()
 {
 	if (!current_user_can('manage_options'))
@@ -170,6 +176,9 @@ function mds_confirmed_order_view_pdf()
 	exit;
 }
 
+/**
+ * Error when trying to view Waybill in PDF format
+ */
 function mds_confirmed_order_no_pdf()
 {
 	$waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
@@ -312,9 +321,9 @@ function quote_admin_callback()
 	}
 
 	// Check which destination address we using
-	if ( $post['which_destination_address'] == 'default' ) {
-		$data['to_town_id'] = $post['destination_town'];
-		$data['to_location_type'] = $post['destination_location_type'];
+	if ( $post['which_delivery_address'] == 'default' ) {
+		$data['to_town_id'] = $post['delivery_town'];
+		$data['to_location_type'] = $post['delivery_location_type'];
 	} else {
 		$data['collivery_to'] = $post['collivery_to'];
 		$data['contact_to'] = $post['contact_to'];
@@ -454,7 +463,7 @@ function accept_admin_callback()
 						'message' => '<p class="mds_response">' . $message . ' You will be redirect to your order in 5 seconds.</p>'
 					));
 				}
-			} catch(RejectedColliveryException $e) {
+			} catch(InvalidColliveryDataException $e) {
 				wp_send_json(array(
 					'redirect' => false,
 					'message' => '<p class="mds_response">' . $e->getMessage() . '</p>'
@@ -479,6 +488,9 @@ function accept_admin_callback()
  */
 add_action( 'admin_menu', 'mds_add_options' );
 
+/**
+ * Add javascript files
+ */
 function mds_add_options()
 {
 	$submenu = add_submenu_page( null, 'Register Collivery', null, 'manage_options', 'mds_register', 'mds_register_collivery' );
@@ -532,6 +544,8 @@ function mds_register_collivery()
 	$parcels = $mds->getOrderContent($order->get_items());
 	$defaults = $mds->returnDefaultAddress();
 	$addresses = $collivery->getAddresses();
+	$shipping_method = $order->get_shipping_method();
+	$total = $order->get_subtotal() + $order->get_cart_tax();
 
 	$instructions = "Order number: " . $order_id;
 	if(isset($settings['include_product_titles']) && $settings['include_product_titles'] == "yes") {
@@ -546,5 +560,12 @@ function mds_register_collivery()
 		}
 	}
 
-	include 'Views/order.php'; // Include our admin page
+	$include_product_titles = true;
+	$towns = $collivery->getTowns();
+	$services = $collivery->getServices();
+	$location_types = $collivery->getLocationTypes();
+	$suburbs = array('' => 'Select Town');
+	$populatedSuburbs = $suburbs + $collivery->getSuburbs(array_search($order->shipping_state, $collivery->getTowns() ));
+
+	echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'custom_fields', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs','services'));
 }
