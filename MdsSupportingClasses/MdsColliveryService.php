@@ -167,43 +167,53 @@ class MdsColliveryService
 			return false;
 		}
 
-		if(!isset($package['destination'])) {
+		try {
+			$this->validatePackageField($package, 'destination', 'array');
+			$this->validatePackageField($package['destination'], 'to_town_id');
+			$this->validatePackageField($package['destination'], 'from_town_id');
+			$this->validatePackageField($package['destination'], 'to_location_type');
+			$this->validatePackageField($package['destination'], 'from_location_type');
+
+			$this->validatePackageField($package, 'cart', 'array');
+			$this->validatePackageField($package['cart'], 'max_weight', 'numeric');
+			$this->validatePackageField($package['cart'], 'count', 'numeric');
+			$this->validatePackageField($package['cart'], 'products', 'array');
+
+			return true;
+		} catch(InvalidCartPackageException $e) {
 			return false;
-		} else {
-			if(!isset($package['destination']['to_town_id']) || !is_integer($package['destination']['to_town_id']) || $package['destination']['to_town_id'] == 0) {
-				return false;
-			}
+		}
+	}
 
-			if(!isset($package['destination']['from_town_id']) || !is_integer($package['destination']['from_town_id']) || $package['destination']['from_town_id'] == 0) {
-				return false;
-			}
+	/**
+	 * @param $array
+	 * @param $field
+	 * @param string $type
+	 * @throws InvalidCartPackageException
+	 */
+	private function validatePackageField($array, $field, $type = 'int')
+	{
+		if(!isset($array[$field])) {
+			throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->settings, $array);
+		}
 
-			if(!isset($package['destination']['to_location_type']) || !is_integer($package['destination']['to_location_type']) || $package['destination']['to_location_type'] == 0) {
-				return false;
-			}
-
-			if(!isset($package['destination']['from_location_type']) || !is_integer($package['destination']['from_location_type']) || $package['destination']['from_location_type'] == 0) {
-				return false;
+		if($type == 'int') {
+			if(!is_integer($array[$field])) {
+				throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->settings, $array);
 			}
 		}
 
-		if(!isset($package['cart'])) {
-			return false;
-		} else {
-			if(!isset($package['cart']['max_weight']) || !is_numeric($package['cart']['max_weight'])) {
-				return false;
-			}
-
-			if(!isset($package['cart']['count']) || !is_numeric($package['cart']['count'])) {
-				return false;
-			}
-
-			if(!isset($package['cart']['products']) || !is_array($package['cart']['products'])) {
-				return false;
+		if($type == 'numeric') {
+			if(!is_numeric($array[$field])) {
+				throw new InvalidCartPackageException($field . ' is not numeric', 'MdsColliveryService::validPackage()', $this->settings, $array);
 			}
 		}
 
-		return true;
+		if($type == 'array') {
+			if(!is_array($array[$field])) {
+				throw new InvalidCartPackageException($field . ' is not an array', 'MdsColliveryService::validPackage()', $this->settings, $array);
+			}
+		}
 	}
 
 	/**
