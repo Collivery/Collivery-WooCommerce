@@ -30,17 +30,20 @@ function mds_admin_menu()
 	add_submenu_page( 'woocommerce', 'Download Logs', 'Download Logs', 'manage_options', 'mds_logs', 'mds_download_log_files' );
 }
 
+/**
+ * Download the error log file
+ */
 function mds_download_log_files()
 {
 	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
-	if($zipFile = $mds->downloadLogFiles()) {
-		$file_name = basename($zipFile);
-		header("Content-Type: application/zip");
+	if($file = $mds->downloadLogFiles()) {
+		$file_name = basename($file);
+		header("Content-Type: text/plain");
 		header("Content-Disposition: attachment; filename=$file_name");
-		header("Content-Length: " . filesize($zipFile));
+		header("Content-Length: " . filesize($file));
 
-		readfile($zipFile);
+		readfile($file);
 		exit;
 	} else {
 		wp_redirect(get_admin_url() . 'admin.php?page=wc-setting&tab=shipping&section=mds_collivery');

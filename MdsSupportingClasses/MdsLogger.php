@@ -40,16 +40,15 @@ class MdsLogger
 	 * @param $error
 	 * @param $settings
 	 * @param array $extraData
-	 * @internal param $data
 	 */
-	public function error($function, $error, $settings, $extraData = [])
+	public function error($function, $error, $settings, $extraData = array())
 	{
-		$this->put('error', [
+		$this->put('error', array_filter(array(
 			'function' => $function,
 			'error' => $error,
 			'settings' => $settings,
 			'data' => $extraData,
-		]);
+		)));
 	}
 
 	/**
@@ -57,16 +56,28 @@ class MdsLogger
 	 * @param $error
 	 * @param $settings
 	 * @param array $extraData
-	 * @internal param $data
 	 */
-	public function warning($function, $error, $settings, $extraData = [])
+	public function warning($function, $error, $settings, $extraData = array())
 	{
-		$this->put('warning', [
+		$this->put('warning', array_filter(array(
 			'function' => $function,
 			'error' => $error,
 			'settings' => $settings,
 			'data' => $extraData,
-		]);
+		)));
+	}
+
+
+	/**
+	 * @param $message
+	 * @param array $data
+	 */
+	public function success($message, $data = array())
+	{
+		$this->put('success', array_filter(array(
+			'message' => $message,
+			'data' => $data,
+		)));
 	}
 
 	/**
@@ -118,6 +129,16 @@ class MdsLogger
 		}
 
 		return false;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function downloadErrorFile()
+	{
+		if(file_exists($this->log_dir . 'error')) {
+			return $this->log_dir . 'error';
+		}
 	}
 
 	/**
