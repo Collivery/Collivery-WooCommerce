@@ -739,6 +739,16 @@ class MdsColliveryService
 	}
 
 	/**
+	 * Returns true or false depending on if the plugin is enabled or not
+	 *
+	 * @return array
+	 */
+	public function isEnabled()
+	{
+		return $this->settings['enabled'] == 'yes';
+	}
+
+	/**
 	 * Gets default address of the MDS Account
 	 *
 	 * @return array|bool
