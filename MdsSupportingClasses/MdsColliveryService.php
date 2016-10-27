@@ -1,12 +1,15 @@
-<?php namespace MdsSupportingClasses;
+<?php
+
+namespace MdsSupportingClasses;
 
 use WC;
 use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
 
-use InvalidAddressDataException;
-use InvalidColliveryDataException;
+use MdsExceptions\InvalidCartPackageException;
+use MdsExceptions\InvalidAddressDataException;
+use MdsExceptions\InvalidColliveryDataException;
 
 /**
  * MdsColliveryService
