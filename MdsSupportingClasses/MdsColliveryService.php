@@ -232,8 +232,8 @@ class MdsColliveryService
 				$package['contents'][$item['product_id']] = array(
 					'data' => $item['data'],
 					'quantity' => $item['quantity'],
-					'price' => $this->format($product->get_price()),
-					'line_subtotal' => $this->format($product->get_price() * $item['quantity']),
+					'price' => $product->get_price(),
+					'line_subtotal' => $product->get_price() * $item['quantity'],
 					'weight' => $product->get_weight() * $item['quantity']
 				);
 			}
@@ -768,39 +768,6 @@ class MdsColliveryService
 	}
 
 	/**
-	 * Adds markup to price
-	 *
-	 * @param $price
-	 * @param $markup
-	 * @return float|string
-	 */
-	public function addMarkup($price, $markup)
-	{
-		$price += $price * ($markup / 100);
-		return (isset($this->settings['round']) && $this->settings['round'] == 'yes') ? $this->round($price) : $this->format($price);
-	}
-
-	/**
-	 * Format a number with grouped thousands
-	 *
-	 * @param $price
-	 * @return string
-	 */
-	public function format($price)
-	{
-		return number_format($price, 2, '.', '');
-	}
-
-	/**
-	 * Rounds number up to the next highest integer
-	 *
-	 * @param $price
-	 * @return float
-	 */
-	public function round($price)
-	{
-		return ceil($this->format($price));
-	}
 	 * @return bool|string
 	 */
 	public function downloadLogFiles()
