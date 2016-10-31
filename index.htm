@@ -17,7 +17,7 @@
 		<h1>MDS Collivery - WooCommerce Plugin Guide</h1>
 
 		<p>
-			<span style="color: #ff0000; float: right;">Rev 1.4 Created (2014-05-05) Updated (2015-07-07)</span>
+			<span style="color: #ff0000; float: right;">Rev 1.4 Created (2014-05-05) Updated (2016-10-31)</span>
 		</p>
 	</header>
 
@@ -26,7 +26,7 @@
 	</p>
 
 	<p>
-		<b>Prerequisites before installing Collivery Extension:</b><br/>• WordPress Version: From 3.8.1 To 4.3.1<br/> • WooCommerce Version: From 2.1.5 To 2.4.7<br/>• PHP Version 5.3 or above <span style="color: red; font-weight: bold;">(Warning do not install the plugin if your PHP version is below 5.3)</span>
+		<b>Prerequisites before installing Collivery Extension:</b><br/>• WordPress Version: From 3.8.1 To 4.6.1<br/> • WooCommerce Version: From 2.6.0 To 2.6.7<br/>• PHP Version 5.3 or above <span style="color: red; font-weight: bold;">(Warning do not install the plugin if your PHP version is below 5.3)</span>
 		<br/>• Hosting service with 'SoapClient' - Enabled<br/>• MDS Collivery - WooCommerce Plugin <a href="https://github.com/Collivery/Collivery-WooCommerce/releases/latest" target="_blank">Download Page</a>
 	</p>
 
@@ -34,13 +34,14 @@
 		<b>Make sure before installing this plugin that you make a full SQL database backup and a full backup of all your files. If for some reason something goes wrong you will need this backup to get your website back to where it was before. Also please note before updating your Wordpress or Woocommerce version make sure you confirm with us that the plugin does support the new version.</b>
 	</p>
 
-    <p style="color: red;">
-        We have found a bug with the plugin where any weights stored in product variations are not used by the plugin when fetching prices from MDS Collivery. The only way to prevent this issue from affecting pricing is to create a product for each variation you have with its own weight and dimension settings. If you are using variations for other reasons for example different colors then this issue will not affect you.
-    </p>
-
 	<p style="color: red;">
 		<b>Disclaimer:<br/>• MDS Collivery provides the following plugins as a service to our clients.<br/>• The responsibility to ensure that the integration is working correctly rests with the client.<br/>• MDS Collivery does not accept responsibility for any errors in pricing, addresses or any other part of the collivery process which may not work correctly.<br/>• By downloading the attached plugins the clients accepts the above conditions and will not in any way hold MDS Collivery responsible for errors.<br/>• MDS Collivery’s integration team will provide all assistance to the client in the integration process and, where possible, will provide technical support to the client.</b>
 	</p>
+
+	<p style="color: red;">
+		<b>Notice:<br/>• The MDS API and all of its plugins do not support international deliveries, this ability is on our wish list and should be rolled out within a year or two.<br />• This plugin modifies the Woocommerce address fields which prevents you from allowing non South African addresses being captured on the Billing and Shipping address, if you wish to sell products to anyone outside of South Africa you will not be able to do so.
+    </p>
+
 	<section>
 		<header>
 			<h2><a name="toc">Table of Contents</a></h2>
@@ -48,6 +49,7 @@
 		<ol>
 			<li><a href="#installation">Installation</a></li>
 			<li><a href="#admin_config">Configuration</a></li>
+			<li><a href="#zones_config">Shipping Zones Configuration</a></li>
 			<li><a href="#client_usage">Front End Usage (Client Side)</a></li>
 			<li><a href="#admin_usage">Back End Usage (Admin Side)</a></li>
 			<li><a href="#automated">Automated system to send delivery requests through to MDS!</a></li>
@@ -99,6 +101,15 @@
 	</section>
 	<section>
 		<header>
+			<h2><a name="zones_config" href="#zones_config">Shipping Zones Configuration</a></h2>
+		</header>
+		<p>
+			Our plugin is compatible with shipping zones, however you can only have it assigned to South Africa, you cannot use it to only select some provinces in South Africa.
+		</p>
+		<img src="images/zones.png"/><br/>
+	</section>
+	<section>
+		<header>
 			<h2><a name="admin_usage" href="#admin_usage">Back End Usage (Admin Side)</a></h2>
 		</header>
 		<p>
@@ -116,10 +127,6 @@
 
 		<p>
 			Here you will be able to change collection address and destination address as well as the delivery service. You can even include some written instructions for the driver and add additional parcels.
-		</p>
-
-		<p>
-			Which Collection Address: for both collection and destination just gives you the option of adding a new address to your lists of addresses in you MDS Collivery account or pick from the addresses already in that list. We have added some validation just to help make sure that the required information gets passed on to the API.
 		</p>
 
         <p>
@@ -145,7 +152,7 @@
 			<h2><a name="automated" href="#automated">Automated system to send delivery requests through to MDS</a></h2>
 		</header>
 		<p>
-			This new feature runs when ever a payment gateway calls the woocommerce payment_complete() function or a payment method of either EFT or Cheque is used and you manually change the status to processing. As soon as this automated process begins, it will check if the order has already been processed and if not we will send the request to MDS. Some things to keep in mind with this feature, the collection address used will always be the default address linked to your MDS account. Also if your client changes any details to their address a new address will be created in MDS system so this automated process might fill up your list of addresses.
+			This feature runs when ever a payment gateway calls the woocommerce payment_complete() function or if you manually change the status to processing. As soon as this automated process begins, it will check if the order has already been processed and if not we will send the request to MDS. Some things to keep in mind with this feature, the collection address used will always be the default address linked to your MDS account. Also if your client changes any details to their address a new address will be created in MDS system so this automated process might fill up your list of addresses.
 		</p>
 	</section>
 </div>
