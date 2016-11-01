@@ -10,7 +10,7 @@
 			<legend style="font-size:large; font-weight:bold;">Status Information:</legend>
 			<table>
 				<?php
-				echo '<tr><td>Waybill <a href="' . get_admin_url() . 'admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=waybill" rel="wrapped_waybill" class="show_waybill">' . $data->waybill . '--<i>View pdf</i>' . '</a></td></tr>' . '<tr><td>Status: ' . $tracking['status_text'] . '</td></tr>';
+				echo '<tr><td>Waybill: <a href="' . get_admin_url() . 'admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=waybill" rel="wrapped_waybill" class="show_waybill">' . 'View PDF' . '</a></td></tr>' . '<tr><td>Status: ' . $tracking['status_text'] . '</td></tr>';
 				echo '<tr><td>Status last updated:' . $tracking['updated_time'] . ' on the ' . date( "d/M/Y", strtotime( $tracking['updated_date'] ) ) . '</td></tr>';
 				if ( isset( $tracking['delivered_at'] ) ) {
 					echo '<tr><td>Delivered at ' . date( "H:i:s", strtotime( $tracking['delivered_at'] ) ) . ' on the ' . date( "d/M/Y", strtotime( $tracking['delivered_at'] ) );
@@ -33,6 +33,11 @@
 				<?php echo '<tr><td>Quoted Vol Weight: ' . number_format( $validation_results->vol_weight, 2, '.', '' ) . ' | Actual Vol Weight: ' . number_format( $tracking['vol_weight'], 2, '.', '' ) . '</td></tr>'; ?>
 				<?php echo '<tr><td>Quoted Price: R' . number_format( $validation_results->price->inc_vat, 2, '.', '' ) . ' | Actual Price: R' . number_format( $tracking['total_price'] * 1.14, 2, '.', '' ) . '</td></tr>'; ?>
 					<tr>
+					<tr>
+						<td>
+							Risk Cover: <?php echo $validation_results->cover == 1 ? 'Yes' : 'No';?>
+						</td>
+					</tr>
 					<td>
 						Proof of delivery: <?= '<a href="' . get_admin_url() . 'admin.php?page=mds-confirmed-order-view-pdf&waybill=' . $data->waybill . '&type=pod" rel="wrapped_waybill" class="show_waybill">' . 'View POD' . '</a>' ?>
 					</td>
