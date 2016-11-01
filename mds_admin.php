@@ -73,8 +73,8 @@ function mds_confirmed_orders()
 
 	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
-	$collivery = $mds->returnColliveryClass();
-	include 'Views/index.php';
+	$services = $mds->returnColliveryClass()->getServices();
+	echo View::make('index', compact('services', 'colliveries'));
 }
 
 /**
@@ -188,16 +188,6 @@ function mds_confirmed_order_view_pdf()
 		echo base64_decode($file['file']);
 		exit;
 	}
-}
-
-/**
- * Error when trying to view Waybill in PDF format
- */
-function mds_confirmed_order_no_pdf()
-{
-	$waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
-	$url = get_admin_url() . 'admin.php?page=mds_confirmed&waybill=' . $waybill_number;
-	require_once 'Views/document_not_found.php';
 }
 
 /**
