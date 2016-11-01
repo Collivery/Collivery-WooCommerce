@@ -343,15 +343,15 @@ function quote_admin_callback()
 		$data['contact_to'] = $post['contact_to'];
 	}
 
-	$response = $collivery->getPrice( $data );
-	if ( !isset( $response['service'] ) ) {
-		echo '<p class="mds_response">' . implode( ", ", $collivery->getErrors() ) . '</p>';
-		die();
-	} else {
-		$form = "";
-		$form .= '<p class="mds_response"><b>Service: </b>' . $services[$response['service']] . ' - Price incl: R' . $response['price']['inc_vat'] . '</p>';
-		echo $form;
-		die();
+	try {
+		$response = $collivery->getPrice($data);
+		if (!isset($response['service'])) {
+			throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->settings, array('data' => $data, 'errors' => $mds->collivery->getErrors()));
+		}
+
+		echo '<p class="mds_response"><b>Service: </b>' . $services[$response['service']] . ' - Price incl: R' . $response['price']['inc_vat'] . '</p>';
+	} catch(InvalidColliveryDataException $e) {
+		echo '<p class="mds_response"><b>Error: </b>' . $e->getMessage();
 	}
 }
 
