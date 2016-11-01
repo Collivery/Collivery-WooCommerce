@@ -131,15 +131,31 @@ function mds_confirmed_order()
 	$collection_contacts = $collivery->getContacts( $validation_results->collivery_from );
 	$destination_contacts = $collivery->getContacts( $validation_results->collivery_to );
 
-	// Set our status if the delivery is invoiced (closed)
-	if ( $tracking['status_id'] == 6 ) {
+	$closedStatusList = array(
+		"6"  => "Invoiced",
+		"8"  => "Delivered",
+		"20" => "POD Received",
+		"4"  => "Quote Rejected",
+		"28" => "Credited",
+		"5"  => "Cancelled"
+	);
+
+	if (isset($closedStatusList[$tracking['status_id']])) {
 		$wpdb->query( "UPDATE `" . $table_name . "` SET `status` = 0 WHERE `waybill` = " . $data->waybill . ";" );
 	}
 
-	$pod = glob( $directory . "/*.{pdf,PDF}", GLOB_BRACE );
 	$image_list = glob( $directory . "/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}", GLOB_BRACE );
-	$view_waybill = 'https://quote.collivery.co.za/waybillpdf.php?wb=' . base64_encode( $data->waybill ) . '&output=I';
-	include 'Views/view.php';
+
+	echo View::make('view', compact(
+		'data',
+		'tracking',
+		'image_list',
+		'validation_results',
+		'collection_address',
+		'destination_address',
+		'collection_contacts',
+		'destination_contacts'
+	));
 }
 
 /**
@@ -165,14 +181,13 @@ function mds_confirmed_order_view_pdf()
 	}
 
 	if ($collivery->getErrors()) {
-		echo View::make('document_not_found', array('url' => get_admin_url() . 'admin.php?page=mds_confirmed_no_pdf&waybill=' . $waybill_number, 'urlText' => 'Back to MDS Confirmed Page'));
+		echo View::make('document_not_found', array('url' => get_admin_url() . 'admin.php?page=mds_confirmed&waybill=' . $waybill_number, 'urlText' => 'Back to MDS Confirmed Page'));
+	} else {
+		header('Content-Type: application/pdf');
+		header('Content-Length: ' . $file['size']);
+		echo base64_decode($file['file']);
 		exit;
 	}
-
-	header('Content-Type: application/pdf');
-	header('Content-Length: ' . $file['size']);
-	echo base64_decode($file['file']);
-	exit;
 }
 
 /**
