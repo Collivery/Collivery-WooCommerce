@@ -1,14 +1,14 @@
 <?php
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', "2.4.0");
+define('MDS_VERSION', "2.5.0");
 include('autoload.php');
 
 /**
  * Plugin Name: MDS Collivery
  * Plugin URI: http://www.collivery.co.za/
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 2.4.0
+ * Version: 2.5.0
  * Author: Bryce Large
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  */
@@ -182,10 +182,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 					"from_location_type" => (int) $defaults['address']['location_type'],
 					"to_town_id" => (int) array_search($to_town_id, $towns),
 					"to_location_type" => (int) array_search($to_town_type, $location_types),
-					'country' => WC()->customer->get_country(),
+					'country' => 'ZA',
 					'state' => WC()->customer->get_state(),
 					'postcode' => WC()->customer->get_postcode(),
-					'city' => WC()->customer->get_city(),
+					'city' => $to_town_id,
 					'address' => WC()->customer->get_address(),
 					'address_2' => WC()->customer->get_address_2()
 				);
@@ -195,10 +195,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 					"from_location_type" => (int) $defaults['address']['location_type'],
 					"to_town_id" => (int) array_search($to_town_id, $towns),
 					"to_location_type" => (int) array_search($_POST['shipping_location_type'], $location_types),
-					'country' => WC()->customer->get_shipping_country(),
+					'country' => 'ZA',
 					'state' => WC()->customer->get_shipping_state(),
 					'postcode' => WC()->customer->get_shipping_postcode(),
-					'city' => WC()->customer->get_shipping_city(),
+					'city' => $to_town_id,
 					'address' => WC()->customer->get_shipping_address(),
 					'address_2' => WC()->customer->get_shipping_address_2()
 				);
