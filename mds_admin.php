@@ -18,6 +18,8 @@ if (is_admin()) {
 			add_action('wp_loaded', 'mds_confirmed_order_view_pdf');
 		} elseif($_GET['page'] == 'mds_download_log_files') {
 			add_action('wp_loaded', 'mds_download_log_files');
+		} elseif($_GET['page'] == 'mds_clear_cache_files') {
+			add_action('wp_loaded', 'mds_clear_cache_files');
 		}
 	}
 }
@@ -49,6 +51,20 @@ function mds_download_log_files()
 	} else {
 		echo View::make('document_not_found', array('url' => get_admin_url() . 'admin.php?page=wc-settings&tab=shipping&section=mds_collivery', 'urlText' => 'Back to MDS Settings Page'));
 	}
+}
+
+/**
+ * Download the error log file
+ */
+function mds_clear_cache_files()
+{
+	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
+	$mds = MdsColliveryService::getInstance();
+	$cache = $mds->returnCacheClass();
+	$cache->delete();
+
+	wp_redirect(get_admin_url() . 'admin.php?page=wc-settings&tab=shipping&section=mds_collivery');
+	exit;
 }
 
 /**

@@ -308,7 +308,15 @@ jQuery(function(){
         downloadButton.setAttribute('href', url);
         downloadButton.setAttribute('class', 'button-primary');
         downloadButton.innerHTML = 'Download Error Logs';
+        downloadButton.setAttribute('id', 'woocommerce_mds_collivery_downloadLogs');
         downloadSetting.replaceWith(downloadButton);
+
+        var clearCacheButton = document.createElement('a');
+        clearCacheButton.innerHTML = 'Clear Cache';
+        clearCacheButton.setAttribute('class', 'button-primary');
+        clearCacheButton.setAttribute('id', 'woocommerce_mds_collivery_clearCache');
+        clearCacheButton.setAttribute('href', url.replace('mds_download_log_files', 'mds_clear_cache_files'));
+        jQuery(clearCacheButton).css('margin-right', '10px').insertBefore('#woocommerce_mds_collivery_downloadLogs');
     }
 
     (function(jQuery){

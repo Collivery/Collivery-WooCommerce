@@ -109,9 +109,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	{
 		$fields = array(
 			'downloadLogs' => array(
-				'title' => __('Download Error Logs?'),
+				'title' => __('Clear Cache/Download Error Logs?'),
 				'type' => 'text',
-				'description' => __('If you have any errors with the MDS plugin, you can use these files to email to integration@collivery.co.za for support'),
+				'description' => __('If you have any errors with the MDS plugin, you can download log files and email them to integration@collivery.co.za for support, clearing cache can be useful if you have empty list of towns etc'),
 				'placeholder' => admin_url() . 'admin.php?page=mds_download_log_files',
 			),
 			'enabled' => array(
