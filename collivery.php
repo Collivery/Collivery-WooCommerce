@@ -283,4 +283,18 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 		add_action( 'woocommerce_order_status_processing', 'automated_add_collivery_status_processing' );
 	}
+
+	if (!function_exists('mds_change_default_checkout_country')) {
+		/**
+		 * Sets South Africa as the default country during checkout
+		 *
+		 * @return string
+		 */
+		function mds_change_default_checkout_country()
+		{
+			return 'ZA';
+		}
+
+		add_filter('default_checkout_country', 'mds_change_default_checkout_country');
+	}
 }

@@ -62,13 +62,6 @@ class MdsCheckoutFields
 			$location_types = array('' => 'Select Premises Type') + $resources['location_types'];
 
 			return array(
-				$prefix . 'country' => array(
-					'type' => 'select',
-					'label' => 'Country',
-					'required' => true,
-					'class' => array( 'form-row-wide', 'address-field', 'update_totals_on_change' ),
-					'autocomplete' => 'country',
-				),
 				$prefix . 'state' => array(
 					'type' => 'select',
 					'label' => 'City/Town',
