@@ -6,6 +6,7 @@ use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
 
+use MdsExceptions\ProductOutOfException;
 use MdsExceptions\InvalidServiceException;
 use MdsExceptions\InvalidCartPackageException;
 use MdsExceptions\InvalidAddressDataException;
@@ -292,20 +293,23 @@ class MdsColliveryService
 	 */
 	public function isOrderInStock($items)
 	{
-		foreach ($items as $item_id => $item) {
-			$qty = $item['item_meta']['_qty'][0];
-			$product = new WC_Product($item['product_id']);
-			$stock = $product->get_total_stock();
+		try {
+			foreach ($items as $item_id => $item) {
+				$qty = $item['item_meta']['_qty'][0];
+				$product = new WC_Product($item['product_id']);
+				$stock = $product->get_total_stock();
 
-			if($stock != '') {
-				if($stock == 0 || $stock < $qty) {
-					$this->logWarning('MdsColliveryService::isOrderInStock', $product->get_formatted_name() . ' is out of stock', ['product_id' => $item['product_id']]);
-					return false;
+				if($stock != '') {
+					if($stock == 0 || $stock < $qty) {
+						throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->settings, $items);
+					}
 				}
 			}
-		}
 
-		return true;
+			return true;
+		} catch (ProductOutOfException $e) {
+			return false;
+		}
 	}
 
 	/**
