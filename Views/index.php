@@ -26,7 +26,6 @@
 			</thead>
 			<tbody>
 			<?php if ( count( $colliveries ) > 0 ):
-				$services = $collivery->getServices();
 				$count = 0;
 				foreach ( $colliveries as $key => $order ):
 					$validation_results = json_decode( $order->validation_results );

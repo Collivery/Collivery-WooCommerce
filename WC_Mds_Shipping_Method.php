@@ -30,6 +30,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	var $collivery_service;
 
+	/**
+	 * @return WC_Mds_Shipping_Method
+	 */
 	public static function get_instance()
 	{
 		if (! self::$instance) {
@@ -39,16 +42,28 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		return self::$instance;
 	}
 
-	function __construct()
+	/**
+	 * WC_Mds_Shipping_Method constructor.
+	 * @param int $instance_id
+	 */
+	function __construct($instance_id = 0)
 	{
 		$this->id = 'mds_collivery';
-		$this->method_title = __('MDS Collivery', 'woocommerce-mds-shipping');
-		$this->admin_page_heading = __('MDS Collivery', 'woocommerce-mds-shipping');
-		$this->admin_page_description = __('Seamlessly integrate your website with MDS Collivery', 'woocommerce-mds-shipping');
+		$this->instance_id = absint($instance_id);
+		$this->method_title = __('MDS Collivery shipping');
+		$this->method_description  = __('MDS Collivery offers range of different delivery services');
+		$this->admin_page_heading = __('MDS Collivery shipping');
+		$this->admin_page_description = __('Seamlessly integrate your website with MDS Collivery');
 
-		add_action('woocommerce_update_options_shipping_' . $this->id, array(&$this, 'process_admin_options'));
+		$this->supports = array(
+			'settings',
+			'shipping-zones',
+			'instance-settings',
+		);
 
 		$this->init();
+
+		add_action( 'woocommerce_update_options_shipping_' . $this->id, array($this, 'process_admin_options'));
 	}
 
 	/**
@@ -62,7 +77,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		// Load the settings.
 		$this->init_settings();
 
-		$this->title = $this->settings['title'];
+		$this->title = $this->method_title;
 		$this->enabled = $this->settings['enabled'];
 
 		$this->init_mds_collivery();
@@ -94,38 +109,33 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	{
 		$fields = array(
 			'downloadLogs' => array(
-				'title' => __('Download Error Logs?', 'woocommerce-mds-shipping'),
+				'title' => __('Clear Cache/Download Error Logs?'),
 				'type' => 'text',
-				'description' => __('If you have any errors with the MDS plugin, you can use these files to email to integration@collivery.co.za for support', 'woocommerce-mds-shipping'),
+				'description' => __('If you have any errors with the MDS plugin, you can download log files and email them to integration@collivery.co.za for support, clearing cache can be useful if you have empty list of towns etc'),
 				'placeholder' => admin_url() . 'admin.php?page=mds_download_log_files',
 			),
 			'enabled' => array(
-				'title' => __('Enabled?', 'woocommerce-mds-shipping'),
+				'title' => __('Enabled?'),
 				'type' => 'checkbox',
-				'label' => __('Enable this shipping method', 'woocommerce-mds-shipping'),
+				'label' => __('Enable this shipping method'),
 				'default' => 'yes',
 			),
-			'title' => array(
-				'title' => __('Method Title', 'woocommerce-mds-shipping'),
-				'type' => 'text',
-				'description' => __('This controls the title which the user sees during checkout.', 'woocommerce-mds-shipping'),
-				'default' => __('MDS Collivery', 'woocommerce-mds-shipping'),
-			),
 			'mds_user' => array(
-				'title' => "MDS " . __('Username', 'woocommerce-mds-shipping'),
+				'title' => "MDS " . __('Username'),
 				'type' => 'text',
-				'description' => __('Email address associated with your MDS account.', 'woocommerce-mds-shipping'),
+				'description' => __('Email address associated with your MDS account.'),
 				'default' => "api@collivery.co.za",
 			),
 			'mds_pass' => array(
-				'title' => "MDS " . __('Password', 'woocommerce-mds-shipping'),
+				'title' => "MDS " . __('Password'),
 				'type' => 'text',
-				'description' => __('The password used when logging in to MDS.', 'woocommerce-mds-shipping'),
+				'description' => __('The password used when logging in to MDS.'),
 				'default' => "api123",
 			)
 		);
 
 		$this->form_fields = $fields;
+		$this->instance_form_fields = $fields;
 	}
 
 	/**
@@ -137,16 +147,16 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$services = $this->collivery->getServices();
 
 		$fields['include_product_titles'] = array(
-			'title' => __('Include product titles', 'woocommerce-mds-shipping'),
+			'title' => __('Include product titles'),
 			'type' => 'checkbox',
-			'description' => __('Includes product titles in the delivery instructions, max 4096 characters', 'woocommerce-mds-shipping'),
+			'description' => __('Includes product titles in the delivery instructions, max 4096 characters'),
 			'default' => 'no',
 		);
 
 		$fields['risk_cover'] = array(
-			'title' => "MDS " . __('Risk Cover', 'woocommerce-mds-shipping'),
+			'title' => "MDS " . __('Risk Cover'),
 			'type' => 'checkbox',
-			'description' => __('Risk cover, up to a maximum of R10 000.', 'woocommerce-mds-shipping'),
+			'description' => __('Risk cover, up to a maximum of R10 000.'),
 			'default' => 'yes',
 		);
 
@@ -158,21 +168,21 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		);
 
 		$fields['round'] = array(
-			'title' => "MDS " . __('Round Price', 'woocommerce-mds-shipping'),
+			'title' => "MDS " . __('Round Price'),
 			'type' => 'checkbox',
-			'description' => __('Rounds price up.', 'woocommerce-mds-shipping'),
+			'description' => __('Rounds price up.'),
 			'default' => 'yes',
 		);
 
 		foreach ($services as $id => $title) {
 			$fields['method_' . $id] = array(
-				'title' => __($title, 'woocommerce-mds-shipping'),
-				'label' => __($title . ': Enabled', 'woocommerce-mds-shipping'),
+				'title' => __($title),
+				'label' => __($title . ': Enabled'),
 				'type' => 'checkbox',
 				'default' => 'yes',
 			);
 			$fields['markup_' . $id] = array(
-				'title' => __($title . ' Markup', 'woocommerce-mds-shipping'),
+				'title' => __($title . ' Markup'),
 				'type' => 'number',
 				'default' => '10',
 				'custom_attributes' => array(
@@ -181,7 +191,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 				)
 			);
 			$fields['wording_' . $id] = array(
-				'title' => __($title . ' Wording', 'woocommerce-mds-shipping'),
+				'title' => __($title . ' Wording'),
 				'type' => 'text',
 				'default' => $title,
 				'class' => 'sectionEnd'
@@ -189,8 +199,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		}
 
 		$fields['method_free'] = array(
-			'title' => __('Free Delivery mode', 'woocommerce-mds-shipping'),
-			'label' => __('Free Delivery: Enabled', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery mode'),
+			'label' => __('Free Delivery: Enabled'),
 			'type' => 'select',
 			'default' => 'no',
 			'options' => array(
@@ -216,7 +226,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		);
 
 		$fields['wording_free'] = array(
-			'title' => __('Free Delivery Wording', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery Wording'),
 			'type' => 'text',
 			'default' => 'Free Delivery',
 			'custom_attributes' => array(
@@ -226,9 +236,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 
 		$fields['free_min_total'] = array(
-			'title' => __('Free Delivery Min Total', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery Min Total'),
 			'type' => 'number',
-			'description' => __('Min order total before free delivery is included, amount is including vat.', 'woocommerce-mds-shipping'),
+			'description' => __('Min order total before free delivery is included, amount is including vat.'),
 			'default' => '1000.00',
 			'custom_attributes' => array(
 				'step' 	=> .1,
@@ -237,9 +247,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		);
 
 		$fields['free_local_only'] = array(
-			'title' => __('Free Delivery Local Only', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery Local Only'),
 			'type' => 'checkbox',
-			'description' => __('Only allow free delivery for local deliveries only. ', 'woocommerce-mds-shipping'),
+			'description' => __('Only allow free delivery for local deliveries only. '),
 			'default' => 'no',
 			'custom_attributes' => array(
 				'data-type' => 'free-delivery-item'
@@ -247,35 +257,36 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		);
 
 		$fields['free_default_service'] = array(
-			'title' => __('Free Delivery Default Service', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery Default Service'),
 			'type' => 'select',
 			'options' => $services,
 			'default' => 5,
-			'description' => __('When free delivery is enabled, which default service do we use.', 'woocommerce-mds-shipping'),
+			'description' => __('When free delivery is enabled, which default service do we use.'),
 			'custom_attributes' => array(
 				'data-type' => 'free-delivery-item'
 			),
 		);
 
 		$fields['free_local_default_service'] = array(
-			'title' => __('Free Delivery Local Only Default Service', 'woocommerce-mds-shipping'),
+			'title' => __('Free Delivery Local Only Default Service'),
 			'type' => 'select',
 			'options' => $services,
 			'default' => 2,
-			'description' => __('When free local only delivery is enabled, which default service do we use.', 'woocommerce-mds-shipping'),
+			'description' => __('When free local only delivery is enabled, which default service do we use.'),
 			'custom_attributes' => array(
 				'data-type' => 'free-delivery-item'
 			),
 		);
 
 		$fields['toggle_automatic_mds_processing'] = array(
-			'title' => __('Automatic MDS Processing', 'woocommerce-mds-shipping'),
+			'title' => __('Automatic MDS Processing'),
 			'type' => 'checkbox',
-			'description' => __('When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>', 'woocommerce-mds-shipping'),
+			'description' => __('When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>'),
 			'default' => 'no',
 		);
 
 		$this->form_fields = $fields;
+		$this->instance_form_fields = $fields;
 	}
 
 	/**
@@ -358,16 +369,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	}
 
 	/**
-	 * @param $package
-	 * @return mixed
-	 */
-	private function getDiscount($package)
-	{
-		$discountCalculator = new DiscountCalculator($this->settings);
-		return $discountCalculator->start($package)->calculate()->getResult();
-	}
-
-	/**
 	 * Function used by Woocommerce to fetch shipping price
 	 *
 	 * @param array $package
@@ -394,8 +395,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				$services = $this->collivery->getServices();
 
-
-				$discount = $this->getDiscount($package);
 				// Get pricing for each service
 				foreach ($services as $id => $title) {
 					if ($this->settings["method_$id"] == 'yes') {
@@ -419,17 +418,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 							"service" => $id,
 						);
 
-						// query the API for our prices
-						$response = $this->collivery_service->getPrice($data);
-						if (isset($response['price']['inc_vat'])) {
+						try {
+							$price = $this->collivery_service->getPrice($data, $id, $package['cart']['total']);
+
 							if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
 								$title = $title . ', additional 24 hours on outlying areas';
 							}
 
-							$quotedPrice = $this->collivery_service->addMarkup(max(0, $response['price']['inc_vat'] - $discount), $this->settings['markup_' . $id]);
 							$label = (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title;
 
-							if(!$quotedPrice) {
+							if($price <= 0) {
+								$price = 0.00;
 								$label .= ' - FREE!';
 							}
 
@@ -437,9 +436,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'id' => 'mds_' . $id,
 								'value' => $id,
 								'label' => $label,
-								'cost' => $quotedPrice,
+								'cost' => $price,
 							));
-						}
+						} catch(\MdsExceptions\InvalidColliveryDataException $e) {}
 					}
 				}
 			} else {

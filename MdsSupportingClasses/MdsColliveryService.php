@@ -1,12 +1,16 @@
-<?php namespace MdsSupportingClasses;
+<?php
+namespace MdsSupportingClasses;
 
 use WC;
 use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
 
-use InvalidAddressDataException;
-use InvalidColliveryDataException;
+use MdsExceptions\ProductOutOfException;
+use MdsExceptions\InvalidServiceException;
+use MdsExceptions\InvalidCartPackageException;
+use MdsExceptions\InvalidAddressDataException;
+use MdsExceptions\InvalidColliveryDataException;
 
 /**
  * MdsColliveryService
@@ -167,43 +171,53 @@ class MdsColliveryService
 			return false;
 		}
 
-		if(!isset($package['destination'])) {
+		try {
+			$this->validatePackageField($package, 'destination', 'array');
+			$this->validatePackageField($package['destination'], 'to_town_id');
+			$this->validatePackageField($package['destination'], 'from_town_id');
+			$this->validatePackageField($package['destination'], 'to_location_type');
+			$this->validatePackageField($package['destination'], 'from_location_type');
+
+			$this->validatePackageField($package, 'cart', 'array');
+			$this->validatePackageField($package['cart'], 'max_weight', 'numeric');
+			$this->validatePackageField($package['cart'], 'count', 'numeric');
+			$this->validatePackageField($package['cart'], 'products', 'array');
+
+			return true;
+		} catch(InvalidCartPackageException $e) {
 			return false;
-		} else {
-			if(!isset($package['destination']['to_town_id']) || !is_integer($package['destination']['to_town_id']) || $package['destination']['to_town_id'] == 0) {
-				return false;
-			}
+		}
+	}
 
-			if(!isset($package['destination']['from_town_id']) || !is_integer($package['destination']['from_town_id']) || $package['destination']['from_town_id'] == 0) {
-				return false;
-			}
+	/**
+	 * @param $array
+	 * @param $field
+	 * @param string $type
+	 * @throws InvalidCartPackageException
+	 */
+	private function validatePackageField($array, $field, $type = 'int')
+	{
+		if(!isset($array[$field])) {
+			throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->settings, $array);
+		}
 
-			if(!isset($package['destination']['to_location_type']) || !is_integer($package['destination']['to_location_type']) || $package['destination']['to_location_type'] == 0) {
-				return false;
-			}
-
-			if(!isset($package['destination']['from_location_type']) || !is_integer($package['destination']['from_location_type']) || $package['destination']['from_location_type'] == 0) {
-				return false;
+		if($type == 'int') {
+			if(!is_integer($array[$field])) {
+				throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->settings, $array);
 			}
 		}
 
-		if(!isset($package['cart'])) {
-			return false;
-		} else {
-			if(!isset($package['cart']['max_weight']) || !is_numeric($package['cart']['max_weight'])) {
-				return false;
-			}
-
-			if(!isset($package['cart']['count']) || !is_numeric($package['cart']['count'])) {
-				return false;
-			}
-
-			if(!isset($package['cart']['products']) || !is_array($package['cart']['products'])) {
-				return false;
+		if($type == 'numeric') {
+			if(!is_numeric($array[$field])) {
+				throw new InvalidCartPackageException($field . ' is not numeric', 'MdsColliveryService::validPackage()', $this->settings, $array);
 			}
 		}
 
-		return true;
+		if($type == 'array') {
+			if(!is_array($array[$field])) {
+				throw new InvalidCartPackageException($field . ' is not an array', 'MdsColliveryService::validPackage()', $this->settings, $array);
+			}
+		}
 	}
 
 	/**
@@ -222,8 +236,8 @@ class MdsColliveryService
 				$package['contents'][$item['product_id']] = array(
 					'data' => $item['data'],
 					'quantity' => $item['quantity'],
-					'price' => $this->format($product->get_price()),
-					'line_subtotal' => $this->format($product->get_price() * $item['quantity']),
+					'price' => $product->get_price(),
+					'line_subtotal' => $product->get_price() * $item['quantity'],
 					'weight' => $product->get_weight() * $item['quantity']
 				);
 			}
@@ -279,20 +293,23 @@ class MdsColliveryService
 	 */
 	public function isOrderInStock($items)
 	{
-		foreach ($items as $item_id => $item) {
-			$qty = $item['item_meta']['_qty'][0];
-			$product = new WC_Product($item['product_id']);
-			$stock = $product->get_total_stock();
+		try {
+			foreach ($items as $item_id => $item) {
+				$qty = $item['item_meta']['_qty'][0];
+				$product = new WC_Product($item['product_id']);
+				$stock = $product->get_total_stock();
 
-			if($stock != '') {
-				if($stock == 0 || $stock < $qty) {
-					$this->logWarning('MdsColliveryService::isOrderInStock', $product->get_formatted_name() . ' is out of stock', ['product_id' => $item['product_id']]);
-					return false;
+				if($stock != '') {
+					if($stock == 0 || $stock < $qty) {
+						throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->settings, $items);
+					}
 				}
 			}
-		}
 
-		return true;
+			return true;
+		} catch (ProductOutOfException $e) {
+			return false;
+		}
 	}
 
 	/**
@@ -312,15 +329,24 @@ class MdsColliveryService
 
 	/**
 	 * @param array $array
-	 * @return array
+	 * @param $serviceId
+	 * @param $cartSubTotal
+	 * @return float
+	 * @throws InvalidColliveryDataException
 	 */
-	public function getPrice(array $array)
+	public function getPrice(array $array, $serviceId, $cartSubTotal)
 	{
 		if(!$result = $this->collivery->getPrice($array)) {
-			$this->logError('MdsCollivery::getPrice', $this->collivery->getErrors(), $array);
+			throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->settings, ['errors' => $this->collivery->getErrors(), 'data' => $array]);
 		}
 
-		return $result;
+		if($this->settings['method_free'] === 'discount' && $cartSubTotal >= $this->settings['free_min_total']) {
+			$discount = $this->settings['shipping_discount_percentage'];
+		} else {
+			$discount = 0;
+		}
+
+		return Money::make($result['price']['inc_vat'], $this->settings['markup_' . $serviceId], $discount, $this->settings['round'] == 'yes' ? true : false)->amount;
 	}
 
 	/**
@@ -346,7 +372,6 @@ class MdsColliveryService
 
 			$reason = preg_replace('|collivery|i', 'delivery', $reason);
 			$reason = preg_replace('|The delivery time has been CHANGED to|i', 'the approximate delivery day is', $reason);
-			$this->logWarning('MdsColliveryService::addCollivery', $reason, $array);
 
 			if(function_exists('wc_add_notice')) {
 				wc_add_notice(sprintf(__($reason, "woocommerce-mds-shipping")));
@@ -372,35 +397,35 @@ class MdsColliveryService
 	public function validateCollivery(array $array)
 	{
 		if(empty($array['collivery_from'])) {
-			throw new InvalidColliveryDataException($array, "Invalid collection address");
+			throw new InvalidColliveryDataException('Invalid collection address', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if(empty($array['collivery_to'])) {
-			throw new InvalidColliveryDataException($array, "Invalid destination address");
+			throw new InvalidColliveryDataException('Invalid destination address', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if(empty($array['contact_from'])) {
-			throw new InvalidColliveryDataException($array, "Invalid collection contact");
+			throw new InvalidColliveryDataException('Invalid collection contact', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if(empty($array['contact_to'])) {
-			throw new InvalidColliveryDataException($array, "Invalid destination contact");
+			throw new InvalidColliveryDataException('Invalid destination contact', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if(empty($array['collivery_type'])) {
-			throw new InvalidColliveryDataException($array, "Invalid parcel type");
+			throw new InvalidColliveryDataException('Invalid parcel type', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if(empty($array['service'])) {
-			throw new InvalidColliveryDataException($array, "Invalid service");
+			throw new InvalidColliveryDataException('Invalid service', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if($array['cover'] != 1 && $array['cover'] != 0) {
-			throw new InvalidColliveryDataException($array, "Invalid risk cover option");
+			throw new InvalidColliveryDataException('Invalid risk cover option', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		if(empty($array['parcels']) || !is_array($array['parcels'])) {
-			throw new InvalidColliveryDataException($array, "Invalid parcels");
+			throw new InvalidColliveryDataException('Invalid parcels', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
 		}
 
 		return $this->collivery->validate($array);
@@ -428,87 +453,84 @@ class MdsColliveryService
 				}
 			}
 
-			if(!isset($service_id)) {
-				$this->logError('MdsServiceClass::automatedAddCollivery', 'No mds shipping method used', $order->get_shipping_methods());
-			} else {
-				try {
-					$this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
+			try {
+				if(!isset($service_id)) {
+					throw new InvalidServiceException('No MDS shipping method used', 'automatedAddCollivery', $this->settings, $order->get_shipping_methods());
+				}
 
-					if(!$this->isOrderInStock($order->get_items())) {
-						$this->updateStatusOrAddNote($order, 'There are products in the order that are not in stock, auto processing aborted.', $processing, 'processing');
-						return false;
-					}
+				$this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
 
-					$parcels = $this->getOrderContent($order->get_items());
-					$defaults = $this->returnDefaultAddress();
+				if(!$this->isOrderInStock($order->get_items())) {
+					$this->updateStatusOrAddNote($order, 'There are products in the order that are not in stock, auto processing aborted.', $processing, 'processing');
+					return false;
+				}
 
-					$address = $this->addColliveryAddress(array(
-						'company_name' => ( $order->shipping_company != "" ) ? $order->shipping_company : 'Private',
-						'building' => $order->shipping_building_details,
-						'street' => $order->shipping_address_1 . ' ' . $order->shipping_address_2,
-						'location_type' => $order->shipping_location_type,
-						'suburb' => $order->shipping_city,
-						'town' => $order->shipping_state,
-						'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
-						'cellphone' => preg_replace("/[^0-9]/", "", $order->shipping_phone),
-						'email' => str_replace(' ', '', $order->shipping_email),
-						'custom_id' => $order->user_id
-					));
+				$parcels = $this->getOrderContent($order->get_items());
+				$defaults = $this->returnDefaultAddress();
 
-					$collivery_from = $defaults['default_address_id'];
-					list($contact_from) = array_keys($defaults['contacts']);
+				$address = $this->addColliveryAddress(array(
+					'company_name' => ( $order->shipping_company != "" ) ? $order->shipping_company : 'Private',
+					'building' => $order->shipping_building_details,
+					'street' => $order->shipping_address_1 . ' ' . $order->shipping_address_2,
+					'location_type' => $order->shipping_location_type,
+					'suburb' => $order->shipping_city,
+					'town' => $order->shipping_state,
+					'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
+					'cellphone' => preg_replace("/[^0-9]/", "", $order->shipping_phone),
+					'email' => str_replace(' ', '', $order->shipping_email),
+					'custom_id' => $order->user_id
+				));
 
-					$collivery_to = $address['address_id'];
-					$contact_to = $address['contact_id'];
+				$collivery_from = $defaults['default_address_id'];
+				list($contact_from) = array_keys($defaults['contacts']);
 
-					$instructions = "Order number: " . $order_id;
-					if(isset($this->settings['include_product_titles']) && $this->settings['include_product_titles'] == "yes") {
-						$count = 1;
-						$instructions .= ': ';
-						foreach($parcels as $parcel) {
-							if(isset($parcel['description'])) {
-								$ending = ($count == count($parcels)) ? '' : ', ';
-								$instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
-								$count++;
-							}
+				$collivery_to = $address['address_id'];
+				$contact_to = $address['contact_id'];
+
+				$instructions = "Order number: " . $order_id;
+				if(isset($this->settings['include_product_titles']) && $this->settings['include_product_titles'] == "yes") {
+					$count = 1;
+					$instructions .= ': ';
+					foreach($parcels as $parcel) {
+						if(isset($parcel['description'])) {
+							$ending = ($count == count($parcels)) ? '' : ', ';
+							$instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
+							$count++;
 						}
 					}
-
-					$orderTotal = $order->get_subtotal() + $order->get_cart_tax();
-					$riskCover = ($this->settings['risk_cover']  == 'yes') & ($orderTotal > $this->settings['risk_cover_threshold']);
-					$colliveryOptions = array(
-						'collivery_from' => (int)$collivery_from,
-						'contact_from' => (int)$contact_from,
-						'collivery_to' => (int)$collivery_to,
-						'contact_to' => (int)$contact_to,
-						'cust_ref' => "Order number: " . $order_id,
-						'instructions' => $instructions,
-						'collivery_type' => 2,
-						'service' => (int)$service_id,
-						'cover' => $riskCover ? 1 : 0,
-						'parcel_count' => count($parcels),
-						'parcels' => $parcels
-					);
-					$collivery_id = $this->addCollivery($colliveryOptions);
-
-					$collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time'])  : '';
-
-					if($collivery_id) {
-						// Save the results from validation into our table
-						$this->addColliveryToProcessedTable($collivery_id, $order->id);
-						$this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
-					} else {
-						$this->logError('MdsServiceClass::automatedAddCollivery', 'no collivery id returned after calling addCollivery', $colliveryOptions);
-						$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process.', $processing, 'processing');
-					}
-				} catch(InvalidColliveryDataException $e) {
-					$this->logError('MdsServiceClass::automatedAddCollivery', $e->getMessage(), $e->getColliveryDataUsed());
-					$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
-				} catch(InvalidAddressDataException $e) {
-					$this->logError('MdsServiceClass::automatedAddCollivery', $e->getMessage(), $e->getAddressDataUsed());
-					$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
 				}
-			}
+
+				$orderTotal = $order->get_subtotal() + $order->get_cart_tax();
+				$riskCover = ($this->settings['risk_cover']  == 'yes') & ($orderTotal > $this->settings['risk_cover_threshold']);
+				$colliveryOptions = array(
+					'collivery_from' => (int)$collivery_from,
+					'contact_from' => (int)$contact_from,
+					'collivery_to' => (int)$collivery_to,
+					'contact_to' => (int)$contact_to,
+					'cust_ref' => "Order number: " . $order_id,
+					'instructions' => $instructions,
+					'collivery_type' => 2,
+					'service' => (int)$service_id,
+					'cover' => $riskCover ? 1 : 0,
+					'parcel_count' => count($parcels),
+					'parcels' => $parcels
+				);
+				$collivery_id = $this->addCollivery($colliveryOptions);
+
+				$collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time'])  : '';
+
+				if($collivery_id) {
+					// Save the results from validation into our table
+					$this->addColliveryToProcessedTable($collivery_id, $order->id);
+					$this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
+				} else {
+					throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->settings, ['data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()]);
+				}
+			} catch(InvalidColliveryDataException $e) {
+				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
+			} catch(InvalidAddressDataException $e) {
+				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
+			} catch (InvalidServiceException $e) {}
 		} else {
 			$order->add_order_note("MDS Collivery automated system did not fire, order already sent to MDS.");
 		}
@@ -569,23 +591,23 @@ class MdsColliveryService
 		}
 
 		if(empty($array['location_type']) || !isset($location_types[$location_type_id])) {
-			throw new InvalidAddressDataException($array, "Invalid location type");
+			throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
 		}
 
 		if(empty($array['town']) || !isset($towns[$town_id])) {
-			throw new InvalidAddressDataException($array, "Invalid town");
+			throw new InvalidAddressDataException('Invalid town', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
 		}
 
 		if(empty($array['suburb']) || !isset($suburbs[$suburb_id])) {
-			throw new InvalidAddressDataException($array, "Invalid suburb");
+			throw new InvalidAddressDataException('Invalid suburb', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
 		}
 
 		if(empty($array['cellphone']) || !is_numeric($array['cellphone'])) {
-			throw new InvalidAddressDataException($array, "Invalid cellphone number");
+			throw new InvalidAddressDataException('Invalid cellphone number', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
 		}
 
 		if(empty($array['email']) || !filter_var($array['email'], FILTER_VALIDATE_EMAIL)) {
-			throw new InvalidAddressDataException($array, "Invalid email address");
+			throw new InvalidAddressDataException('Invalid email address', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
 		}
 
 		$newAddress = array(
@@ -722,6 +744,16 @@ class MdsColliveryService
 	}
 
 	/**
+	 * Returns true or false depending on if the plugin is enabled or not
+	 *
+	 * @return array
+	 */
+	public function isEnabled()
+	{
+		return $this->settings['enabled'] == 'yes';
+	}
+
+	/**
 	 * Gets default address of the MDS Account
 	 *
 	 * @return array|bool
@@ -751,67 +783,12 @@ class MdsColliveryService
 	}
 
 	/**
-	 * Adds markup to price
-	 *
-	 * @param $price
-	 * @param $markup
-	 * @return float|string
-	 */
-	public function addMarkup($price, $markup)
-	{
-		$price += $price * ($markup / 100);
-		return (isset($this->settings['round']) && $this->settings['round'] == 'yes') ? $this->round($price) : $this->format($price);
-	}
-
-	/**
-	 * Format a number with grouped thousands
-	 *
-	 * @param $price
-	 * @return string
-	 */
-	public function format($price)
-	{
-		return number_format($price, 2, '.', '');
-	}
-
-	/**
-	 * Rounds number up to the next highest integer
-	 *
-	 * @param $price
-	 * @return float
-	 */
-	public function round($price)
-	{
-		return ceil($this->format($price));
-	}
-
-	/**
-	 * @param $function
-	 * @param $error
-	 * @param $data
-	 */
-	public function logWarning($function, $error, $data)
-	{
-		$this->logger->warning($function, $error, $this->enviroment->loggerFormat(), $data);
-	}
-
-	/**
-	 * @param $function
-	 * @param $error
-	 * @param array $data
-	 */
-	public function logError($function, $error, $data = [])
-	{
-		$this->logger->error($function, $error, $this->enviroment->loggerFormat(), $data);
-	}
-
-	/**
 	 * @return bool|string
 	 */
 	public function downloadLogFiles()
 	{
-		if($zipFile = $this->logger->zipLogFiles()) {
-			return $zipFile;
+		if($file = $this->logger->downloadErrorFile()) {
+			return $file;
 		}
 
 		return false;
