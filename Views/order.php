@@ -39,10 +39,7 @@ use MdsSupportingClasses\View;
 						'parcels' => $parcels
 					]);?>
 					<hr />
-					<?php echo View::make('_service_fields', [
-						'services' => $services,
-						'shipping_method' => $order->get_shipping_method(),
-					])?>
+					<?php echo View::make('_service_fields', compact('services', 'shipping_method'));?>
 					<hr />
 					<label for="cover">Risk Cover</label>
 					<label>
