@@ -15,11 +15,11 @@
 		<input type="number" name="<?php echo isset($count) ? "parcels[$count][weight]" : '';?>" value="<?php echo isset($parcel['weight']) ? $parcel['weight'] : '' ?>" placeholder="kg" class="form-control" rel="weight" min="0" style="width: 60px;">
 	</td>
 	<td>
-		<input type="number" name="<?php echo isset($count) ? "parcels[$count][qty]" : '';?>" value="<?php echo isset($parcel['qty']) ? $parcel['qty'] : isset($parcel['quantity']) ? $parcel['quantity'] : '' ?>" placeholder="pcs" class="form-control<?php echo isset($count) ? ' parcel_qty' : '';?>" rel="qty" min="1" style="width: 53px;">
+		<input type="number" name="<?php echo isset($count) ? "parcels[$count][qty]" : '';?>" value="<?php echo isset($parcel['qty']) ? $parcel['qty'] : isset($parcel['quantity']) ? $parcel['quantity'] : 1 ?>" placeholder="pcs" class="<?php echo isset($count) ? ' parcel_qty' : '';?>" rel="qty" min="1" style="width: 53px;">
 	</td>
 	<?php if(isset($include_product_titles) && $include_product_titles):?>
 		<td>
-			<input type="text" name="<?php echo isset($count) ? "parcels[$count][description]" : '';?>" value="<?php echo isset($parcel['description']) ? $parcel['description'] : '' ?>" placeholder="Description" class="form-control" rel="description" style="width: 200px;">
+			<input type="text" name="<?php echo isset($count) ? "parcels[$count][description]" : '';?>" value="<?php echo isset($parcel['description']) ? $parcel['description'] : '' ?>" placeholder="Description" rel="description" style="width: 200px;">
 		</td>
 	<?php endif;?>
 	<td>
