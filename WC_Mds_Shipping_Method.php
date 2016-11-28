@@ -1,5 +1,7 @@
 <?php
 
+use MdsExceptions\InvalidColliveryDataException;
+
 /**
  * WC_Mds_Shipping_Method class extending from WC_Shipping_Method class
  */
@@ -343,26 +345,26 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$currentSettings = $this->settings;
 		$newSettings = $this->sanitized_fields;
 
-		if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
-			if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
-				$this->collivery_service->logError('WC_Mds_Shipping_Method::validate_settings_fields', 'Incorrect MDS account details');
-				$this->admin_add_error("The current MDS account details were incorrect, account details have been reset to the test account.");
-				$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
-				$this->sanitized_fields['mds_pass'] = 'api123';
-				return true;
-			}
-		} elseif($currentSettings['mds_user'] != $newSettings['mds_user'] || $currentSettings['mds_pass'] != $newSettings['mds_pass']) {
-			$newAuthentication = $this->collivery->isNewInstanceAuthenticated(array(
-				'email' => $newSettings['mds_user'],
-				'password' => $newSettings['mds_pass']
-			));
+		try {
+			if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
+				if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
+					$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
+					$this->sanitized_fields['mds_pass'] = 'api123';
+					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
+				}
+			} elseif($currentSettings['mds_user'] != $newSettings['mds_user'] || $currentSettings['mds_pass'] != $newSettings['mds_pass']) {
+				$newAuthentication = $this->collivery->isNewInstanceAuthenticated(array(
+					'email' => $newSettings['mds_user'],
+					'password' => $newSettings['mds_pass']
+				));
 
-			if(!$newAuthentication) {
-				$this->collivery_service->logError('WC_Mds_Shipping_Method::validate_settings_fields', 'Incorrect MDS account details');
-				$this->admin_add_error("Your MDS account details are incorrect, new settings have been discarded.");
-				$this->errors[] = "Your MDS account details are incorrect, new settings have been discarded.";
-				return false;
+				if(!$newAuthentication) {
+					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
+				}
 			}
+		} catch (InvalidColliveryDataException $e) {
+			$this->errors[] = "Your MDS account details are incorrect, new settings have been discarded.";
+			return false;
 		}
 
 		return true;
@@ -438,7 +440,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								'label' => $label,
 								'cost' => $price,
 							));
-						} catch(\MdsExceptions\InvalidColliveryDataException $e) {}
+						} catch(InvalidColliveryDataException $e) {}
 					}
 				}
 			} else {
