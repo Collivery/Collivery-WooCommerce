@@ -63,7 +63,7 @@ class EnvironmentInformationBag
 		$this->woocommerceVersion = $this->getWoocommerceVersionNumber();
 		$this->appHost = 'Wordpress: ' . $wp_version . ' - WooCommerce: ' . $this->wordpressVersion;
 		$this->appUrl = get_site_url();
-		$this->appName = 'WooCommerce Plugin - ' . preg_replace('/^(http|https):\/\//|i', '', $this->appUrl);
+		$this->appName = 'WooCommerce Plugin - ' . preg_replace('/^(http|https):\/\//i', '', $this->appUrl);
 		$this->phpVersion = phpversion();
 		$this->appVersion = MDS_VERSION;
 		$this->soapInstalled = (extension_loaded('soap')) ? 'yes' : 'no';
