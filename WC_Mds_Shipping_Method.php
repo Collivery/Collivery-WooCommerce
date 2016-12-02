@@ -351,6 +351,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 					$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
 					$this->sanitized_fields['mds_pass'] = 'api123';
 					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
+				} else {
+					$this->collivery_service->cache->delete();
+					throw new InvalidColliveryDataException('Current instance is not authenticated', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
 				}
 			} elseif($currentSettings['mds_user'] != $newSettings['mds_user'] || $currentSettings['mds_pass'] != $newSettings['mds_pass']) {
 				$newAuthentication = $this->collivery->isNewInstanceAuthenticated(array(
