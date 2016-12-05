@@ -524,7 +524,7 @@ class MdsColliveryService
 					$this->addColliveryToProcessedTable($collivery_id, $order->id);
 					$this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
 				} else {
-					throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->settings, ['data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()]);
+					throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->settings, array('data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()));
 				}
 			} catch(InvalidColliveryDataException $e) {
 				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
