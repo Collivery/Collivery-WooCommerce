@@ -43,19 +43,19 @@ class EnvironmentInformationBag
 	public $soapInstalled;
 
 	/**
-	 * @var array|null
+	 * @var array
 	 */
-	protected $settings;
+	protected $settings = [];
 
 	/**
 	 * EnvironmentInformation constructor.
 	 * @param array $settings
 	 */
-	public function __construct(array $settings = null)
+	public function __construct($settings = null)
 	{
 		global $wp_version;
 
-		if($settings) {
+		if(is_array($settings)) {
 			$this->setSettings($settings);
 		}
 
