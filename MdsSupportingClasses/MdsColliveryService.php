@@ -337,7 +337,7 @@ class MdsColliveryService
 	public function getPrice(array $array, $serviceId, $cartSubTotal)
 	{
 		if(!$result = $this->collivery->getPrice($array)) {
-			throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->settings, ['errors' => $this->collivery->getErrors(), 'data' => $array]);
+			throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->settings, array('errors' => $this->collivery->getErrors(), 'data' => $array));
 		}
 
 		if($this->settings['method_free'] === 'discount' && $cartSubTotal >= $this->settings['free_min_total']) {
