@@ -43,11 +43,11 @@ use MdsSupportingClasses\View;
 					<hr />
 					<label for="cover">Risk Cover</label>
 					<label>
-						<input id="cover" name="cover" type="radio" value="1"<?= !$defaultCover ? ' checked="checked"' : '' ?>>
-						Up to 1000 - default
+						<input id="cover" name="cover" type="radio" value="0"<?= !$defaultCover ? ' checked="checked"' : '' ?>>
+						Up to R1000 - default
 					</label>
 					<label>
-						<input id="cover" name="cover" type="radio" value="0"<?= !$defaultCover ? ' checked="checked"' : '' ?>>
+						<input id="cover" name="cover" type="radio" value="1"<?= !$defaultCover ? ' checked="checked"' : '' ?>>
 						Up to R10,000
 					</label>
 					<hr />
