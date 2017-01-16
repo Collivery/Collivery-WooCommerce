@@ -197,6 +197,10 @@ class MdsColliveryService
 	 */
 	private function validatePackageField($array, $field, $type = 'int')
 	{
+		if(!is_array($array)) {
+			throw new InvalidCartPackageException('Unable to validate field"' . $field . '" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->settings, array());
+		}
+
 		if(!isset($array[$field])) {
 			throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->settings, $array);
 		}
@@ -223,6 +227,7 @@ class MdsColliveryService
 	/**
 	 * Used to build the package for use out of the shipping class
 	 *
+	 * @param $cart
 	 * @return array
 	 */
 	function buildPackageFromCart($cart)
