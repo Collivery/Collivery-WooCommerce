@@ -1,7 +1,7 @@
 <?php
+
 namespace MdsSupportingClasses;
 
-use WC;
 use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
@@ -17,6 +17,9 @@ use MdsExceptions\InvalidColliveryDataException;
  */
 class MdsColliveryService
 {
+	const TEST_USER = 'api@collivery.co.za';
+	const TEST_PASS = 'api123';
+
 	/**
 	 * self
 	 */
@@ -54,10 +57,6 @@ class MdsColliveryService
 	public static function getInstance($settings = null)
 	{
 		if (! self::$instance) {
-			if (is_null($settings)) {
-				global $wpdb;
-				$settings = unserialize($wpdb->get_var("SELECT `option_value` FROM `" . $wpdb->prefix . "options` WHERE `option_name` LIKE 'woocommerce_mds_collivery_settings'"));
-			};
 			self::$instance = new self($settings);
 		}
 
@@ -68,7 +67,7 @@ class MdsColliveryService
 	 * MdsColliveryService constructor.
 	 * @param $settings
 	 */
-	private function __construct($settings)
+	private function __construct($settings = null)
 	{
 		$this->settings = $settings;
 		$this->converter = new UnitConverter();
@@ -84,14 +83,55 @@ class MdsColliveryService
 	 */
 	public function initMdsCollivery()
 	{
-		$this->collivery = new Collivery(array(
+		if (!is_array($this->settings)) {
+			$defaultSettings = [
+				'mds_user' => self::TEST_USER,
+				'mds_pass' => self::TEST_PASS,
+				'enabled' => 'yes',
+				'include_product_titles' => 'no',
+				'risk_cover' => 'yes',
+				'risk_cover_threshold' => 0.00,
+				'round' => 'yes',
+				'method_free' => 'no',
+				'shipping_discount_percentage' => 10,
+				'wording_free' => 'Free Delivery',
+				'free_min_total' => 1000.00,
+				'free_local_only' => 'no',
+				'free_default_service' => 5,
+				'free_local_default_service' => 2,
+				'toggle_automatic_mds_processing' => 'no',
+			];
+
+			$this->settings = $defaultSettings;
+		}
+
+		$colliveryInitData = array(
 			'app_name' => $this->enviroment->appName,
 			'app_version' => $this->enviroment->appVersion,
 			'app_host' => $this->enviroment->appHost,
 			'app_url' => $this->enviroment->appUrl,
 			'user_email' => $this->settings['mds_user'],
 			'user_password' => $this->settings['mds_pass']
-		), $this->cache);
+		);
+
+		$this->collivery = new Collivery($colliveryInitData, $this->cache);
+
+		if(isset($defaultSettings)) {
+			try {
+				$services = $this->collivery->getServices();
+				if(!empty($services)) {
+					foreach($services as $id => $title) {
+						$defaultSettings['method_' . $id] = 'yes';
+						$defaultSettings['markup_' . $id] = '10';
+						$defaultSettings['wording_' . $id] = $title;
+					}
+				} else {
+					throw new InvalidColliveryDataException('Unable to get services through the API', 'MdsColliveryService::initMdsCollivery()', $this->settings, $colliveryInitData);
+				}
+			} catch (InvalidColliveryDataException $e) {
+				// Just for logging
+			}
+		}
 	}
 
 	/**
