@@ -84,7 +84,7 @@ class MdsColliveryService
 	public function initMdsCollivery()
 	{
 		if (!is_array($this->settings)) {
-			$defaultSettings = [
+			$defaultSettings = array(
 				'mds_user' => self::TEST_USER,
 				'mds_pass' => self::TEST_PASS,
 				'enabled' => 'yes',
@@ -100,7 +100,7 @@ class MdsColliveryService
 				'free_default_service' => 5,
 				'free_local_default_service' => 2,
 				'toggle_automatic_mds_processing' => 'no',
-			];
+			);
 
 			$this->settings = $defaultSettings;
 		}
