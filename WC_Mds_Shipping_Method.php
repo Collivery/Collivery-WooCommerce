@@ -46,12 +46,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 	/**
 	 * WC_Mds_Shipping_Method constructor.
-	 * @param int $instance_id
 	 */
-	function __construct($instance_id = 0)
+	function __construct()
 	{
 		$this->id = 'mds_collivery';
-		$this->instance_id = absint($instance_id);
 		$this->method_title = __('MDS Collivery shipping');
 		$this->method_description  = __('MDS Collivery offers range of different delivery services');
 		$this->admin_page_heading = __('MDS Collivery shipping');
@@ -60,7 +58,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$this->supports = array(
 			'settings',
 			'shipping-zones',
-			'instance-settings',
 		);
 
 		$this->init();
