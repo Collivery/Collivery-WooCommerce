@@ -303,8 +303,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			return false;
 		} else {
 			update_option( $this->plugin_id . $this->id . '_settings', apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $this->id, $this->sanitized_fields ) );
-			$this->init_settings();
-			return true;
+            $this->init_settings();
+            $this->collivery_service = $this->collivery_service->newInstance($this->settings);
+            $this->collivery = $this->collivery_service->returnColliveryClass();
+            $this->converter = $this->collivery_service->returnConverterClass();
+            $this->cache = $this->collivery_service->returnCacheClass();
+            return true;
 		}
 	}
 
