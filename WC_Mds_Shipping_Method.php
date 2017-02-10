@@ -29,9 +29,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 	/**
 	 * WC_Mds_Shipping_Method constructor.
+	 * @param int $instance_id
 	 */
-	function __construct()
+	function __construct($instance_id = 0)
 	{
+		parent::__construct($instance_id);
+
 		$this->id = 'mds_collivery';
 		$this->method_title = __('MDS Collivery shipping');
 		$this->method_description  = __('MDS Collivery offers range of different delivery services');
@@ -41,6 +44,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$this->supports = array(
 			'settings',
 			'shipping-zones',
+			'instance-settings',
 		);
 
 		$this->init();
@@ -270,6 +274,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$this->form_fields = $fields;
 		$this->instance_form_fields = $fields;
 	}
+
+    /**
+     * Initialise Settings for instances.
+     * Do not default the settings, rather just use the plugins standard settings
+     *
+     * @since 2.6.0
+     */
+    public function init_instance_settings()
+    {
+        $this->instance_settings = $this->settings;
+    }
 
 	/**
 	 * Admin Panel Options Processing
