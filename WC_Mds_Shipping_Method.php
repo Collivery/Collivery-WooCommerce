@@ -8,11 +8,6 @@ use MdsExceptions\InvalidColliveryDataException;
 class WC_Mds_Shipping_Method extends WC_Shipping_Method
 {
 	/**
-	 * self
-	 */
-	private static $instance;
-
-	/**
 	 * @type MdsSupportingClasses\Collivery
 	 */
 	var $collivery;
@@ -31,18 +26,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 * @type MdsSupportingClasses\MdsColliveryService
 	 */
 	var $collivery_service;
-
-	/**
-	 * @return WC_Mds_Shipping_Method
-	 */
-	public static function get_instance()
-	{
-		if (! self::$instance) {
-			self::$instance = new self();
-		}
-
-		return self::$instance;
-	}
 
 	/**
 	 * WC_Mds_Shipping_Method constructor.
