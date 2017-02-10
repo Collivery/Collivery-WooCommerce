@@ -56,11 +56,29 @@ class MdsColliveryService
 	 */
 	public static function getInstance($settings = null)
 	{
-		if (! self::$instance) {
+		if (!self::$instance) {
+			if (is_null($settings)) {
+				global $wpdb;
+				$settings = unserialize(
+					$wpdb->get_var(
+						"SELECT `option_value` FROM `".$wpdb->prefix."options` WHERE `option_name` LIKE 'woocommerce_mds_collivery_settings'"
+					)
+				);
+			};
+
 			self::$instance = new self($settings);
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * @param null $settings
+	 * @return MdsColliveryService
+	 */
+	public function renewInstance($settings)
+	{
+		self::$instance = new self($settings);
 	}
 
 	/**
@@ -84,6 +102,7 @@ class MdsColliveryService
 	public function initMdsCollivery()
 	{
 		if (!is_array($this->settings)) {
+			$this->logger->error('initMdsCollivery', 'default settings used', $this->settings);
 			$defaultSettings = array(
 				'mds_user' => self::TEST_USER,
 				'mds_pass' => self::TEST_PASS,
