@@ -51,49 +51,54 @@ class MdsColliveryService
 	var $settings;
 
 	/**
-	 * @param null $settings
 	 * @return MdsColliveryService
 	 */
-	public static function getInstance($settings = null)
+	public static function getInstance()
 	{
 		if (!self::$instance) {
-			if (is_null($settings)) {
-				global $wpdb;
-				$settings = unserialize(
-					$wpdb->get_var(
-						"SELECT `option_value` FROM `".$wpdb->prefix."options` WHERE `option_name` LIKE 'woocommerce_mds_collivery_settings'"
-					)
-				);
-			};
-
-			self::$instance = new self($settings);
+			self::$instance = new self();
 		}
 
 		return self::$instance;
 	}
 
 	/**
-	 * @param null $settings
+	 * @param $settings
 	 * @return MdsColliveryService
 	 */
-	public function renewInstance($settings)
+	public function newInstance($settings)
 	{
-		self::$instance = new self($settings);
+		self::$instance = new self();
+		$this->initSettings($settings);
+
+		return self::$instance;
 	}
 
 	/**
 	 * MdsColliveryService constructor.
-	 * @param $settings
 	 */
-	private function __construct($settings = null)
+	private function __construct()
 	{
-		$this->settings = $settings;
 		$this->converter = new UnitConverter();
 		$this->cache = new MdsCache(ABSPATH . 'cache/mds_collivery/');
 		$this->logger = new MdsLogger(ABSPATH . 'cache/mds_collivery/');
-		$this->enviroment = new EnvironmentInformationBag($this->settings);
+		$this->enviroment = new EnvironmentInformationBag();
 
+		$this->initSettings();
 		$this->initMdsCollivery();
+	}
+
+	/**
+	 *  Sets up the settings array by fetching all of the options out of the database
+	 * @param null $settings
+	 */
+	public function initSettings($settings = null)
+	{
+		if($settings) {
+			$this->settings = $settings;
+		} else {
+			$this->settings = get_option('woocommerce_mds_collivery_settings', null);
+		}
 	}
 
 	/**
@@ -122,6 +127,7 @@ class MdsColliveryService
 			);
 
 			$this->settings = $defaultSettings;
+			$this->enviroment->setSettings($defaultSettings);
 		}
 
 		$colliveryInitData = array(
@@ -140,10 +146,12 @@ class MdsColliveryService
 				$services = $this->collivery->getServices();
 				if(!empty($services)) {
 					foreach($services as $id => $title) {
-						$defaultSettings['method_' . $id] = 'yes';
-						$defaultSettings['markup_' . $id] = '10';
-						$defaultSettings['wording_' . $id] = $title;
+						$this->settings['method_' . $id] = 'yes';
+						$this->settings['markup_' . $id] = '10';
+						$this->settings['wording_' . $id] = $title;
 					}
+
+					$this->enviroment->setSettings($this->settings);
 				} else {
 					throw new InvalidColliveryDataException('Unable to get services through the API', 'MdsColliveryService::initMdsCollivery()', $this->settings, $colliveryInitData);
 				}
