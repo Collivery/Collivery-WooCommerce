@@ -113,7 +113,7 @@ class MdsColliveryService
 				'mds_pass' => self::TEST_PASS,
 				'enabled' => 'yes',
 				'include_product_titles' => 'no',
-				'risk_cover' => 'yes',
+				'risk_cover' => 'no',
 				'risk_cover_threshold' => 0.00,
 				'round' => 'yes',
 				'method_free' => 'no',

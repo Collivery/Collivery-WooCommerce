@@ -143,7 +143,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			'title' => "MDS " . __('Risk Cover'),
 			'type' => 'checkbox',
 			'description' => __('Risk cover, up to a maximum of R10 000.'),
-			'default' => 'yes',
+			'default' => 'no',
 		);
 
 		$fields['risk_cover_threshold'] = array(
