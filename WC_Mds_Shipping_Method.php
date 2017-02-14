@@ -419,7 +419,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 							"to_location_type" => $package['destination']['to_location_type'],
 							"from_location_type" => $package['destination']['from_location_type'],
 							"cover" => $riskCover,
-							"weight" => $package['cart']['max_weight'],
+							"weight" => $package['cart']['weight'],
 							"num_package" => $package['cart']['count'],
 							"parcels" => $package['cart']['products'],
 							"exclude_weekend" => 1,
