@@ -369,7 +369,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			return false;
 		}
 
-		$this->collivery_service->renewInstance($newSettings);
+		$this->collivery_service->newInstance($newSettings);
 		$this->setttings = $newSettings;
 		$this->init_mds_collivery();
 
