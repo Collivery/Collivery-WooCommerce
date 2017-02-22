@@ -63,7 +63,7 @@ class Money
 			$amount += $amount * ($this->markup / 100);
 		}
 
-		return $this->applyDiscount($this->shouldRound ? $this->round($amount) : $this->format($amount));
+		return $this->applyDiscount($amount);
 	}
 
 	/**
@@ -73,9 +73,10 @@ class Money
 	public function applyDiscount($amount)
 	{
 		if($this->discountPercentage > 0) {
-			return $amount - (($this->discountPercentage / 100) * $amount);
+			$amendedAmount = $amount - (($this->discountPercentage / 100) * $amount);
+			return $this->shouldRound ? $this->round($amendedAmount) : $this->format($amendedAmount);
 		} else {
-			return $amount;
+			return $this->shouldRound ? $this->round($amount) : $this->format($amount);
 		}
 	}
 
