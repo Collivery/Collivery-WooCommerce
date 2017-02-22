@@ -346,7 +346,7 @@ class MdsColliveryService
 			$discount = 0;
 		}
 
-		return Money::make($result['price']['inc_vat'], $this->settings['markup_' . $serviceId], $discount, $this->settings['round'] == 'yes' ? true : false)->amount;
+		return Money::make($result['price']['inc_vat'], $this->settings['markup_' . $serviceId], $discount, $this->settings['round'] == 'yes')->amount;
 	}
 
 	/**
