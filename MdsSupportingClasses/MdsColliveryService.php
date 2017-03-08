@@ -512,99 +512,99 @@ class MdsColliveryService
 	 */
 	public function automatedAddCollivery($order_id, $processing = false)
 	{
-		global $wpdb;
-
 		$order = new WC_Order($order_id);
 
-		$colliveries = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->prefix . "mds_collivery_processed WHERE order_id=" . $order->id . ";");
-
-		if($colliveries == 0) {
-			foreach($order->get_shipping_methods() as $shipping) {
-				if(preg_match("/mds_/", $shipping['method_id'])) {
-					$service_id = str_replace("mds_", "", $shipping['method_id']);
-				}
-			}
-
-			try {
-				if(!isset($service_id)) {
-					throw new InvalidServiceException('No MDS shipping method used', 'automatedAddCollivery', $this->settings, $order->get_shipping_methods());
-				}
-
-				$this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
-
-				if(!$this->isOrderInStock($order->get_items())) {
-					$this->updateStatusOrAddNote($order, 'There are products in the order that are not in stock, auto processing aborted.', $processing, 'processing');
-					return false;
-				}
-
-				$parcels = $this->getOrderContent($order->get_items());
-				$defaults = $this->returnDefaultAddress();
-
-				$address = $this->addColliveryAddress(array(
-					'company_name' => ( $order->shipping_company != "" ) ? $order->shipping_company : 'Private',
-					'building' => $order->shipping_building_details,
-					'street' => $order->shipping_address_1 . ' ' . $order->shipping_address_2,
-					'location_type' => $order->shipping_location_type,
-					'suburb' => $order->shipping_city,
-					'town' => $order->shipping_state,
-					'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
-					'cellphone' => preg_replace("/[^0-9]/", "", $order->shipping_phone),
-					'email' => str_replace(' ', '', $order->shipping_email),
-					'custom_id' => $order->user_id
-				));
-
-				$collivery_from = $defaults['default_address_id'];
-				list($contact_from) = array_keys($defaults['contacts']);
-
-				$collivery_to = $address['address_id'];
-				$contact_to = $address['contact_id'];
-
-				$instructions = "Order number: " . $order_id;
-				if(isset($this->settings['include_product_titles']) && $this->settings['include_product_titles'] == "yes") {
-					$count = 1;
-					$instructions .= ': ';
-					foreach($parcels as $parcel) {
-						if(isset($parcel['description'])) {
-							$ending = ($count == count($parcels)) ? '' : ', ';
-							$instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
-							$count++;
-						}
+		try {
+			if($this->hasOrderBeenProcessed($order->id)) {
+				foreach($order->get_shipping_methods() as $shipping) {
+					if(preg_match("/mds_/", $shipping['method_id'])) {
+						$service_id = str_replace("mds_", "", $shipping['method_id']);
 					}
 				}
 
-				$orderTotal = $order->get_subtotal() + $order->get_cart_tax();
-				$riskCover = ($this->settings['risk_cover']  == 'yes') & ($orderTotal > $this->settings['risk_cover_threshold']);
-				$colliveryOptions = array(
-					'collivery_from' => (int)$collivery_from,
-					'contact_from' => (int)$contact_from,
-					'collivery_to' => (int)$collivery_to,
-					'contact_to' => (int)$contact_to,
-					'cust_ref' => "Order number: " . $order_id,
-					'instructions' => $instructions,
-					'collivery_type' => 2,
-					'service' => (int)$service_id,
-					'cover' => $riskCover ? 1 : 0,
-					'parcel_count' => count($parcels),
-					'parcels' => $parcels
-				);
-				$collivery_id = $this->addCollivery($colliveryOptions);
+				try {
+					if(!isset($service_id)) {
+						throw new InvalidServiceException('No MDS shipping method used', 'automatedAddCollivery', $this->loggerSettingsArray(), $order->get_shipping_methods());
+					}
 
-				$collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time'])  : '';
+					$this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
 
-				if($collivery_id) {
-					// Save the results from validation into our table
-					$this->addColliveryToProcessedTable($collivery_id, $order->id);
-					$this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
-				} else {
-					throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->settings, array('data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()));
-				}
-			} catch(InvalidColliveryDataException $e) {
-				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
-			} catch(InvalidAddressDataException $e) {
-				$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
-			} catch (InvalidServiceException $e) {}
-		} else {
-			$order->add_order_note("MDS Collivery automated system did not fire, order already sent to MDS.");
+					if(!$this->isOrderInStock($order->get_items())) {
+						$this->updateStatusOrAddNote($order, 'There are products in the order that are not in stock, auto processing aborted.', $processing, 'processing');
+						return false;
+					}
+
+					$parcels = $this->getOrderContent($order->get_items());
+					$defaults = $this->returnDefaultAddress();
+
+					$address = $this->addColliveryAddress(array(
+						'company_name' => ( $order->shipping_company != "" ) ? $order->shipping_company : 'Private',
+						'building' => $order->shipping_building_details,
+						'street' => $order->shipping_address_1 . ' ' . $order->shipping_address_2,
+						'location_type' => $order->shipping_location_type,
+						'suburb' => $order->shipping_city,
+						'town' => $order->shipping_state,
+						'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
+						'cellphone' => preg_replace("/[^0-9]/", "", $order->shipping_phone),
+						'email' => str_replace(' ', '', $order->shipping_email),
+						'custom_id' => $order->user_id
+					));
+
+					$collivery_from = $defaults['default_address_id'];
+					list($contact_from) = array_keys($defaults['contacts']);
+
+					$collivery_to = $address['address_id'];
+					$contact_to = $address['contact_id'];
+
+					$instructions = "Order number: " . $order_id;
+					if(isset($this->settings['include_product_titles']) && $this->settings['include_product_titles'] == "yes") {
+						$count = 1;
+						$instructions .= ': ';
+						foreach($parcels as $parcel) {
+							if(isset($parcel['description'])) {
+								$ending = ($count == count($parcels)) ? '' : ', ';
+								$instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
+								$count++;
+							}
+						}
+					}
+
+					$orderTotal = $order->get_subtotal() + $order->get_cart_tax();
+					$riskCover = ($this->settings['risk_cover']  == 'yes') & ($orderTotal > $this->settings['risk_cover_threshold']);
+					$colliveryOptions = array(
+						'collivery_from' => (int)$collivery_from,
+						'contact_from' => (int)$contact_from,
+						'collivery_to' => (int)$collivery_to,
+						'contact_to' => (int)$contact_to,
+						'cust_ref' => "Order number: " . $order_id,
+						'instructions' => $instructions,
+						'collivery_type' => 2,
+						'service' => (int)$service_id,
+						'cover' => $riskCover ? 1 : 0,
+						'parcel_count' => count($parcels),
+						'parcels' => $parcels
+					);
+					$collivery_id = $this->addCollivery($colliveryOptions);
+
+					$collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time'])  : '';
+
+					if($collivery_id) {
+						// Save the results from validation into our table
+						$this->addColliveryToProcessedTable($collivery_id, $order->id);
+						$this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
+					} else {
+						throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->loggerSettingsArray(), array('data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()));
+					}
+				} catch(InvalidColliveryDataException $e) {
+					$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
+				} catch(InvalidAddressDataException $e) {
+					$this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
+				} catch (InvalidServiceException $e) {}
+			} else {
+				$order->add_order_note("MDS Collivery automated system did not fire, order already sent to MDS.");
+			}
+		} catch (OrderAlreadyProcessedException $e) {
+			$order->add_order_note("MDS Collivery automated system could not fire, the database table is missing which stores the processed orders.");
 		}
 	}
 
@@ -773,6 +773,35 @@ class MdsColliveryService
 		}
 
 		return array('towns' => array_combine($towns, $towns), 'location_types' => array_combine($location_types, $location_types));
+	}
+
+	/**
+	 * If the exception is thrown the base exception class will log this along with a check to see if the processed table exists
+	 *
+	 * @param int $orderId
+	 *
+	 * @return int
+	 * @throws OrderAlreadyProcessedException
+	 */
+	public function hasOrderBeenProcessed($orderId)
+	{
+		global $wpdb;
+
+		$result = $wpdb->get_var( $wpdb->prepare( "
+			SELECT COUNT(*)
+			FROM {$wpdb->prefix}mds_collivery_processed
+			WHERE order_id=%d
+		", $orderId ) );
+
+		$tableName = $wpdb->prefix.'mds_collivery_processed';
+		if($wpdb->get_var("SHOW TABLES LIKE '$tableName'") != $tableName) {
+			throw new OrderAlreadyProcessedException("Database table $tableName does not exists so we cannot confirm if the order has been processed, unable to continue", $this->loggerSettingsArray(), [
+				'order_id' => $orderId,
+				'table' => $tableName
+			]);
+		}
+
+		return $result;
 	}
 
 	/**
