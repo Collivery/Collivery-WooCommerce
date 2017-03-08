@@ -1,6 +1,7 @@
 <?php
 
 use MdsExceptions\InvalidColliveryDataException;
+use MdsExceptions\OrderAlreadyProcessedException;
 use MdsSupportingClasses\View;
 
 /*******************************************************************************
@@ -352,12 +353,12 @@ function quote_admin_callback()
 	try {
 		$response = $collivery->getPrice($data);
 		if (!isset($response['service'])) {
-			throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->settings, array('data' => $data, 'errors' => $mds->collivery->getErrors()));
+			throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->loggerSettingsArray(), array('data' => $data, 'errors' => $mds->collivery->getErrors()));
 		}
 
-		echo '<p class="mds_response"><b>Service: </b>' . $services[$response['service']] . ' - Price incl: R' . $response['price']['inc_vat'] . '</p>';
+		wp_die('<p class="mds_response"><b>Service: </b>' . $services[$response['service']] . ' - Price incl: R' . $response['price']['inc_vat'] . '</p>');
 	} catch(InvalidColliveryDataException $e) {
-		echo '<p class="mds_response"><b>Error: </b>' . $e->getMessage();
+		wp_die('<p class="mds_response"><b>Error: </b>' . $e->getMessage().'</p>');
 	}
 }
 
