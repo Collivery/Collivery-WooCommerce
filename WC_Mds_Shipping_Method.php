@@ -343,16 +343,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		$currentSettings = $this->settings;
 		$newSettings = $this->sanitized_fields;
+        $environmentBag = new EnvironmentInformationBag($currentSettings);
 
 		try {
 			if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
 				if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
 					$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
 					$this->sanitized_fields['mds_pass'] = 'api123';
-					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
+					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $environmentBag->loggerFormat(), $form_fields);
 				} else {
 					$this->collivery_service->cache->delete();
-					throw new InvalidColliveryDataException('Current instance is not authenticated', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
+					throw new InvalidColliveryDataException('Current instance is not authenticated', 'WC_Mds_Shipping_Method::validate_settings_fields', $environmentBag->loggerFormat(), $form_fields);
 				}
 			} elseif($currentSettings['mds_user'] != $newSettings['mds_user'] || $currentSettings['mds_pass'] != $newSettings['mds_pass']) {
 				$newAuthentication = $this->collivery->isNewInstanceAuthenticated(array(
@@ -361,7 +362,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 				));
 
 				if(!$newAuthentication) {
-					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $currentSettings, $form_fields);
+					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $environmentBag->loggerFormat(), $form_fields);
 				}
 			}
 		} catch (InvalidColliveryDataException $e) {

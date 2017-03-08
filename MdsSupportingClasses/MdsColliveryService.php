@@ -11,6 +11,7 @@ use MdsExceptions\InvalidServiceException;
 use MdsExceptions\InvalidCartPackageException;
 use MdsExceptions\InvalidAddressDataException;
 use MdsExceptions\InvalidColliveryDataException;
+use MdsExceptions\OrderAlreadyProcessedException;
 
 /**
  * MdsColliveryService
@@ -99,6 +100,8 @@ class MdsColliveryService
 		} else {
 			$this->settings = get_option('woocommerce_mds_collivery_settings', null);
 		}
+
+		$this->enviroment->setSettings($this->settings);
 	}
 
 	/**
@@ -153,7 +156,7 @@ class MdsColliveryService
 
 					$this->enviroment->setSettings($this->settings);
 				} else {
-					throw new InvalidColliveryDataException('Unable to get services through the API', 'MdsColliveryService::initMdsCollivery()', $this->settings, $colliveryInitData);
+					throw new InvalidColliveryDataException('Unable to get services through the API', 'MdsColliveryService::initMdsCollivery()', $this->loggerSettingsArray(), $colliveryInitData);
 				}
 			} catch (InvalidColliveryDataException $e) {
 				// Just for logging
@@ -265,28 +268,28 @@ class MdsColliveryService
 	private function validatePackageField($array, $field, $type = 'int')
 	{
 		if(!is_array($array)) {
-			throw new InvalidCartPackageException('Unable to validate field"' . $field . '" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->settings, array());
+			throw new InvalidCartPackageException('Unable to validate field"' . $field . '" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), array());
 		}
 
 		if(!isset($array[$field])) {
-			throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->settings, $array);
+			throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
 		}
 
 		if($type == 'int') {
 			if(!is_integer($array[$field])) {
-				throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->settings, $array);
+				throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
 			}
 		}
 
 		if($type == 'numeric') {
 			if(!is_numeric($array[$field])) {
-				throw new InvalidCartPackageException($field . ' is not numeric', 'MdsColliveryService::validPackage()', $this->settings, $array);
+				throw new InvalidCartPackageException($field . ' is not numeric', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
 			}
 		}
 
 		if($type == 'array') {
 			if(!is_array($array[$field])) {
-				throw new InvalidCartPackageException($field . ' is not an array', 'MdsColliveryService::validPackage()', $this->settings, $array);
+				throw new InvalidCartPackageException($field . ' is not an array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
 			}
 		}
 	}
@@ -373,7 +376,7 @@ class MdsColliveryService
 
 				if($stock != '') {
 					if($stock == 0 || $stock < $qty) {
-						throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->settings, $items);
+						throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->loggerSettingsArray(), $items);
 					}
 				}
 			}
@@ -409,7 +412,7 @@ class MdsColliveryService
 	public function getPrice(array $array, $serviceId, $cartSubTotal)
 	{
 		if(!$result = $this->collivery->getPrice($array)) {
-			throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->settings, array('errors' => $this->collivery->getErrors(), 'data' => $array));
+			throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), array('errors' => $this->collivery->getErrors(), 'data' => $array));
 		}
 
 		if($this->settings['method_free'] === 'discount' && $cartSubTotal >= $this->settings['free_min_total']) {
@@ -469,35 +472,35 @@ class MdsColliveryService
 	public function validateCollivery(array $array)
 	{
 		if(empty($array['collivery_from'])) {
-			throw new InvalidColliveryDataException('Invalid collection address', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid collection address', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['collivery_to'])) {
-			throw new InvalidColliveryDataException('Invalid destination address', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid destination address', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['contact_from'])) {
-			throw new InvalidColliveryDataException('Invalid collection contact', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid collection contact', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['contact_to'])) {
-			throw new InvalidColliveryDataException('Invalid destination contact', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid destination contact', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['collivery_type'])) {
-			throw new InvalidColliveryDataException('Invalid parcel type', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid parcel type', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['service'])) {
-			throw new InvalidColliveryDataException('Invalid service', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid service', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if($array['cover'] != 1 && $array['cover'] != 0) {
-			throw new InvalidColliveryDataException('Invalid risk cover option', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid risk cover option', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['parcels']) || !is_array($array['parcels'])) {
-			throw new InvalidColliveryDataException('Invalid parcels', 'MdsColliveryService::validateCollivery()', $this->settings, $array);
+			throw new InvalidColliveryDataException('Invalid parcels', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
 		}
 
 		return $this->collivery->validate($array);
@@ -663,23 +666,23 @@ class MdsColliveryService
 		}
 
 		if(empty($array['location_type']) || !isset($location_types[$location_type_id])) {
-			throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
+			throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['town']) || !isset($towns[$town_id])) {
-			throw new InvalidAddressDataException('Invalid town', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
+			throw new InvalidAddressDataException('Invalid town', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['suburb']) || !isset($suburbs[$suburb_id])) {
-			throw new InvalidAddressDataException('Invalid suburb', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
+			throw new InvalidAddressDataException('Invalid suburb', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['cellphone']) || !is_numeric($array['cellphone'])) {
-			throw new InvalidAddressDataException('Invalid cellphone number', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
+			throw new InvalidAddressDataException('Invalid cellphone number', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
 		}
 
 		if(empty($array['email']) || !filter_var($array['email'], FILTER_VALIDATE_EMAIL)) {
-			throw new InvalidAddressDataException('Invalid email address', 'MdsColliveryService::addColliveryAddress()', $this->settings, $array);
+			throw new InvalidAddressDataException('Invalid email address', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
 		}
 
 		$newAddress = array(
@@ -881,6 +884,14 @@ class MdsColliveryService
 	public function returnColliveryValidatedData()
 	{
 		return $this->validated_data;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function loggerSettingsArray()
+	{
+		return $this->enviroment->loggerFormat();
 	}
 
 	/**
