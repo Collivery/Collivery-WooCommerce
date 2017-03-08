@@ -3,18 +3,26 @@
 class MdsColliveryAutoLoader
 {
 	protected static $classMap = array(
-		'MdsCache' => '\MdsSupportingClasses\MdsCache',
 		'MdsCollivery' => '\MdsSupportingClasses\Collivery',
+		'EnvironmentInformationBag' => '\MdsSupportingClasses\EnvironmentInformationBag',
 		'GitHubPluginUpdater' => '\MdsSupportingClasses\GitHubPluginUpdater',
+		'MdsCache' => '\MdsSupportingClasses\MdsCache',
+		'MdsCheckoutFields' => '\MdsSupportingClasses\MdsCheckoutFields',
 		'MdsColliveryService' => '\MdsSupportingClasses\MdsColliveryService',
+		'MdsLogger' => '\MdsSupportingClasses\MdsLogger',
+		'Money' => '\MdsSupportingClasses\Money',
 		'ParseDown' => '\MdsSupportingClasses\ParseDown',
 		'UnitConverter' => '\MdsSupportingClasses\UnitConverter',
+		'View' => '\MdsSupportingClasses\View',
 		'DiscountCalculator' => '\MdsSupportingClasses\DiscountCalculator',
 		'ExceptionMiddleware' => '\MdsExceptions\ExceptionMiddleware',
 		'InvalidAddressDataException' => '\MdsExceptions\InvalidAddressDataException',
 		'InvalidCartPackageException' => '\MdsExceptions\InvalidCartPackageException',
 		'InvalidColliveryDataException' => '\MdsExceptions\InvalidColliveryDataException',
 		'InvalidResourceDataException' => '\MdsExceptions\InvalidResourceDataException',
+		'InvalidServiceException' => '\MdsExceptions\InvalidServiceException',
+		'OrderAlreadyProcessedException' => '\MdsExceptions\OrderAlreadyProcessedException',
+		'ProductOutOfStockException' => '\MdsExceptions\ProductOutOfStockException',
 	);
 
 	public static function autoload($class)
