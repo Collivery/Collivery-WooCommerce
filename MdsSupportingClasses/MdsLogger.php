@@ -1,4 +1,6 @@
-<?php namespace MdsSupportingClasses;
+<?php
+
+namespace MdsSupportingClasses;
 
 use ZipArchive;
 
@@ -103,14 +105,14 @@ class MdsLogger
 		$files = array();
 
 		foreach (array('warning', 'error') as $name) {
-			if (file_exists($this->log_dir . $name)) {
-				$files[] = $this->log_dir . $name;
+			if (file_exists($this->getLogDirectory() . $name)) {
+				$files[] = $this->getLogDirectory() . $name;
 			}
 		}
 
 		$zip = new ZipArchive();
 		$zip_name = 'mdsWoocommerceLogs.zip';
-		$zip_path = $this->log_dir . $zip_name;
+		$zip_path = $this->getLogDirectory() . $zip_name;
 		if (file_exists($zip_path)) {
 			unlink($zip_path);
 		}
@@ -136,8 +138,8 @@ class MdsLogger
 	 */
 	public function downloadErrorFile()
 	{
-		if(file_exists($this->log_dir . 'error')) {
-			return $this->log_dir . 'error';
+		if(file_exists($this->getLogDirectory() . 'error')) {
+			return $this->getLogDirectory() . 'error';
 		}
 	}
 
@@ -149,10 +151,10 @@ class MdsLogger
 	 */
 	protected function load($name)
 	{
-		if (file_exists($this->log_dir . $name) && $content = file_get_contents($this->log_dir . $name)) {
+		if (file_exists($this->getLogDirectory() . $name) && $content = file_get_contents($this->getLogDirectory() . $name)) {
 			return $content;
 		} else {
-			$this->create_dir($this->log_dir);
+			$this->create_dir($this->getLogDirectory());
 		}
 	}
 
@@ -165,13 +167,13 @@ class MdsLogger
 	 */
 	protected function put($name, $value)
 	{
-		if (file_exists($this->log_dir . $name)) {
-			if (filemtime($this->log_dir . $name) < strtotime(date('Y-m-d') . ' 00:00:00')) {
-				unlink($this->log_dir . $name);
+		if (file_exists($this->getLogDirectory() . $name)) {
+			if (filemtime($this->getLogDirectory() . $name) < strtotime(date('Y-m-d') . ' 00:00:00')) {
+				unlink($this->getLogDirectory() . $name);
 			}
 		}
 
-		if (file_put_contents($this->log_dir . $name, json_encode(array(time() => $value), JSON_PRETTY_PRINT), FILE_APPEND)) {
+		if (file_put_contents($this->getLogDirectory() . $name, json_encode(array(time() => $value), JSON_PRETTY_PRINT), FILE_APPEND)) {
 			return true;
 		} else {
 			return false;
@@ -186,7 +188,7 @@ class MdsLogger
 	protected function create_dir($dir_array)
 	{
 		if (!is_array($dir_array)) {
-			$dir_array = explode('/', $this->log_dir);
+			$dir_array = explode('/', $this->getLogDirectory());
 		}
 
 		array_pop($dir_array);
@@ -196,5 +198,15 @@ class MdsLogger
 			$this->create_dir($dir_array);
 			mkdir($dir);
 		}
+	}
+
+	/**
+	 * Gets the root cache directory not the admin one
+	 *
+	 * @return string
+	 */
+	public function getLogDirectory()
+	{
+		return get_home_path() . '/' . $this->log_dir;
 	}
 }
