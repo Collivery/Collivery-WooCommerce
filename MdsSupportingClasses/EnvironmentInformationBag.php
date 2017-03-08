@@ -45,7 +45,7 @@ class EnvironmentInformationBag
 	/**
 	 * @var array
 	 */
-	protected $settings = [];
+	protected $settings = array();
 
 	/**
 	 * EnvironmentInformation constructor.
