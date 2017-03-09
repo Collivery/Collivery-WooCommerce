@@ -207,6 +207,6 @@ class MdsLogger
 	 */
 	public function getLogDirectory()
 	{
-		return get_home_path() . '/' . $this->log_dir;
+		return ABSPATH . '/' . $this->log_dir;
 	}
 }
