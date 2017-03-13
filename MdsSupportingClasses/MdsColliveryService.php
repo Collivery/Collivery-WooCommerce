@@ -96,9 +96,9 @@ class MdsColliveryService
 	public function initSettings($settings = null)
 	{
 		if($settings) {
-			$this->settings = $settings;
+			$this->settings = is_array($settings) ? $settings : array();
 		} else {
-			$this->settings = get_option('woocommerce_mds_collivery_settings', null);
+			$this->settings = get_option('woocommerce_mds_collivery_settings', array());
 		}
 
 		$this->enviroment->setSettings($this->settings);
