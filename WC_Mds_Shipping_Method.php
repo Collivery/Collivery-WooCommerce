@@ -242,7 +242,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 * Function used by Woocommerce to fetch shipping price
 	 *
 	 * @param array $package
-	 * @return bool
 	 */
 	function calculate_shipping($package = array())
 	{
@@ -264,58 +263,55 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 				$this->add_rate($rate);
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				$services = $this->collivery->getServices();
+				if(is_array($services)) {
+					// Get pricing for each service
+					foreach ($services as $id => $title) {
+						if ($this->settings["method_$id"] == 'yes') {
+							// Now lets get the price for
+							$riskCover = 0;
+							$cartTotal = $package['cart']['total'];
+							if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
+								$riskCover = 1;
+							}
 
-				// Get pricing for each service
-				foreach ($services as $id => $title) {
-					if ($this->settings["method_$id"] == 'yes') {
-						// Now lets get the price for
-						$riskCover = 0;
-						$cartTotal = $package['cart']['total'];
-						if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
-							$riskCover = 1;
+							$data = array(
+								"to_town_id" => $package['destination']['to_town_id'],
+								"from_town_id" => $package['destination']['from_town_id'],
+								"to_location_type" => $package['destination']['to_location_type'],
+								"from_location_type" => $package['destination']['from_location_type'],
+								"cover" => $riskCover,
+								"weight" => $package['cart']['weight'],
+								"num_package" => $package['cart']['count'],
+								"parcels" => $package['cart']['products'],
+								"exclude_weekend" => 1,
+								"service" => $id,
+							);
+
+							try {
+								$price = $this->collivery_service->getPrice($data, $id, $package['cart']['total']);
+
+								if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
+									$title = $title . ', additional 24 hours on outlying areas';
+								}
+
+								$label = (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title;
+
+								if($price <= 0) {
+									$price = 0.00;
+									$label .= ' - FREE!';
+								}
+
+								$this->add_rate(array(
+									'id' => 'mds_' . $id,
+									'value' => $id,
+									'label' => $label,
+									'cost' => $price,
+								));
+							} catch(InvalidColliveryDataException $e) {}
 						}
-
-						$data = array(
-							"to_town_id" => $package['destination']['to_town_id'],
-							"from_town_id" => $package['destination']['from_town_id'],
-							"to_location_type" => $package['destination']['to_location_type'],
-							"from_location_type" => $package['destination']['from_location_type'],
-							"cover" => $riskCover,
-							"weight" => $package['cart']['weight'],
-							"num_package" => $package['cart']['count'],
-							"parcels" => $package['cart']['products'],
-							"exclude_weekend" => 1,
-							"service" => $id,
-						);
-
-						try {
-							$price = $this->collivery_service->getPrice($data, $id, $package['cart']['total']);
-
-							if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
-								$title = $title . ', additional 24 hours on outlying areas';
-							}
-
-							$label = (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title;
-
-							if($price <= 0) {
-								$price = 0.00;
-								$label .= ' - FREE!';
-							}
-
-							$this->add_rate(array(
-								'id' => 'mds_' . $id,
-								'value' => $id,
-								'label' => $label,
-								'cost' => $price,
-							));
-						} catch(InvalidColliveryDataException $e) {}
 					}
 				}
-			} else {
-				return false;
 			}
-		} else {
-			return false;
 		}
 	}
 
