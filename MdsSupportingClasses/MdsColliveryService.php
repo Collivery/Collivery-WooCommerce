@@ -2,6 +2,7 @@
 
 namespace MdsSupportingClasses;
 
+use MdsExceptions\SoapConnectionException;
 use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
@@ -864,18 +865,22 @@ class MdsColliveryService
 	 */
 	public function returnDefaultAddress()
 	{
-		$default_address_id = $this->collivery->getDefaultAddressId();
-		if(!$default_address = $this->collivery->getAddress($default_address_id)) {
-			return false;
+		try {
+			$default_address_id = $this->collivery->getDefaultAddressId();
+			if(!$default_address = $this->collivery->getAddress($default_address_id)) {
+				return false;
+			}
+
+			$data = array(
+				'address' => $default_address,
+				'default_address_id' => $default_address_id,
+				'contacts' => $this->collivery->getContacts($default_address_id)
+			);
+
+			return $data;
+		} catch (SoapConnectionException $e) {
+			return array();
 		}
-
-		$data = array(
-			'address' => $default_address,
-			'default_address_id' => $default_address_id,
-			'contacts' => $this->collivery->getContacts($default_address_id)
-		);
-
-		return $data;
 	}
 
 	/**

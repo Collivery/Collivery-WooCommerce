@@ -1,6 +1,7 @@
 <?php
 
 use MdsExceptions\InvalidColliveryDataException;
+use MdsExceptions\SoapConnectionException;
 use MdsSupportingClasses\EnvironmentInformationBag;
 
 /**
@@ -243,6 +244,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 * Function used by Woocommerce to fetch shipping price
 	 *
 	 * @param array $package
+	 * @throws InvalidResourceDataException
 	 */
 	function calculate_shipping($package = array())
 	{
@@ -263,32 +265,32 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 				$this->add_rate($rate);
 			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
-				$services = $this->collivery->getServices();
-				if(is_array($services)) {
-					// Get pricing for each service
-					foreach ($services as $id => $title) {
-						if ($this->settings["method_$id"] == 'yes') {
-							// Now lets get the price for
-							$riskCover = 0;
-							$cartTotal = $package['cart']['total'];
-							if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
-								$riskCover = 1;
-							}
+				try {
+					$services = $this->collivery->getServices();
+					if(is_array($services)) {
+						// Get pricing for each service
+						foreach ($services as $id => $title) {
+							if ($this->settings["method_$id"] == 'yes') {
+								// Now lets get the price for
+								$riskCover = 0;
+								$cartTotal = $package['cart']['total'];
+								if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
+									$riskCover = 1;
+								}
 
-							$data = array(
-								"to_town_id" => $package['destination']['to_town_id'],
-								"from_town_id" => $package['destination']['from_town_id'],
-								"to_location_type" => $package['destination']['to_location_type'],
-								"from_location_type" => $package['destination']['from_location_type'],
-								"cover" => $riskCover,
-								"weight" => $package['cart']['weight'],
-								"num_package" => $package['cart']['count'],
-								"parcels" => $package['cart']['products'],
-								"exclude_weekend" => 1,
-								"service" => $id,
-							);
+								$data = array(
+									"to_town_id" => $package['destination']['to_town_id'],
+									"from_town_id" => $package['destination']['from_town_id'],
+									"to_location_type" => $package['destination']['to_location_type'],
+									"from_location_type" => $package['destination']['from_location_type'],
+									"cover" => $riskCover,
+									"weight" => $package['cart']['weight'],
+									"num_package" => $package['cart']['count'],
+									"parcels" => $package['cart']['products'],
+									"exclude_weekend" => 1,
+									"service" => $id,
+								);
 
-							try {
 								$price = $this->collivery_service->getPrice($data, $id, $package['cart']['total']);
 
 								if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
@@ -308,9 +310,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 									'label' => $label,
 									'cost' => $price,
 								));
-							} catch(InvalidColliveryDataException $e) {}
+							}
 						}
 					}
+				} catch (SoapConnectionException $e) {
+				} catch (InvalidColliveryDataException $e) {
 				}
 			}
 		}

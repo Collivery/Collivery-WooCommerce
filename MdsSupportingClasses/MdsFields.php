@@ -3,6 +3,7 @@
 namespace MdsSupportingClasses;
 
 use MdsExceptions\InvalidResourceDataException;
+use MdsExceptions\SoapConnectionException;
 
 class MdsFields
 {
@@ -42,24 +43,28 @@ class MdsFields
 			throw new InvalidResourceDataException("Unable to retrieve fields from the API", $this->service->loggerSettingsArray());
 		}
 
-		$towns = $this->collivery->getTowns();
-		$location_types = $this->collivery->getLocationTypes();
-		$services = $this->collivery->getServices();
+		try {
+			$towns = $this->collivery->getTowns();
+			$location_types = $this->collivery->getLocationTypes();
+			$services = $this->collivery->getServices();
 
-		if(!is_array($towns) || !is_array($location_types) || !is_array($services)) {
-			if(!is_array($towns)) {
-				$this->cache->clear('town');
-			}
-			if(!is_array($location_types)) {
-				$this->cache->clear('location_types');
-			}
-			if(!is_array($services)) {
-				$this->cache->clear('service');
-			}
+			if(!is_array($towns) || !is_array($location_types) || !is_array($services)) {
+				if(!is_array($towns)) {
+					$this->cache->clear('town');
+				}
+				if(!is_array($location_types)) {
+					$this->cache->clear('location_types');
+				}
+				if(!is_array($services)) {
+					$this->cache->clear('service');
+				}
 
-			$this->getResources($attempt + 1);
-		} else {
-			return compact('towns', 'location_types', 'services');
+				$this->getResources($attempt + 1);
+			} else {
+				return compact('towns', 'location_types', 'services');
+			}
+		} catch (SoapConnectionException $e) {
+			throw new InvalidResourceDataException($e->getMessage(), $this->service->loggerSettingsArray());
 		}
 	}
 }
