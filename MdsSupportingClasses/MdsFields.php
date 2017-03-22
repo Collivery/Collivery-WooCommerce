@@ -59,7 +59,7 @@ class MdsFields
 
 			$this->getResources($attempt + 1);
 		} else {
-			return compact('towns', 'location_types');
+			return compact('towns', 'location_types', 'services');
 		}
 	}
 }

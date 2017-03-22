@@ -169,6 +169,8 @@ class MdsSettings extends MdsFields
 				'description' => __('When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>'),
 				'default' => 'no',
 			);
+
+			return $fields;
 		} catch (InvalidResourceDataException $e) {
 			return $this->defaultFields;
 		}
