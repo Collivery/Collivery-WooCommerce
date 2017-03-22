@@ -519,7 +519,7 @@ class MdsColliveryService
 		$order = new WC_Order($order_id);
 
 		try {
-			if($this->hasOrderBeenProcessed($order->id)) {
+			if(!$this->hasOrderBeenProcessed($order->id)) {
 				foreach($order->get_shipping_methods() as $shipping) {
 					if(preg_match("/mds_/", $shipping['method_id'])) {
 						$service_id = str_replace("mds_", "", $shipping['method_id']);

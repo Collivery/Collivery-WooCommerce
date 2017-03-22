@@ -379,7 +379,7 @@ function accept_admin_callback()
 
 	try {
 		$order = new WC_Order( $post['order_id'] );
-		if($mds->hasOrderBeenProcessed($order->id)) {
+		if(!$mds->hasOrderBeenProcessed($order->id)) {
 			// Check which collection address we using and if we need to add the address to collivery api
 			if ( $post['which_collection_address'] == 'default' ) {
 				$collection_address = $mds->addColliveryAddress(array(
