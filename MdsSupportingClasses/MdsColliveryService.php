@@ -82,7 +82,7 @@ class MdsColliveryService
 	{
 		$this->converter = new UnitConverter();
 		$this->cache = new MdsCache(ABSPATH . 'cache/mds_collivery/');
-		$this->logger = new MdsLogger(ABSPATH . 'cache/mds_collivery/');
+		$this->logger = new MdsLogger();
 		$this->enviroment = new EnvironmentInformationBag();
 
 		$this->initSettings();
