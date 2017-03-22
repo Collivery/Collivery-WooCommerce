@@ -4,23 +4,8 @@ namespace MdsSupportingClasses;
 
 use MdsExceptions\InvalidResourceDataException;
 
-class MdsCheckoutFields
+class MdsCheckoutFields extends MdsFields
 {
-	/**
-	 * @var MdsColliveryService
-	 */
-	protected $service;
-
-	/**
-	 * @var Collivery
-	 */
-	protected $collivery;
-
-	/**
-	 * @var MdsCache
-	 */
-	protected $cache;
-
 	/**
 	 * @var array
 	 */
@@ -32,10 +17,8 @@ class MdsCheckoutFields
 	 */
 	public function __construct(array $defaultFields)
 	{
-		$this->service = MdsColliveryService::getInstance();
-		$this->collivery = $this->service->returnColliveryClass();
-		$this->cache = $this->service->returnCacheClass();
 		$this->defaultFields = $defaultFields;
+		parent::__construct();
 	}
 
 	/**
@@ -58,8 +41,8 @@ class MdsCheckoutFields
 
 		try {
 			$resources = $this->getResources();
-			$towns = array('' => 'Select Town') + $resources['towns'];
-			$location_types = array('' => 'Select Premises Type') + $resources['location_types'];
+			$towns = array('' => 'Select Town') + array_combine($resources['towns'], $resources['towns']);
+			$location_types = array('' => 'Select Premises Type') + array_combine($resources['location_types'], $resources['location_types']);
 
 			return array(
 				$prefix . 'state' => array(
@@ -142,31 +125,6 @@ class MdsCheckoutFields
 			);
 		} catch(InvalidResourceDataException $e) {
 			return $this->defaultFields;
-		}
-	}
-
-	/**
-	 * @param int $attempt
-	 * @return array
-	 * @throws InvalidResourceDataException
-	 */
-	private function getResources($attempt = 0)
-	{
-		if($attempt > 1) {
-			throw new InvalidResourceDataException($this->service, "Unable to retrieve fields from the API");
-		}
-
-		$towns = $this->collivery->getTowns();
-		$location_types = $this->collivery->getLocationTypes();
-
-		if(empty($towns) || empty($location_types)) {
-			$this->cache->clear('town');
-			$this->cache->clear('location_types');
-			$this->getResources($attempt + 1);
-		} else {
-			$towns = array_combine($towns, $towns);
-			$location_types = array_combine($location_types, $location_types);
-			return compact('towns', 'location_types');
 		}
 	}
 }
