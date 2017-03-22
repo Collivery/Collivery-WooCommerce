@@ -1,6 +1,7 @@
 <?php
 
 use MdsExceptions\InvalidColliveryDataException;
+use MdsSupportingClasses\EnvironmentInformationBag;
 
 /**
  * WC_Mds_Shipping_Method class extending from WC_Shipping_Method class
@@ -204,7 +205,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		$currentSettings = $this->settings;
 		$newSettings = $this->sanitized_fields;
-        $environmentBag = new EnvironmentInformationBag($currentSettings);
+		$environmentBag = new EnvironmentInformationBag($currentSettings);
 
 		try {
 			if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
