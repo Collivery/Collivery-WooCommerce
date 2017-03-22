@@ -1,5 +1,6 @@
 <?php namespace MdsSupportingClasses;
 
+use MdsExceptions\SoapConnectionException;
 use SoapClient; // Use PHP Soap Client
 use SoapFault;  // Use PHP Soap Fault
 
@@ -74,7 +75,8 @@ class Collivery {
 	/**
 	 * Checks if the Soap Client has been set, and returns it.
 	 *
-	 * @return  SoapClient  Webserver Soap Client
+	 * @return SoapClient Webserver Soap Client
+	 * @throws SoapConnectionException
 	 */
 	protected function client()
 	{
@@ -84,6 +86,13 @@ class Collivery {
 
 		if ( ! $this->token ) {
 			$this->authenticate();
+		}
+
+		/**
+		 * Since the soap fault is caught in the init method, all the methods using client() will be calling methods on null if the SoapFault is caught
+		 */
+		if(is_null($this->client)) {
+			throw new SoapConnectionException('Unsuccessful soap connection');
 		}
 
 		return $this->client;
