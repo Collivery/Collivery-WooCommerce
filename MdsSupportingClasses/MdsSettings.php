@@ -59,6 +59,13 @@ class MdsSettings extends MdsFields
 				'default' => 'yes',
 			);
 
+			$fields['include_vat'] = array(
+				'title' => "MDS " . __('Include VAT'),
+				'type' => 'checkbox',
+				'description' => __('Should the price include VAT on the checkout page'),
+				'default' => 'yes',
+			);
+
 			foreach ($resources['services'] as $id => $title) {
 				$fields['method_' . $id] = array(
 					'title' => __($title),

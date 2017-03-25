@@ -119,6 +119,7 @@ class MdsColliveryService
 				'include_product_titles' => 'no',
 				'risk_cover' => 'no',
 				'risk_cover_threshold' => 0.00,
+				'include_vat' => 'yes',
 				'round' => 'yes',
 				'method_free' => 'no',
 				'shipping_discount_percentage' => 10,
@@ -422,7 +423,13 @@ class MdsColliveryService
 			$discount = 0;
 		}
 
-		return Money::make($result['price']['inc_vat'], $this->settings['markup_' . $serviceId], $discount, $this->settings['round'] == 'yes')->amount;
+		if(isset($this->settings['include_vat']) && $this->settings['include_vat'] === 'yes') {
+			$returnedAmount = $result['price']['inc_vat'];
+		} else {
+			$returnedAmount = $result['price']['ex_vat'];
+		}
+
+		return Money::make($returnedAmount, $this->settings['markup_' . $serviceId], $discount, $this->settings['round'] == 'yes')->amount;
 	}
 
 	/**
