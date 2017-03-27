@@ -44,6 +44,10 @@ class MdsCheckoutFields extends MdsFields
 			$towns = array('' => 'Select Town') + array_combine($resources['towns'], $resources['towns']);
 			$location_types = array('' => 'Select Premises Type') + array_combine($resources['location_types'], $resources['location_types']);
 
+			// Silly hack to force all addresses to ZA
+			WC()->customer->set_country('ZA');
+			WC()->customer->set_shipping_country('ZA');
+
 			return array(
 				$prefix . 'state' => array(
 					'type' => 'select',
