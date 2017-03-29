@@ -18,17 +18,18 @@ class MdsCheckoutFields extends MdsFields
 	public function __construct(array $defaultFields)
 	{
 		$this->defaultFields = $defaultFields;
-		parent::__construct();
 	}
 
 	/**
 	 * @param string|null $prefix
 	 * @return array
 	 */
-	public function getFields($prefix = null)
+	public function getCheckoutFields($prefix = null)
 	{
-		if(!$this->service->isEnabled()) {
-			if($prefix && isset($this->defaultFields[$prefix])) {
+		$service = MdsColliveryService::getInstance();
+
+		if(!$service->isEnabled()) {
+			if(isset($this->defaultFields[$prefix])) {
 				return $this->defaultFields[$prefix];
 			} else {
 				return $this->defaultFields;
