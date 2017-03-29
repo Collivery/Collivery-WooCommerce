@@ -50,12 +50,13 @@ class MdsColliveryService
 	var $settings;
 
 	/**
+	 * @param array|null $settings
 	 * @return MdsColliveryService
 	 */
-	public static function getInstance()
+	public static function getInstance($settings = null)
 	{
 		if (!self::$instance) {
-			self::$instance = new self();
+			self::$instance = new self($settings);
 		}
 
 		return self::$instance;
