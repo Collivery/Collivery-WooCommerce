@@ -97,13 +97,23 @@ class MdsColliveryService
 	 */
 	public function initSettings($settings = null)
 	{
-		if($settings) {
-			$this->settings = is_array($settings) ? $settings : array();
+		if (is_array($settings)) {
+			$this->settings = new MdsSettings($settings);
 		} else {
-			$this->settings = get_option('woocommerce_mds_collivery_settings', array());
+			$settings = get_option('woocommerce_mds_collivery_settings', null);
+
+			// If there are no settings defined, use defaults.
+			if (!is_array($settings)) {
+				$form_fields = MdsFields::getFields();
+				$settings = array_merge(
+					array_fill_keys(array_keys($form_fields), ''),
+					wp_list_pluck($form_fields, 'default')
+				);
+			}
+			$this->settings = new MdsSettings($settings);
 		}
 
-		$this->enviroment->setSettings($this->settings);
+		$this->enviroment->setSettings($this->settings->settings);
 	}
 
 	/**
