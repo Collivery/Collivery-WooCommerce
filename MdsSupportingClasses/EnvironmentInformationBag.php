@@ -81,9 +81,9 @@ class EnvironmentInformationBag
 		$this->settings = $settings;
 	}
 
-	/**
-	 * @return array
-	 */
+    /**
+     * @return array
+     */
 	public function loggerFormat()
 	{
 		return array(
@@ -95,7 +95,8 @@ class EnvironmentInformationBag
 			'appVersion' => $this->appVersion,
 			'appUrl' => $this->appUrl,
 			'soapInstalled' => $this->soapInstalled,
-		) + $this->settings;
+			'settings' => $this->settings,
+		);
 	}
 
 	/**
