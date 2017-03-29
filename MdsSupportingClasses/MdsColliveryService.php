@@ -19,9 +19,6 @@ use MdsExceptions\OrderAlreadyProcessedException;
  */
 class MdsColliveryService
 {
-	const TEST_USER = 'api@collivery.co.za';
-	const TEST_PASS = 'api123';
-
 	/**
 	 * self
 	 */
@@ -121,60 +118,16 @@ class MdsColliveryService
 	 */
 	public function initMdsCollivery()
 	{
-		if (!is_array($this->settings)) {
-			$this->logger->error('initMdsCollivery', 'default settings used', $this->settings);
-			$defaultSettings = array(
-				'mds_user' => self::TEST_USER,
-				'mds_pass' => self::TEST_PASS,
-				'enabled' => 'yes',
-				'include_product_titles' => 'no',
-				'risk_cover' => 'no',
-				'risk_cover_threshold' => 0.00,
-				'include_vat' => 'yes',
-				'round' => 'yes',
-				'method_free' => 'no',
-				'shipping_discount_percentage' => 10,
-				'wording_free' => 'Free Delivery',
-				'free_min_total' => 1000.00,
-				'free_local_only' => 'no',
-				'free_default_service' => 5,
-				'free_local_default_service' => 2,
-				'toggle_automatic_mds_processing' => 'no',
-			);
-
-			$this->settings = $defaultSettings;
-			$this->enviroment->setSettings($defaultSettings);
-		}
-
 		$colliveryInitData = array(
 			'app_name' => $this->enviroment->appName,
 			'app_version' => $this->enviroment->appVersion,
 			'app_host' => $this->enviroment->appHost,
 			'app_url' => $this->enviroment->appUrl,
-			'user_email' => $this->settings['mds_user'],
-			'user_password' => $this->settings['mds_pass']
+			'user_email' => $this->settings->getValue('mds_user'),
+			'user_password' => $this->settings->getValue('mds_pass')
 		);
 
 		$this->collivery = new Collivery($colliveryInitData, $this->cache);
-
-		if(isset($defaultSettings)) {
-			try {
-				$services = $this->collivery->getServices();
-				if(!empty($services)) {
-					foreach($services as $id => $title) {
-						$this->settings['method_' . $id] = 'yes';
-						$this->settings['markup_' . $id] = '10';
-						$this->settings['wording_' . $id] = $title;
-					}
-
-					$this->enviroment->setSettings($this->settings);
-				} else {
-					throw new InvalidColliveryDataException('Unable to get services through the API', 'MdsColliveryService::initMdsCollivery()', $this->loggerSettingsArray(), $colliveryInitData);
-				}
-			} catch (InvalidColliveryDataException $e) {
-				// Just for logging
-			}
-		}
 	}
 
 	/**
