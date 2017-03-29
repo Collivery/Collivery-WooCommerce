@@ -202,11 +202,15 @@ class Collivery {
 	 */
 	public function isCurrentInstanceAuthenticated()
 	{
-		if($this->getParcelTypes()) {
-			return true;
+		try {
+			if ($this->client()->get_parcel_types($this->token)) {
+				return true;
+			}
+		} catch (SoapFault $e) {
+			return false;
+		} catch (SoapConnectionException $e) {
+			return false;
 		}
-
-		return false;
 	}
 
 	/**
