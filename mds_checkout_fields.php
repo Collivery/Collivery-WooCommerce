@@ -10,7 +10,7 @@ if (!function_exists('custom_override_default_address_fields')) {
 	function custom_override_default_address_fields($address_fields)
 	{
 		$mdsCheckoutFields = new \MdsSupportingClasses\MdsCheckoutFields($address_fields);
-		return $mdsCheckoutFields->getFields();
+		return $mdsCheckoutFields->getCheckoutFields();
 	}
 
 	add_filter('woocommerce_default_address_fields', 'custom_override_default_address_fields');
@@ -28,8 +28,8 @@ if (!function_exists('custom_override_checkout_fields')) {
 	{
 		$mdsCheckoutFields = new \MdsSupportingClasses\MdsCheckoutFields($address_fields);
 
-		$address_fields['billing'] = $mdsCheckoutFields->getFields('billing');
-		$address_fields['shipping'] = $mdsCheckoutFields->getFields('shipping');
+		$address_fields['billing'] = $mdsCheckoutFields->getCheckoutFields('billing');
+		$address_fields['shipping'] = $mdsCheckoutFields->getCheckoutFields('shipping');
 
 		return $address_fields;
 	}
