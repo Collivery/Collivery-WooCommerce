@@ -327,6 +327,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	public function process_admin_options()
 	{
+		if ($this->instance_id) {
+			return parent::process_admin_options();
+		}
+
 		$error = false;
 		$newAuthentication = true;
 		$postData = $this->get_post_data();
@@ -378,7 +382,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 		$result = $newAuthentication && parent::process_admin_options();
 		if ($result && !$error) {
 			$this->collivery_service = $this->collivery_service->newInstance($this->settings);
-
 			return true;
 		} else {
 			return false;
