@@ -2,7 +2,6 @@
 
 namespace MdsSupportingClasses;
 
-use MdsExceptions\SoapConnectionException;
 use WC_Order;
 use WC_Product;
 use WC_Admin_Settings;
@@ -13,6 +12,7 @@ use MdsExceptions\InvalidCartPackageException;
 use MdsExceptions\InvalidAddressDataException;
 use MdsExceptions\InvalidColliveryDataException;
 use MdsExceptions\OrderAlreadyProcessedException;
+use MdsExceptions\SoapConnectionException;
 
 /**
  * MdsColliveryService
