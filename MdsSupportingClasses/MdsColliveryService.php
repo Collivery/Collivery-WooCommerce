@@ -813,7 +813,7 @@ class MdsColliveryService
 	/**
 	 * Returns the WC_Mds_Shipping_Method plugin settings
 	 *
-	 * @return array
+	 * @return MdsSettings
 	 */
 	public function returnPluginSettings()
 	{
