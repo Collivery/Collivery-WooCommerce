@@ -95,35 +95,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function init_form_fields()
 	{
-		$fields = array(
-			'downloadLogs' => array(
-				'title' => __('Clear Cache/Download Error Logs?'),
-				'type' => 'text',
-				'description' => __('If you have any errors with the MDS plugin, you can download log files and email them to integration@collivery.co.za for support, clearing cache can be useful if you have empty list of towns etc'),
-				'placeholder' => admin_url() . 'admin.php?page=mds_download_log_files',
-			),
-			'enabled' => array(
-				'title' => __('Enabled?'),
-				'type' => 'checkbox',
-				'label' => __('Enable this shipping method'),
-				'default' => 'yes',
-			),
-			'mds_user' => array(
-				'title' => "MDS " . __('Username'),
-				'type' => 'text',
-				'description' => __('Email address associated with your MDS account.'),
-				'default' => "api@collivery.co.za",
-			),
-			'mds_pass' => array(
-				'title' => "MDS " . __('Password'),
-				'type' => 'text',
-				'description' => __('The password used when logging in to MDS.'),
-				'default' => "api123",
-			)
-		);
-
-		$this->form_fields = $fields;
-		$this->instance_form_fields = $fields;
 	}
 
 	/**
@@ -131,41 +102,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function init_ws_form_fields()
 	{
-		$settingFields = new \MdsSupportingClasses\MdsSettings($this->form_fields);
-		$fields = $settingFields->getFields();
 
-		$this->form_fields = $fields;
-		$this->instance_form_fields = $fields;
-	}
-
-	/**
-	 * Initialise Settings for instances.
-	 * Do not default the settings, rather just use the plugins standard settings
-	 *
-	 * @since 2.6.0
-	 */
-	public function init_instance_settings()
-	{
-		$this->instance_settings = $this->settings;
-	}
-
-	/**
-	 * Admin Panel Options Processing
-	 * - Saves the options to the DB
-	 * - Used to validate MDS account details
-	 *
-	 * @since 1.0.0
-	 * @return bool
-	 */
-	public function process_admin_options()
-	{
-		$this->validate_settings_fields();
-
-		if ( count( $this->errors ) > 0 ) {
-			$this->display_errors();
-			return false;
-		} else {
-			update_option( $this->plugin_id . $this->id . '_settings', apply_filters( 'woocommerce_settings_api_sanitized_fields_' . $this->id, $this->sanitized_fields ) );
 			$this->init_settings();
 			$this->collivery_service = $this->collivery_service->newInstance($this->settings);
 			$this->collivery = $this->collivery_service->returnColliveryClass();
@@ -173,71 +110,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 			$this->cache = $this->collivery_service->returnCacheClass();
 			return true;
 		}
-	}
-
-	/**
-	 * Validate Settings Field Data.
-	 * - Used to validate MDS account details
-	 *
-	 * @since 1.0.0
-	 * @uses method_exists()
-	 * @param array $form_fields (default: array())
-	 * @return bool
-	 */
-	public function validate_settings_fields($form_fields = array())
-	{
-		if ( ! $form_fields ) {
-			$form_fields = $this->get_form_fields();
-		}
-
-		$this->sanitized_fields = array();
-
-		foreach ($form_fields as $fieldKey => $field) {
-			if (method_exists($this, 'get_field_value')) {
-				// WooCommerce 2.6 Method
-				$fieldValue = $this->get_field_value($fieldKey, $field);
-			} else {
-				// Pre-WooCommerce 2.6 method
-				$fieldValue = $this->getFieldValueForBackwardsCompatibility($fieldKey, $field);
-			}
-
-			$this->sanitized_fields[$fieldKey] = $fieldValue;
-		}
-
-		$currentSettings = $this->settings;
-		$newSettings = $this->sanitized_fields;
-		$environmentBag = new EnvironmentInformationBag($currentSettings);
-
-		try {
-			if(!$existingAuthentication = $this->collivery->isCurrentInstanceAuthenticated()) {
-				if($currentSettings['mds_user'] != 'api@collivery.co.za' || $currentSettings['mds_pass'] != 'api123') {
-					$this->sanitized_fields['mds_user'] = 'api@collivery.co.za';
-					$this->sanitized_fields['mds_pass'] = 'api123';
-					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $environmentBag->loggerFormat(), $form_fields);
-				} else {
-					$this->collivery_service->cache->delete();
-					throw new InvalidColliveryDataException('Current instance is not authenticated', 'WC_Mds_Shipping_Method::validate_settings_fields', $environmentBag->loggerFormat(), $form_fields);
-				}
-			} elseif($currentSettings['mds_user'] != $newSettings['mds_user'] || $currentSettings['mds_pass'] != $newSettings['mds_pass']) {
-				$newAuthentication = $this->collivery->isNewInstanceAuthenticated(array(
-					'email' => $newSettings['mds_user'],
-					'password' => $newSettings['mds_pass']
-				));
-
-				if(!$newAuthentication) {
-					throw new InvalidColliveryDataException('Incorrect MDS account details', 'WC_Mds_Shipping_Method::validate_settings_fields', $environmentBag->loggerFormat(), $form_fields);
-				}
-			}
-		} catch (InvalidColliveryDataException $e) {
-			$this->errors[] = "Your MDS account details are incorrect, new settings have been discarded.";
-			return false;
-		}
-
-		$this->collivery_service->newInstance($newSettings);
-		$this->setttings = $newSettings;
-		$this->init_mds_collivery();
-
-		return true;
 	}
 
 	/**
