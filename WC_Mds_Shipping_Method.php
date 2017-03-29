@@ -321,46 +321,67 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	}
 
 	/**
-	 * Work through our shopping cart
-	 * Convert lengths and weights to desired unit
+	 * Before saving the username and password we need to validate them
 	 *
-	 * @param $package
-	 * @return null|array
+	 * @return bool
 	 */
-	function get_cart_content($package)
+	public function process_admin_options()
 	{
-		return $this->collivery_service->getCartContent($package);
-	}
+		$error = false;
+		$newAuthentication = true;
+		$postData = $this->get_post_data();
+		$userNameKey = $this->plugin_id.$this->id.'_';
+		$passwordKey = $this->plugin_id.$this->id.'_';
+		$userName = $postData[$userNameKey.'mds_user'];
+		$password = $postData[$passwordKey.'mds_pass'];
 
-	/**
-	 * Creates an error message in the admin section
-	 *
-	 * @param string $message
-	 */
-	function admin_add_error($message)
-	{
-		$admin_settings = new WC_Admin_Settings();
-		$admin_settings->add_error($message, "woocommerce-mds-shipping");
-	}
-
-	/**
-	 * This function adds support for clients using WooCommerce < 2.6
-	 *
-	 * @param $key
-	 * @param $field
-	 *
-	 * @return array
-	 */
-	protected function getFieldValueForBackwardsCompatibility($key, $field)
-	{
-		$type = empty($field['type']) ? 'text' : $field['type'];
-
-		if (method_exists($this, 'validate_' . $key . '_field')) {
-			return $this->{'validate_' . $key . '_field'}($key);
-		} elseif (method_exists($this, 'validate_' . $type . '_field')) {
-			return $this->{'validate_' . $type . '_field'}($key);
+		if ($this->get_option('mds_user') != $userName || $this->get_option('mds_pass') != $password) {
+			if (!filter_var($userName, FILTER_VALIDATE_EMAIL)) {
+				$error = 'Your MDS Username is not a valid email address, unable to save your Your MDS Username or Password';
+			} else {
+				$newAuthentication = $this->collivery->isNewInstanceAuthenticated(
+					array(
+						'email' => $postData[$this->plugin_id.$this->id.'_mds_user'],
+						'password' => $postData[$this->plugin_id.$this->id.'_mds_pass'],
+					)
+				);
+				try {
+					if (!$newAuthentication) {
+						throw new InvalidColliveryDataException(
+							'Incorrect MDS account details, username and password discarded',
+							'WC_Mds_Shipping_Method::validate_settings_fields',
+							$this->collivery_service->loggerSettingsArray(),
+							$postData
+						);
+					}
+				} catch (InvalidColliveryDataException $e) {
+					$error = $e->getMessage();
+				}
+			}
+		} elseif (!$this->collivery->isCurrentInstanceAuthenticated()) {
+			$this->add_error(
+				'Your current MDS Username and or password was not valid, we have replaced them with the default'
+			);
+			$postData[$userNameKey.'mds_user'] = 'api@collivery.co.za';
+			$postData[$passwordKey.'mds_pass'] = 'api123';
 		}
 
-		return $this->validate_text_field($key);
+		if ($error) {
+			unset($postData[$userNameKey.'mds_user']);
+			unset($postData[$passwordKey.'mds_pass']);
+			$this->set_post_data($postData);
+			$this->add_error($error);
+		}
+
+		$this->display_errors();
+
+		$result = $newAuthentication && parent::process_admin_options();
+		if ($result && !$error) {
+			$this->collivery_service = $this->collivery_service->newInstance($this->settings);
+
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
