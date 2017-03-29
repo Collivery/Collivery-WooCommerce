@@ -1,8 +1,13 @@
 <?php
+if (!defined('ABSPATH')) {
+	exit;
+}
 
 use MdsExceptions\InvalidColliveryDataException;
+use MdsExceptions\InvalidResourceDataException;
 use MdsExceptions\SoapConnectionException;
-use MdsSupportingClasses\EnvironmentInformationBag;
+use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\MdsSettings;
 
 /**
  * WC_Mds_Shipping_Method class extending from WC_Shipping_Method class
@@ -30,6 +35,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	var $collivery_service;
 
 	/**
+	 * @var  MdsSettings
+	 */
+	private $mdsSettings;
+
+	/**
 	 * WC_Mds_Shipping_Method constructor.
 	 * @param int $instance_id
 	 */
@@ -39,7 +49,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		$this->id = 'mds_collivery';
 		$this->method_title = __('MDS Collivery shipping');
-		$this->method_description  = __('MDS Collivery offers range of different delivery services');
+		$this->method_description = __('MDS Collivery offers range of different delivery services');
 		$this->admin_page_heading = __('MDS Collivery shipping');
 		$this->admin_page_description = __('Seamlessly integrate your website with MDS Collivery');
 
@@ -51,7 +61,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 		$this->init();
 
-		add_action( 'woocommerce_update_options_shipping_' . $this->id, array($this, 'process_admin_options'));
+		add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
 	}
 
 	/**
@@ -61,21 +71,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	{
 		// Load the form fields.
 		$this->init_form_fields();
-
-		// Load the settings.
 		$this->init_settings();
 
 		$this->title = $this->method_title;
-		$this->enabled = $this->settings['enabled'];
+		$this->enabled = get_option('enabled');
 
 		$this->init_mds_collivery();
+		$this->init_ws_form_fields();
+		$this->init_instance_settings();
+		$this->mdsSettings = new MdsSettings($this->settings, $this->instance_settings);
 
-		if($this->enabled == 'yes') {
-			// Load the rest of the form fields
-			$this->init_ws_form_fields();
-		}
-
-		add_action('woocommerce_update_options_shipping_' . $this->id , array($this, 'process_admin_options'));
+		add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
 	}
 
 	/**
@@ -84,7 +90,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	function init_mds_collivery()
 	{
 		$this->collivery_service = MdsColliveryService::getInstance($this->settings);
-
 		$this->collivery = $this->collivery_service->returnColliveryClass();
 		$this->converter = $this->collivery_service->returnConverterClass();
 		$this->cache = $this->collivery_service->returnCacheClass();
@@ -95,6 +100,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function init_form_fields()
 	{
+		$this->form_fields = MdsSettings::defaultFields();
+		$this->instance_form_fields = array();
 	}
 
 	/**
@@ -102,13 +109,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function init_ws_form_fields()
 	{
+		$this->form_fields = MdsSettings::getFields();
+		$this->instance_form_fields = MdsSettings::instanceFields();
 
+		if ($this->settings['free_default_service']) {
 			$this->init_settings();
 			$this->collivery_service = $this->collivery_service->newInstance($this->settings);
-			$this->collivery = $this->collivery_service->returnColliveryClass();
-			$this->converter = $this->collivery_service->returnConverterClass();
-			$this->cache = $this->collivery_service->returnCacheClass();
-			return true;
 		}
 	}
 
