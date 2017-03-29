@@ -59,14 +59,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			return;
 		}
 
-		// If this plugin is sub 2.0.1 then alter the mds table to include the order_id column
-		$testForColumn = $wpdb->get_row("SELECT * FROM " . $wpdb->prefix . "mds_collivery_processed", ARRAY_A);
-		if(!empty($testForColumn) && !array_key_exists('order_id', $testForColumn)) {
-			$wpdb->query("ALTER TABLE " . $wpdb->prefix . "mds_collivery_processed ADD order_id INT NULL AFTER id");
-		}
-
 		require_once('WC_Mds_Shipping_Method.php');
-
 		require_once('mds_admin.php'); // Admin scripts
 		require_once('mds_checkout_fields.php'); // Checkout fields.
 
