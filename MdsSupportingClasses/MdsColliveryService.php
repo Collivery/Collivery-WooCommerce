@@ -382,19 +382,19 @@ class MdsColliveryService
 			throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), array('errors' => $this->collivery->getErrors(), 'data' => $array));
 		}
 
-		if($this->settings['method_free'] === 'discount' && $cartSubTotal >= $this->settings['free_min_total']) {
-			$discount = $this->settings['shipping_discount_percentage'];
+		if($this->settings->getValue('method_free') === 'discount' && $cartSubTotal >= $this->settings->getValue('free_min_total')) {
+			$discount = $this->settings->getValue('shipping_discount_percentage');
 		} else {
 			$discount = 0;
 		}
 
-		if(isset($this->settings['include_vat']) && $this->settings['include_vat'] === 'yes') {
+		if($this->settings->getValue('include_vat') === 'yes') {
 			$returnedAmount = $result['price']['inc_vat'];
 		} else {
 			$returnedAmount = $result['price']['ex_vat'];
 		}
 
-		return Money::make($returnedAmount, $this->settings['markup_' . $serviceId], $discount, $this->settings['round'] == 'yes')->amount;
+		return Money::make($returnedAmount, $this->settings->getValue('markup_' . $serviceId), $discount, $this->settings->getValue('round') == 'yes')->amount;
 	}
 
 	/**
@@ -412,8 +412,8 @@ class MdsColliveryService
 			$id = $this->validated_data['service'];
 			$services = $this->collivery->getServices();
 
-			if(!empty($this->settings["wording_$id"])) {
-				$reason = preg_replace('|' . preg_quote($services[$id]) . '|', $this->settings["wording_$id"], $this->validated_data['time_changed_reason']);
+			if(!empty($this->settings->getValue("wording_$id"))) {
+				$reason = preg_replace('|' . preg_quote($services[$id]) . '|', $this->settings->getValue("wording_$id"), $this->validated_data['time_changed_reason']);
 			} else {
 				$reason = $this->validated_data['time_changed_reason'];
 			}
@@ -533,7 +533,7 @@ class MdsColliveryService
 					$contact_to = $address['contact_id'];
 
 					$instructions = "Order number: " . $order_id;
-					if(isset($this->settings['include_product_titles']) && $this->settings['include_product_titles'] == "yes") {
+					if($this->settings->getValue('include_product_titles') == "yes") {
 						$count = 1;
 						$instructions .= ': ';
 						foreach($parcels as $parcel) {
@@ -546,7 +546,7 @@ class MdsColliveryService
 					}
 
 					$orderTotal = $order->get_subtotal() + $order->get_cart_tax();
-					$riskCover = ($this->settings['risk_cover']  == 'yes') & ($orderTotal > $this->settings['risk_cover_threshold']);
+					$riskCover = ($this->settings->getValue('risk_cover')  == 'yes') & ($orderTotal > $this->settings->getValue('risk_cover_threshold'));
 					$colliveryOptions = array(
 						'collivery_from' => (int)$collivery_from,
 						'contact_from' => (int)$contact_from,
@@ -823,11 +823,11 @@ class MdsColliveryService
 	/**
 	 * Returns true or false depending on if the plugin is enabled or not
 	 *
-	 * @return array
+	 * @return bool
 	 */
 	public function isEnabled()
 	{
-		return $this->settings['enabled'] == 'yes';
+		return $this->settings->getValue('enabled') == 'yes';
 	}
 
 	/**
