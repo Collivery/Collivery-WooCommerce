@@ -78,15 +78,16 @@ class MdsColliveryService
 
 	/**
 	 * MdsColliveryService constructor.
+	 * @param null $settings
 	 */
-	private function __construct()
+	private function __construct($settings = null)
 	{
 		$this->converter = new UnitConverter();
 		$this->cache = new MdsCache(ABSPATH . 'cache/mds_collivery/');
 		$this->logger = new MdsLogger();
 		$this->enviroment = new EnvironmentInformationBag();
 
-		$this->initSettings();
+		$this->initSettings($settings);
 		$this->initMdsCollivery();
 	}
 
