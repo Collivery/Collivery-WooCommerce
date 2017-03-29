@@ -27,27 +27,27 @@ class MdsColliveryService
 	/**
 	 * @type Collivery
 	 */
-	var $collivery;
+	private $collivery;
 
 	/**
 	 * @type MdsCache
 	 */
-	var $cache;
+	private $cache;
 
 	/**
 	 * @type MdsLogger
 	 */
-	var $logger;
+	private $logger;
 
 	/**
 	 * @type array
 	 */
-	var $validated_data;
+	private $validated_data;
 
 	/**
-	 * @type array
+	 * @type MdsSettings
 	 */
-	var $settings;
+	private $settings;
 
 	/**
 	 * @param array|null $settings
