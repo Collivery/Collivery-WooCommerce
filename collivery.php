@@ -111,7 +111,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 			$mds = MdsColliveryService::getInstance();
 			$settings = $mds->returnPluginSettings();
-			if ($settings['enabled'] == 'no' || !$defaults = $mds->returnDefaultAddress()) {
+			if ($settings->getValue('enabled') == 'no' || !$defaults = $mds->returnDefaultAddress()) {
 				return $packages;
 			}
 
@@ -165,9 +165,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			}
 
 			$package['cart'] = $cart;
-			$package['method_free'] = $settings["method_free"];
-			$package['free_min_total'] = $settings["free_min_total"];
-			$package['free_local_only'] = $settings["free_local_only"];
+			$package['method_free'] = $settings->getValue("method_free");
+			$package['free_min_total'] = $settings->getValue("free_min_total");
+			$package['free_local_only'] = $settings->getValue("free_local_only");
 
 			if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
 				$package['destination'] = array(
@@ -197,9 +197,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 				);
 			}
 
-			if ($settings["method_free"] == 'yes' && $cart['total'] >= $settings["free_min_total"]) {
+			if ($settings->getValue("method_free") == 'yes' && $cart['total'] >= $settings->getValue("free_min_total")) {
 				$package['service'] = 'free';
-				if($settings["free_local_only"] == 'yes') {
+				if($settings->getValue("free_local_only") == 'yes') {
 					$data = array(
 							"num_package" => 1,
 							"service" => 2,
@@ -248,7 +248,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			$mds = MdsColliveryService::getInstance();
 			$settings = $mds->returnPluginSettings();
 
-			if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
+			if ($settings->getValue('enabled') == 'yes' && $settings->getValue("toggle_automatic_mds_processing") == 'yes') {
 				$mds->automatedAddCollivery($order_id);
 			}
 		}
@@ -269,7 +269,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			$mds = MdsColliveryService::getInstance();
 			$settings = $mds->returnPluginSettings();
 
-			if ($settings['enabled'] == 'yes' && $settings["toggle_automatic_mds_processing"] == 'yes') {
+			if ($settings->getValue('enabled') == 'yes' && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
 				$mds->automatedAddCollivery($order_id, true);
 			}
 		}
