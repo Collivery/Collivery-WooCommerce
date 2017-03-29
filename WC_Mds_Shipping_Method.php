@@ -120,33 +120,36 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function calculate_shipping($package = array())
 	{
-		if($this->collivery_service->validPackage($package)) {
-			if(isset($package['service']) && $package['service'] == 'free') {
+		if ($this->collivery_service->validPackage($package)) {
+			if (isset($package['service']) && $package['service'] == 'free') {
 
-				if(isset($package['local']) && $package['local'] == 'yes') {
-					$id = 'mds_' . $this->settings['free_local_default_service'];
+				if (isset($package['local']) && $package['local'] == 'yes') {
+					$id = 'mds_'.$this->mdsSettings->getInstanceValue('free_local_default_service');
 				} else {
-					$id = 'mds_' . $this->settings['free_default_service'];
+					$id = 'mds_'.$this->mdsSettings->getInstanceValue('free_default_service');
 				}
 
 				$rate = array(
 					'id' => $id,
-					'label' => (!empty($this->settings["wording_free"])) ? $this->settings["wording_free"] : "Free Delivery",
+					'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),
 					'cost' => 0.0,
 				);
 
 				$this->add_rate($rate);
-			} elseif(!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
+			} elseif (!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
 				try {
 					$services = $this->collivery->getServices();
-					if(is_array($services)) {
+					if (is_array($services)) {
 						// Get pricing for each service
 						foreach ($services as $id => $title) {
-							if ($this->settings["method_$id"] == 'yes') {
+							if ($this->mdsSettings->getInstanceValue("method_$id") == 'yes') {
 								// Now lets get the price for
 								$riskCover = 0;
 								$cartTotal = $package['cart']['total'];
-								if ($this->settings['risk_cover'] == 'yes' && ($cartTotal >= $this->settings['risk_cover_threshold'])) {
+								if ($this->mdsSettings->getValue(
+										'risk_cover'
+									) == 'yes' && ($cartTotal >= $this->mdsSettings->getValue('risk_cover_threshold'))
+								) {
 									$riskCover = 1;
 								}
 
@@ -165,23 +168,26 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
 								$price = $this->collivery_service->getPrice($data, $id, $package['cart']['total']);
 
-								if((empty($this->settings["wording_$id"]) || $this->settings["wording_$id"] != $title) && ($id == 1 || $id == 2)) {
-									$title = $title . ', additional 24 hours on outlying areas';
+								if ($this->mdsSettings->getInstanceValue("wording_$id", $title) == $title && ($id == 1 || $id == 2)) {
+									$title = $title.', additional 24 hours on outlying areas';
+								} else {
+									$title = $this->mdsSettings->getInstanceValue("wording_$id");
 								}
 
-								$label = (!empty($this->settings["wording_$id"])) ? $this->settings["wording_$id"] : $title;
-
-								if($price <= 0) {
+								$label = $title;
+								if ($price <= 0) {
 									$price = 0.00;
 									$label .= ' - FREE!';
 								}
 
-								$this->add_rate(array(
-									'id' => 'mds_' . $id,
-									'value' => $id,
-									'label' => $label,
-									'cost' => $price,
-								));
+								$this->add_rate(
+									array(
+										'id' => 'mds_'.$id,
+										'value' => $id,
+										'label' => $label,
+										'cost' => $price,
+									)
+								);
 							}
 						}
 					}
