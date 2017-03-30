@@ -1,107 +1,74 @@
-jQuery(document).ready(function() {
+jQuery(document).ready(function () {
+    var select2fields = {
+        city: 'Select your city/town',
+        suburb: 'Select your city/town',
+        location_type: 'Select your location type'
+    };
 
-	var timer_update_billing_subs;
-	var timer_update_shipping_subs;
-	var mds_ajax_billing_state;
-	var mds_ajax_shipping_state;
+    jQuery.each(select2fields, function (field, placeholder) {
+        var el = jQuery('#billing_' + field);
+        if (jQuery.isFunction(el.select2)) {
+            el.select2({
+                placeholder: placeholder
+            });
+        }
+    });
 
-	function update_billing_subs() {
-		if (mds_ajax_billing_state)
-			mds_ajax_billing_state.abort();
+    var ajaxUpdates = [
+        {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
+        {fromField: 'billing_city', field: 'billing_suburb', prefix: 'suburbs', db_prefix: 'billing'},
+        {fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
+        {fromField: 'shipping_city', field: 'shipping_suburb', prefix: 'suburbs', db_prefix: 'shipping'}
+    ];
 
-		if (jQuery('#billing_state').val() == '') {
+    jQuery.each(ajaxUpdates, function (index, row) {
+        var parentEl = jQuery('#' + row.fromField);
+        parentEl.on('keydown', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode !== 9) {
+                updateSelect(row.fromField, row.field, row.prefix, row.db_prefix);
+            }
+        });
 
-			jQuery('#billing_city').empty();
-			jQuery('#billing_city').append('<option value="">Select a city first...</option>');
-		} else {
+        parentEl.on('change', function () {
+            updateSelect(row.fromField, row.field, row.prefix, row.db_prefix);
+        });
+    });
 
-			jQuery('#billing_city').empty();
-			jQuery('#billing_city').append('<option value="">Loading...</option>');
+    function updateSelect(fromField, field, prefix, db_prefix) {
+        var fromEl = jQuery('#' + fromField), el = jQuery('#' + field);
+        if (fromEl.val() !== '') {
+            return ajax = jQuery.ajax({
+                type: 'POST',
+                async: false,
+                timeout: 3000,
+                url: woocommerce_params.ajax_url,
+                data: {
+                    action: 'mds_collivery_generate_' + prefix,
+                    security: woocommerce_params.update_order_review_nonce,
+                    parentValue: fromEl.val(),
+                    db_prefix: db_prefix + '_',
+                },
+                success: function (response) {
+                    resetSelect(el, response);
+                    if (prefix === 'towns') {
+                        updateSelect(field, db_prefix + '_suburb', 'suburbs', db_prefix);
+                    }
+                },
+                error: function () {
+                    resetSelect(el, '<option selected="selected" value="">Error retrieving data from server. Please refresh the page and try again</option>');
+                },
+                beforeSend: function () {
+                    resetSelect(el, '<option selected="selected" value="">Loading...</option>');
+                }
+            });
+        }
+    }
 
-			var town = jQuery('#billing_state').val();
-			var type = 'billing_';
-
-			var data = {
-				action: 'mds_collivery_generate_suburbs',
-				security: woocommerce_params.update_order_review_nonce,
-				town: town,
-				type: type,
-			};
-
-			mds_ajax_billing_state = jQuery.ajax({
-				type: 'POST',
-				url: woocommerce_params.ajax_url,
-				data: data,
-				success: function(my_response) {
-					jQuery('#billing_city').empty();
-					jQuery('#billing_city').append(my_response);
-				}
-			});
-		}
-	}
-
-	function update_shipping_subs() {
-
-		if (mds_ajax_shipping_state)
-			mds_ajax_shipping_state.abort();
-
-		if (jQuery('#shipping_state').val() == '') {
-			jQuery('#shipping_city').empty();
-			jQuery('#shipping_city').append('<option value="">---Please select a city first---</option>');
-		} else {
-			jQuery('#shipping_city').empty();
-			jQuery('#shipping_city').append('<option value="">Loading...</option>');
-
-			var town = jQuery('#shipping_state').val();
-			var type = 'shipping_';
-
-			var data = {
-				action: 'mds_collivery_generate_suburbs',
-				security: woocommerce_params.update_order_review_nonce,
-				town: town,
-				type: type,
-			};
-
-			mds_ajax_shipping_state = jQuery.ajax({
-				type: 'POST',
-				url: woocommerce_params.ajax_url,
-				data: data,
-				success: function(my_response) {
-					jQuery('#shipping_city').empty();
-					jQuery('#shipping_city').append(my_response);
-				}
-			});
-		}
-	}
-
-	jQuery('#billing_state').on('keydown', function(e) {
-		var keyCode = e.keyCode || e.which;
-
-		if (keyCode != 9) {
-			clearTimeout(timer_update_billing_subs);
-			timer_update_billing_subs = setTimeout(update_billing_subs, '2000');
-		}
-	});
-
-	jQuery('#shipping_state').on('keydown', function(e) {
-		var keyCode = e.keyCode || e.which;
-
-		if (keyCode != 9) {
-			clearTimeout(timer_update_shipping_subs);
-			timer_update_shipping_subs = setTimeout(update_shipping_subs, '2000');
-		}
-	});
-
-	jQuery('#billing_state').on('change', function() {
-		clearTimeout(timer_update_billing_subs);
-		update_billing_subs();
-	});
-
-	jQuery('#shipping_state').on('change', function() {
-		clearTimeout(timer_update_shipping_subs);
-		update_shipping_subs();
-	});
-
-	update_billing_subs();
-	update_shipping_subs();
+    function resetSelect(el, html) {
+        el.html(html);
+        if (jQuery.isFunction(el.select2)) {
+            el.select2();
+        }
+    }
 });
