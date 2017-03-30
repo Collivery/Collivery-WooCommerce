@@ -781,6 +781,18 @@ class MdsColliveryService
 	}
 
 	/**
+	 * @param $userId
+	 * @param $field
+	 * @return null|string
+	 */
+	public function extractUserProfileField($userId, $field)
+	{
+		global $wpdb;
+
+		return $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM {$wpdb->prefix}usermeta WHERE user_id=%d AND meta_key=%s", $userId, $field));
+	}
+
+	/**
 	 * Returns the MDS Collivery class
 	 *
 	 * @return Collivery
