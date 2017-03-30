@@ -48,22 +48,35 @@ class MdsCheckoutFields extends MdsFields
 			// Silly hack to force all addresses to ZA
 			WC()->customer->set_country('ZA');
 			WC()->customer->set_shipping_country('ZA');
-
 			return array(
+				$prefix . 'country' => array(
+					'type' => 'country',
+					'label' => 'Country',
+					'required' => true,
+					'autocomplete' => 'country',
+					'class' => array( 'form-row-wide', 'address-field', 'update_totals_on_change' ),
+				),
 				$prefix . 'state' => array(
-					'type' => 'select',
-					'label' => 'City/Town',
+					'type' => 'state',
+					'label' => 'Province',
 					'required' => true,
 					'class' => array( 'form-row-wide', 'address-field', 'update_totals_on_change' ),
-					'options' => $towns,
-					'selected' => ''
+					'validate' => array('state'),
+					'autocomplete' =>'address-level1',
 				),
 				$prefix . 'city' => array(
+					'type' => 'select',
+					'label' => 'Town / City',
+					'required' => true,
+					'options' => $towns,
+					'class' => array( 'form-row-wide', 'address-field', 'update_totals_on_change' ),
+				),
+				$prefix . 'suburb' => array(
 					'type' => 'select',
 					'label' => 'Suburb',
 					'required' => true,
 					'class' => array( 'form-row-wide', 'address-field' ),
-					'options' => array( 'Select town first...' )
+					'options' => array('First select town/city'),
 				),
 				$prefix . 'location_type' => array(
 					'type' => 'select',
