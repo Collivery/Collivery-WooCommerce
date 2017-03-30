@@ -249,29 +249,24 @@ add_action( 'wp_ajax_suburbs_admin', 'suburbs_admin_callback' );
 function suburbs_admin_callback()
 {
 	if ( ( isset( $_POST['town'] ) ) && ( $_POST['town'] != '' ) ) {
-		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
-		$mds = MdsColliveryService::getInstance();
+		$mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
 		$collivery = $mds->returnColliveryClass();
 		$fields = $collivery->getSuburbs( $_POST['town'] );
 		if ( !empty( $fields ) ) {
-			if ( count( $fields ) == 1 ) {
-				foreach ( $fields as $value ) {
-					echo '<option value="' . $value . '">' . $value . '</option>';
-				}
-			} else {
-				echo "<option value=\"\" selected=\"selected\">Select Suburb</option>";
-				foreach ( $fields as $value ) {
-					echo '<option value="' . $value . '">' . $value . '</option>';
-				}
-			}
+			wp_die(View::make('_options', array(
+				'fields' => $fields,
+				'placeholder' => 'Select suburb',
+			)));
 		} else {
-			echo '<option value="">Error retrieving data from server. Please try again later...</option>';
+			wp_die(View::make('_options', array(
+				'placeholder' => 'Error retrieving data from server. Please try again later...',
+			)));
 		}
 	} else {
-		echo '<option value="">First Select Town...</option>';
+		wp_die(View::make('_options', array(
+			'placeholder' => 'First Select Town...',
+		)));
 	}
-
-	die();
 }
 
 // Ajax for getting suburbs in admin section
@@ -287,24 +282,20 @@ function contacts_admin_callback()
 		$collivery = $mds->returnColliveryClass();
 		$fields = $collivery->getContacts( $_POST['address_id'] );
 		if ( !empty( $fields ) ) {
-			if ( count( $fields ) == 1 ) {
-				foreach ( $fields as $contact_id => $contact ) {
-					echo '<option value="' . $contact_id . '">' . $contact['full_name'] . '</option>';
-				}
-			} else {
-				echo "<option value=\"\" selected=\"selected\">Select Contact</option>";
-				foreach ( $fields as $contact_id => $contact ) {
-					echo '<option value="' . $contact_id . '">' . $contact['full_name'] . '</option>';
-				}
-			}
+            wp_die(View::make('_options', array(
+				'fields' => $fields,
+				'placeholder' => 'Select contact',
+			)));
 		} else {
-			echo '<option value="">Error retrieving data from server. Please try again later...</option>';
+            wp_die(View::make('_options', array(
+				'placeholder' => 'Error retrieving data from server. Please try again later...',
+			)));
 		}
 	} else {
-		echo '<option value="">First Select Address...</option>';
+        wp_die(View::make('_options', array(
+			'placeholder' => 'First select address...',
+		)));
 	}
-
-	die();
 }
 
 /**
