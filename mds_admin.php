@@ -183,8 +183,8 @@ function mds_confirmed_order_view_pdf()
 	if (!current_user_can('manage_options'))
 		return;
 
-	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
-	$collivery = MdsColliveryService::getInstance()->collivery;
+	$mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+	$collivery = $mds->returnColliveryClass();
 	$waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
 
 	if (isset($_GET['type'])) {
@@ -197,7 +197,7 @@ function mds_confirmed_order_view_pdf()
 		}
 	}
 
-	if ($collivery->getErrors()) {
+	if ($mds->getColliveryErrors()) {
 		echo View::make('document_not_found', array('url' => get_admin_url() . 'admin.php?page=mds_confirmed&waybill=' . $waybill_number, 'urlText' => 'Back to MDS Confirmed Page'));
 	} else {
 		header('Content-Type: application/pdf');
@@ -344,7 +344,7 @@ function quote_admin_callback()
 	try {
 		$response = $collivery->getPrice($data);
 		if (!isset($response['service'])) {
-			throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->loggerSettingsArray(), array('data' => $data, 'errors' => $mds->collivery->getErrors()));
+			throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->loggerSettingsArray(), array('data' => $data, 'errors' => $mds->getColliveryErrors()));
 		}
 
 		wp_die('<p class="mds_response"><b>Service: </b>' . $services[$response['service']] . ' - Price incl: R' . $response['price']['inc_vat'] . '</p>');
