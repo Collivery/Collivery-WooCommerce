@@ -16,7 +16,7 @@
                 <select style="width: 100%;" id="<?php echo $prefix;?>_town" name="<?php echo $prefix;?>_town">
                     <option value="" selected="selected"></option>
                     <?php foreach ( $towns as $town_id => $town ): ?>
-                        <option<?php echo isset($order) && $town == $order->shipping_state ? ' selected="selected"' : '';?> value="<?php echo $town_id; ?>"><?php echo $town; ?></option>
+                        <option<?php echo isset($order) && $town == $order->shipping_city ? ' selected="selected"' : '';?> value="<?php echo $town_id; ?>"><?php echo $town; ?></option>
                     <?php endforeach; ?>`
                 </select>
             </td>
@@ -28,7 +28,7 @@
             <td>
                 <select style="width: 100%;" id="<?php echo $prefix;?>_suburb" name="<?php echo $prefix;?>_suburb">
                     <?php foreach ( $suburbs as $suburb_id => $suburb ): ?>
-                        <option<?php echo isset($order) && $suburb == $order->shipping_city ? ' selected="selected"' : '';?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
+                        <option<?php echo isset($order) && $suburb == $order->shipping_suburb ? ' selected="selected"' : '';?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
                     <?php endforeach; ?>`
                 </select>
             </td>

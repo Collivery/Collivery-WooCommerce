@@ -128,22 +128,22 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 			if(isset($_POST['post_data'])) {
 				parse_str($_POST['post_data'], $post_data);
 				if(!isset($post_data['ship_to_different_address']) || $post_data['ship_to_different_address'] != TRUE) {
-					$to_town_id = $post_data['billing_state'];
+					$to_town_id = $post_data['billing_city'];
 					$to_town_type = $post_data['billing_location_type'];
 				} else {
-					$to_town_id = $post_data['shipping_state'];
+					$to_town_id = $post_data['shipping_city'];
 					$to_town_type = $post_data['shipping_location_type'];
 				}
 			} elseif(isset($_POST['ship_to_different_address'])) {
 				if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
-					$to_town_id = $_POST['billing_state'];
+					$to_town_id = $_POST['billing_city'];
 					$to_town_type = $_POST['billing_location_type'];
 				} else {
-					$to_town_id = $_POST['shipping_state'];
+					$to_town_id = $_POST['shipping_city'];
 					$to_town_type = $_POST['shipping_location_type'];
 				}
 			} elseif(isset($packages[0]['destination'])) {
-				$to_town_id = $packages[0]['destination']['state'];
+				$to_town_id = $packages[0]['destination']['city'];
 				if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != TRUE) {
 					if(isset($_POST['billing_location_type'])) {
 						$to_town_type = $_POST['billing_location_type'];
