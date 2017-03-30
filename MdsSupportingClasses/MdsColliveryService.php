@@ -401,10 +401,9 @@ class MdsColliveryService
 	 * Adds the delivery request to MDS Collivery
 	 *
 	 * @param array $array
-	 * @param bool $accept
 	 * @return bool
 	 */
-	public function addCollivery(array $array, $accept=true)
+	public function addCollivery(array $array)
 	{
 		$this->validated_data = $this->validateCollivery($array);
 
@@ -428,7 +427,7 @@ class MdsColliveryService
 
 		$collivery_id = $this->collivery->addCollivery($this->validated_data);
 
-		if($accept) {
+		if($this->settings->getValue('auto_accept', true)) {
 			return ($this->collivery->acceptCollivery($collivery_id)) ? $collivery_id : false;
 		}
 

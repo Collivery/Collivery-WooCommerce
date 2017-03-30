@@ -111,6 +111,14 @@ class MdsFields
 				),
 				'default' => 'no',
 			),
+			'auto_accept' => array(
+				'title' => __('Auto accept'),
+				'type' => 'checkbox',
+				'description' => __(
+					'After automatic mds processing has sent the request through to MDS, should the request be auto accepted or will you manually accept the delivery on the MDS website'
+				),
+				'default' => 'yes',
+			),
 			'wording_free' => array(
 				'title' => __('Free Delivery Wording'),
 				'type' => 'text',
