@@ -1067,7 +1067,7 @@ class Collivery {
 	 * @param string  $id   Error ID
 	 * @param string  $text Error text
 	 */
-	protected function setError( $id, $text )
+	public function setError( $id, $text )
 	{
 		$this->errors[ $id ] = $text;
 	}
