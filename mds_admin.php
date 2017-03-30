@@ -548,7 +548,7 @@ function mds_register_collivery()
 	$total = $order->get_subtotal() + $order->get_cart_tax();
 
 	$instructions = "Order number: " . $order_id;
-	if(isset($settings['include_product_titles']) && $settings['include_product_titles'] == "yes") {
+	if($settings->getValue('include_product_titles') == "yes") {
 		$count = 1;
 		$instructions .= ': ';
 		foreach($parcels as $parcel) {
