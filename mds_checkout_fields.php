@@ -59,29 +59,49 @@ if (!function_exists('custom_override_state_label')) {
 	add_filter('woocommerce_get_country_locale', 'custom_override_state_label');
 }
 
-if (!function_exists('my_custom_checkout_field_update_order_meta')) {
+if (!function_exists('generate_towns')) {
 	/**
-	 * Save our location type field
+	 * Get the towns on province Change
 	 *
-	 * @param $order_id
+	 * @return string
 	 */
-	function my_custom_checkout_field_update_order_meta($order_id)
+	function generate_towns()
 	{
-		/** @var \MdsSupportingClasses\MdsColliveryService $mds */
-		$mds = MdsColliveryService::getInstance();
+		$mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
 
-		if ($mds->isEnabled()) {
-			if (!empty($_POST['shipping_location_type'])) {
-				update_post_meta($order_id, 'shipping_location_type', sanitize_text_field($_POST['shipping_location_type']));
-			}
+		$selectedTown = null;
+		if (get_current_user_id() > 0) {
+			$selectedTown = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'city');
+		}
 
-			if (!empty($_POST['billing_location_type'])) {
-				update_post_meta($order_id, 'billing_location_type', sanitize_text_field($_POST['billing_location_type']));
-			}
+		if (isset($_POST['parentValue']) && $_POST['parentValue'] != '') {
+			$collivery = $mds->returnColliveryClass();
+			$provinceMap = array(
+				'EC' => 'EC',
+				'FS' => 'OFS',
+				'GP' => 'GAU',
+				'KZN' => 'KZN',
+				'LP' => 'NP',
+				'MP' => 'MP',
+				'NC' => 'NC',
+				'NW' => 'NW',
+				'WC' => 'CAP',
+			);
+			$province = isset($provinceMap[$_POST['parentValue']]) ? $provinceMap[$_POST['parentValue']] : 'unknown';
+			echo View::make('_options', array(
+				'fields' => $collivery->getTowns( 'ZAF', $province ),
+				'placeholder' => 'Select town/city',
+				'selectedValue' => $selectedTown,
+			));
+		} else {
+			echo View::make('_options', array(
+				'placeholder' => 'First select province',
+			));
 		}
 	}
 
-	add_action('woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta');
+	add_action('wp_ajax_mds_collivery_generate_towns', 'generate_towns');
+	add_action('wp_ajax_nopriv_mds_collivery_generate_towns', 'generate_towns');
 }
 
 if (!function_exists('generate_suburbs')) {
@@ -92,45 +112,33 @@ if (!function_exists('generate_suburbs')) {
 	 */
 	function generate_suburbs()
 	{
-		// Here so we can auto select the clients state
-		if (WC()->session->get_customer_id() > 0 && $_POST['type']) {
-			global $wpdb;
-			$table_name = $wpdb->prefix . 'usermeta';
-			$config = $wpdb->get_results("SELECT * FROM `" . $table_name . "` WHERE user_id='" . WC()->session->get_customer_id() . "' and meta_key='" . $_POST['type'] . "city'", OBJECT);
-			$selected_suburb = $config[0]->meta_value;
+		$mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+
+		$selectedSuburb = null;
+		if (get_current_user_id() > 0) {
+			$selectedSuburb = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'suburb');
 		}
 
-		if ((isset($_POST['town'])) && ($_POST['town'] != '')) {
-			/** @var \MdsSupportingClasses\MdsColliveryService $mds */
-			$mds = MdsColliveryService::getInstance();
+		if ((isset($_POST['parentValue'])) && ($_POST['parentValue'] != '')) {
 			$collivery = $mds->returnColliveryClass();
-			$town_id = array_search($_POST['town'], $collivery->getTowns());
+			$town_id = array_search($_POST['parentValue'], $collivery->getTowns());
 			$fields = $collivery->getSuburbs($town_id);
+
 			if (!empty($fields)) {
-				if (count($fields) == 1) {
-					foreach ($fields as $value) {
-						echo '<option value="' . $value . '">' . $value . '</option>';
-					}
-				} else {
-					if (isset($selected_suburb)) {
-						foreach ($fields as $value) {
-							if ($value != $selected_suburb) {
-								echo '<option value="' . $value . '">' . $value . '</option>';
-							} else {
-								echo '<option value="' . $value . '" selected="selected">' . $value . '</option>';
-							}
-						}
-					} else {
-						echo "<option value=\"\" selected=\"selected\">Select Suburb</option>";
-						foreach ($fields as $value) {
-							echo '<option value="' . $value . '">' . $value . '</option>';
-						}
-					}
-				}
-			} else
-				echo '<option value="">Error retrieving data from server. Please try again later...</option>';
+				echo View::make('_options', array(
+					'fields' => $fields,
+					'placeholder' => 'Select suburb',
+					'selectedValue' => $selectedSuburb,
+				));
+			} else {
+				echo View::make('_options', array(
+					'placeholder' => 'Error retrieving data from server. Please try again later...',
+				));
+			}
 		} else {
-			echo '<option value="">First Select Town...</option>';
+			echo View::make('_options', array(
+				'placeholder' => 'First Select Town...',
+			));
 		}
 	}
 
