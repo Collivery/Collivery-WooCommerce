@@ -884,6 +884,14 @@ class MdsColliveryService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getColliveryErrors()
+	{
+		return $this->collivery->getErrors();
+	}
+
+	/**
 	 * @return bool|string
 	 */
 	public function downloadLogFiles()
