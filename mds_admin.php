@@ -234,7 +234,7 @@ add_action( 'woocommerce_order_action_confirm_shipping', 'mds_process_order_meta
  */
 function mds_process_order_meta( $order )
 {
-	wp_redirect( admin_url() . 'edit.php?page=mds_register&post_id=' . $order->id );
+	wp_redirect( admin_url() . 'edit.php?page=mds_register&post_id=' . $order->get_id() );
 	die();
 }
 
@@ -370,7 +370,7 @@ function accept_admin_callback()
 
 	try {
 		$order = new WC_Order( $post['order_id'] );
-		if(!$mds->hasOrderBeenProcessed($order->id)) {
+		if(!$mds->hasOrderBeenProcessed($order->get_id())) {
 			// Check which collection address we using and if we need to add the address to collivery api
 			if ( $post['which_collection_address'] == 'default' ) {
 				$collection_address = $mds->addColliveryAddress(array(
@@ -415,7 +415,7 @@ function accept_admin_callback()
 					'phone' => preg_replace("/[^0-9]/", "", $post['delivery_phone']),
 					'cellphone' => preg_replace("/[^0-9]/", "", $post['delivery_cellphone']),
 					'email' => $post['delivery_email'],
-					'custom_id' => $order->user_id
+					'custom_id' => $order->get_user_id()
 				));
 
 				// Check for any problems
