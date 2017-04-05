@@ -176,11 +176,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 					"to_town_id" => (int) array_search($to_town_id, $towns),
 					"to_location_type" => (int) array_search($to_town_type, $location_types),
 					'country' => 'ZA',
-					'state' => WC()->customer->get_state(),
+					'state' => WC()->customer->get_billing_state(),
 					'postcode' => WC()->customer->get_postcode(),
 					'city' => $to_town_id,
-					'address' => WC()->customer->get_address(),
-					'address_2' => WC()->customer->get_address_2()
+					'address' => WC()->customer->get_billing_address_1(),
+					'address_2' => WC()->customer->get_billing_address_2()
 				);
 			} else {
 				$package['destination'] = array(
@@ -192,7 +192,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 					'state' => WC()->customer->get_shipping_state(),
 					'postcode' => WC()->customer->get_shipping_postcode(),
 					'city' => $to_town_id,
-					'address' => WC()->customer->get_shipping_address(),
+					'address' => WC()->customer->get_shipping_address_1(),
 					'address_2' => WC()->customer->get_shipping_address_2()
 				);
 			}

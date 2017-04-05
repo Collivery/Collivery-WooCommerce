@@ -160,7 +160,7 @@ class MdsColliveryService
 				$cart['weight'] += $_product->get_weight() * $qty;
 
 				// Work out Volumetric Weight based on MDS calculations
-				$vol_weight = (($_product->length * $_product->width * $_product->height) / 4000);
+				$vol_weight = (($_product->get_length() * $_product->get_width() * $_product->get_height()) / 4000);
 
 				if ($vol_weight > $_product->get_weight()) {
 					$cart['max_weight'] += $vol_weight * $qty;
@@ -170,13 +170,13 @@ class MdsColliveryService
 
 				// Length conversion, mds collivery only accepts cm
 				if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
-					$parcel['length'] = $this->converter->convert($_product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-					$parcel['width'] = $this->converter->convert($_product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-					$parcel['height'] = $this->converter->convert($_product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+					$parcel['length'] = $this->converter->convert($_product->get_length(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+					$parcel['width'] = $this->converter->convert($_product->get_width(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+					$parcel['height'] = $this->converter->convert($_product->get_height(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
 				} else {
-					$parcel['length'] = $_product->length;
-					$parcel['width'] = $_product->width;
-					$parcel['height'] = $_product->height;
+					$parcel['length'] = $_product->get_length();
+					$parcel['width'] = $_product->get_width();
+					$parcel['height'] = $_product->get_height();
 				}
 
 				// Weight conversion, mds collivery only accepts kg
@@ -303,13 +303,13 @@ class MdsColliveryService
 
 			// Length conversion, mds collivery only accepts cm
 			if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
-				$parcel['length'] = $this->converter->convert($product->length, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-				$parcel['width'] = $this->converter->convert($product->width, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-				$parcel['height'] = $this->converter->convert($product->height, strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+				$parcel['length'] = $this->converter->convert($product->get_length(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+				$parcel['width'] = $this->converter->convert($product->get_width(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
+				$parcel['height'] = $this->converter->convert($product->get_height(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
 			} else {
-				$parcel['length'] = $product->length;
-				$parcel['width'] = $product->width;
-				$parcel['height'] = $product->height;
+				$parcel['length'] = $product->get_length();
+				$parcel['width'] = $product->get_width();
+				$parcel['height'] = $product->get_height();
 			}
 
 			// Weight conversion, mds collivery only accepts kg
