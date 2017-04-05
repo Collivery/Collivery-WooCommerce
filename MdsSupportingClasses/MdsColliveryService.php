@@ -514,8 +514,8 @@ class MdsColliveryService
 
 					$address = $this->addColliveryAddress(array(
 						'company_name' => ( $order->shipping_company != "" ) ? $order->shipping_company : 'Private',
-						'building' => $order->shipping_building_details,
-						'street' => $order->shipping_address_1 . ' ' . $order->shipping_address_2,
+						'building' => $order->shipping_address_2,
+						'street' => $order->shipping_address_1,
 						'location_type' => $order->shipping_location_type,
 						'suburb' => $order->shipping_suburb,
 						'town' => $order->shipping_city,
