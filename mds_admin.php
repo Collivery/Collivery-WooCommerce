@@ -536,7 +536,6 @@ function mds_register_collivery()
 {
 	$order = new WC_Order( $_GET['post_id'] );
 	$order_id = $_GET['post_id'];
-	$custom_fields = $order->order_custom_fields;
 
 	/** @var \MdsSupportingClasses\MdsColliveryService $mds */
 	$mds = MdsColliveryService::getInstance();
