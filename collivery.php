@@ -26,6 +26,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 				wp_die( 'Sorry, but you cannot run this plugin, it requires the <a href="http://php.net/manual/en/class.soapclient.php">SOAP</a> support on your server/hosting to function.' );
 			}
 
+			if (!version_compare(phpversion(), "5.4.0", ">=")) {
+				deactivate_plugins( basename( __FILE__ ) );
+				wp_die( 'Sorry, but you cannot run this plugin, it requires PHP version 5.4 or higher' );
+			}
+
 			global $wpdb;
 
 			// Creates our table to store our accepted deliveries
