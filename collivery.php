@@ -6,7 +6,7 @@ include('autoload.php');
 
 /**
  * Plugin Name: MDS Collivery
- * Plugin URI: http://www.collivery.co.za/
+ * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
  * Version: 3.0.0
  * Author: Bryce Large
