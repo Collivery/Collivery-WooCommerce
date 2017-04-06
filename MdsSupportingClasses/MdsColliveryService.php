@@ -427,7 +427,7 @@ class MdsColliveryService
 
 		$collivery_id = $this->collivery->addCollivery($this->validated_data);
 
-		if($this->settings->getValue('auto_accept', true)) {
+		if($this->settings->getValue('auto_accept', 'yes') === 'yes') {
 			return ($this->collivery->acceptCollivery($collivery_id)) ? $collivery_id : false;
 		}
 
