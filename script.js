@@ -7,11 +7,11 @@ jQuery(document).ready(function () {
 
     jQuery.each(select2fields, function (field, placeholder) {
         var el = jQuery('#billing_' + field);
-        if (jQuery.isFunction(el.select2)) {
+        try {
             el.select2({
                 placeholder: placeholder
             });
-        }
+        } catch(err) {}
     });
 
     var ajaxUpdates = [
@@ -67,8 +67,8 @@ jQuery(document).ready(function () {
 
     function resetSelect(el, html) {
         el.html(html);
-        if (jQuery.isFunction(el.select2)) {
+        try {
             el.select2();
-        }
+        } catch(err) {}
     }
 });
