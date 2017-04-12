@@ -61,7 +61,7 @@ class EnvironmentInformationBag
 
 		$this->wordpressVersion = $wp_version;
 		$this->woocommerceVersion = $this->getWoocommerceVersionNumber();
-		$this->appHost = 'Wordpress: ' . $wp_version . ' - WooCommerce: ' . $this->wordpressVersion;
+		$this->appHost = 'Wordpress: ' . $wp_version . ' - WooCommerce: ' . $this->woocommerceVersion;
 		$this->appUrl = get_site_url();
 		$this->appName = 'WooCommerce Plugin - ' . preg_replace('/^(http|https):\/\//i', '', $this->appUrl);
 		$this->phpVersion = phpversion();
