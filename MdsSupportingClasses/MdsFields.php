@@ -60,7 +60,7 @@ class MdsFields
 				'title' => __('Risk cover minimum'),
 				'type' => 'decimal',
 				'description' => __('The minimum price of cart items to enable').' MDS '.__(
-						'risk cover<br><strong>Please read the <a href="https://collivery.net/terms" target="_blank">terms and conditions</a> on our website</strong>'
+						'risk cover, only active when risk cover above is checked<br><strong>Please read the <a href="https://collivery.net/terms" target="_blank">terms and conditions</a> on our website</strong>'
 					),
 				'default' => 1000.00,
 			),
