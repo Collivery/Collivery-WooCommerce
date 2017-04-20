@@ -1,4 +1,5 @@
 <?php
+
 if (!empty($placeholder)) {
     if ((isset($selectedValue) || !isset($fields[$selectedValue])) || count($fields) > 1) {
         echo '<option selected="selected">'.$placeholder.'</option>';
@@ -16,4 +17,3 @@ if (!empty($fields)) {
         }
     }
 }
-?>
