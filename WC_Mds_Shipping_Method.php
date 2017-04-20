@@ -126,7 +126,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 	 */
 	function calculate_shipping($package = array())
 	{
-		if ($this->collivery_service->validPackage($package)) {
+		if (isset($package['destination']['from_town_id']) && $this->collivery_service->validPackage($package)) {
 			if (isset($package['service']) && $package['service'] == 'free') {
 
 				if (isset($package['local']) && $package['local'] == 'yes') {
