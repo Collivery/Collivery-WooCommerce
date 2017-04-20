@@ -897,6 +897,11 @@ class MdsColliveryService
 	{
 		if($file = $this->logger->downloadErrorFile()) {
 			return $file;
+		} else {
+			$this->logger->error('', '', $this->enviroment->loggerFormat());
+			if($file = $this->logger->downloadErrorFile()) {
+				return $file;
+			}
 		}
 
 		return false;
