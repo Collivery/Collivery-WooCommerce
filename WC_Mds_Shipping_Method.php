@@ -152,10 +152,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 								// Now lets get the price for
 								$riskCover = 0;
 								$cartTotal = $package['cart']['total'];
-								if ($this->mdsSettings->getValue(
-										'risk_cover'
-									) == 'yes' && ($cartTotal >= $this->mdsSettings->getValue('risk_cover_threshold'))
-								) {
+								if ($this->mdsSettings->getValue('risk_cover') == 'yes' && ($cartTotal >= $this->mdsSettings->getValue('risk_cover_threshold', 1000))) {
 									$riskCover = 1;
 								}
 

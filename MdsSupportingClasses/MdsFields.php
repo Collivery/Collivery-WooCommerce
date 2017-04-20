@@ -62,7 +62,7 @@ class MdsFields
 				'description' => __('The minimum price of cart items to enable').' MDS '.__(
 						'risk cover<br><strong>Please read the <a href="https://collivery.net/terms" target="_blank">terms and conditions</a> on our website</strong>'
 					),
-				'default' => 0.00,
+				'default' => 1000.00,
 			),
 			'round' => array(
 				'title' => "MDS ".__('Round Price'),
