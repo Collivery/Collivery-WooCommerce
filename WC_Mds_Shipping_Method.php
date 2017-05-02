@@ -132,18 +132,16 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         if (isset($package['destination']['from_town_id']) && $this->collivery_service->validPackage($package)) {
             if (isset($package['service']) && $package['service'] == 'free') {
                 if (isset($package['local']) && $package['local'] == 'yes') {
-                    $id = $this->mdsSettings->getInstanceValue('free_local_default_service');
+                    $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_local_default_service');
                 } else {
-                    $id = $this->mdsSettings->getInstanceValue('free_default_service');
+                    $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_default_service');
                 }
 
-                $rate = array(
-                    'id' => $this->get_rate_id($id),
+                $this->add_rate(array(
+                    'id' => $id,
                     'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),
                     'cost' => 0.0,
-                );
-
-                $this->add_rate($rate);
+                ));
             } elseif (!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
                 try {
                     $services = $this->collivery->getServices();
@@ -185,14 +183,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     $label .= ' - FREE!';
                                 }
 
-                                $this->add_rate(
-                                    array(
-                                        'id' => $this->get_rate_id($id),
-                                        'value' => $id,
-                                        'label' => $label,
-                                        'cost' => $price,
-                                    )
-                                );
+                                $this->add_rate(array(
+                                    'id' => 'mds_'.$id,
+                                    'value' => $id,
+                                    'label' => $label,
+                                    'cost' => $price,
+                                ));
                             }
                         }
                     }
