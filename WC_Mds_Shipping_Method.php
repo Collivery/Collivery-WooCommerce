@@ -132,13 +132,13 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         if (isset($package['destination']['from_town_id']) && $this->collivery_service->validPackage($package)) {
             if (isset($package['service']) && $package['service'] == 'free') {
                 if (isset($package['local']) && $package['local'] == 'yes') {
-                    $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_local_default_service');
+                    $id = $this->mdsSettings->getInstanceValue('free_local_default_service');
                 } else {
-                    $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_default_service');
+                    $id = $this->mdsSettings->getInstanceValue('free_default_service');
                 }
 
                 $rate = array(
-                    'id' => $id,
+                    'id' => $this->get_rate_id($id),
                     'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),
                     'cost' => 0.0,
                 );
@@ -187,7 +187,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
                                 $this->add_rate(
                                     array(
-                                        'id' => 'mds_'.$id,
+                                        'id' => $this->get_rate_id($id),
                                         'value' => $id,
                                         'label' => $label,
                                         'cost' => $price,
