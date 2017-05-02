@@ -46,7 +46,7 @@ class ShippingPackageData
             return $packages;
         }
 
-        $requiredFields = $this->extractRequiredFields($input);
+        $requiredFields = $this->extractRequiredFields($input, $packages);
         if ((!isset($requiredFields->to_town_type) || !isset($requiredFields->to_town_id)) || ($requiredFields->to_town_id == '' || $requiredFields->to_town_type == '')) {
             return $packages;
         }
@@ -112,9 +112,10 @@ class ShippingPackageData
     /**
      * @param array $array
      *
+     * @param array $packages
      * @return object
      */
-    public function extractRequiredFields(array $array)
+    public function extractRequiredFields(array $array, array $packages)
     {
         if (isset($array['post_data'])) {
             parse_str($array['post_data'], $postData);
