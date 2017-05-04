@@ -2,9 +2,9 @@
 
 if (!empty($placeholder)) {
     if ((isset($selectedValue) || !isset($fields[$selectedValue])) || count($fields) > 1) {
-        echo '<option selected="selected">'.$placeholder.'</option>';
+        echo '<option value="" selected="selected">'.$placeholder.'</option>';
     } else {
-        echo '<option>'.$placeholder.'</option>';
+        echo '<option value="">'.$placeholder.'</option>';
     }
 }
 
