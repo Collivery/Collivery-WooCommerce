@@ -102,6 +102,9 @@ class EnvironmentInformationBag
         ];
     }
 
+    /**
+     * @return null
+     */
     private function getWoocommerceVersionNumber()
     {
         // If get_plugins() isn't available, require it

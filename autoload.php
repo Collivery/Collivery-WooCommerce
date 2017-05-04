@@ -2,6 +2,9 @@
 
 class MdsColliveryAutoLoader
 {
+    /**
+     * @var array
+     */
     protected static $classMap = array(
         'MdsCollivery' => '\MdsSupportingClasses\Collivery',
         'EnvironmentInformationBag' => '\MdsSupportingClasses\EnvironmentInformationBag',
@@ -25,6 +28,9 @@ class MdsColliveryAutoLoader
         'ProductOutOfStockException' => '\MdsExceptions\ProductOutOfStockException',
     );
 
+    /**
+     * @param $class
+     */
     public static function autoload($class)
     {
         $classParts = explode('\\', $class);
