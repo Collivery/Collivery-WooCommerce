@@ -216,7 +216,7 @@ class MdsFields
      *
      * @throws InvalidResourceDataException
      */
-    public function getResources($attempt = 0)
+    public static function getResources($attempt = 0)
     {
         $service = MdsColliveryService::getInstance();
         $collivery = $service->returnColliveryClass();
@@ -248,7 +248,7 @@ class MdsFields
                     $cache->clear('collivery.auth');
                 }
 
-                $this->getResources($attempt + 1);
+                self::getResources($attempt + 1);
             } else {
                 return compact('towns', 'location_types', 'services');
             }

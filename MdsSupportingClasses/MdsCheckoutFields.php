@@ -43,7 +43,7 @@ class MdsCheckoutFields extends MdsFields
         }
 
         try {
-            $resources = $this->getResources();
+            $resources = self::getResources();
             $towns = array('' => 'Select Town') + array_combine($resources['towns'], $resources['towns']);
             $location_types = array('' => 'Select Premises Type') + array_combine($resources['location_types'], $resources['location_types']);
 
