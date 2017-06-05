@@ -440,7 +440,7 @@ function accept_admin_callback()
                 'contact_from' => $contact_from,
                 'collivery_to' => $collivery_to,
                 'contact_to' => $contact_to,
-                'cust_ref' => 'Order number: '.$order->id,
+                'cust_ref' => 'Order number: '.$order->get_id(),
                 'instructions' => $post['instructions'],
                 'collivery_type' => 2, // Package
                 'service' => $post['service'],
@@ -463,7 +463,7 @@ function accept_admin_callback()
                 $collection_time = (isset($validatedData['collection_time'])) ? ' anytime from: '.date('Y-m-d H:i', $validatedData['collection_time']) : '';
 
                 // Save the results from validation into our table
-                $mds->addColliveryToProcessedTable($collivery_id, $order->id);
+                $mds->addColliveryToProcessedTable($collivery_id, $order->get_id());
                 $message = 'Order has been sent to MDS Collivery, Waybill Number: '.$collivery_id.', please have order ready for collection'.$collection_time.'.';
                 $mds->updateStatusOrAddNote($order, $message, false, 'completed');
 
