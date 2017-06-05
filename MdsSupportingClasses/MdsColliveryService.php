@@ -23,6 +23,11 @@ class MdsColliveryService
     private static $instance;
 
     /**
+     * @var UnitConverter
+     */
+    private $converter;
+
+    /**
      * @var Collivery
      */
     private $collivery;
