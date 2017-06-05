@@ -7,16 +7,7 @@ use MdsExceptions\SoapConnectionException;
 
 class MdsFields
 {
-    /**
-     * @param MdsColliveryService $service
-     * @return array
-     */
-    public static function getFields(MdsColliveryService $service)
-    {
-        return self::instanceFields($service);
-    }
-
-    public static function defaultFields()
+    public static function getFields()
     {
         return array(
             'downloadLogs' => array(
@@ -157,7 +148,7 @@ class MdsFields
      */
     public static function instanceFields(MdsColliveryService $service)
     {
-        $fields = self::defaultFields();
+        $fields = array();
 
         try {
             $resources = self::getResources($service);
@@ -228,20 +219,22 @@ class MdsFields
         $collivery = $service->returnColliveryClass();
 
         try {
+            $resources = array();
             foreach (['towns', 'location_types', 'services'] as $resource) {
-                ${$resource} = $collivery->{'get' . ucwords($resource)};
-                if (!is_array(${$resource})) {
+                $result = $collivery->{'get' . str_replace('_', '', ucwords($resource))}();
+                if (!is_array($result)) {
                     throw new InvalidResourceDataException(
                         'Unable to retrieve fields from the API',
                         $service->loggerSettingsArray()
                     );
                 }
+
+                $resources[$resource] = $result;
             }
 
-            $resources = compact('towns', 'location_types', 'services');
             $cache->put('resources', $resources);
 
-            return compact('towns', 'location_types', 'services');
+            return $resources;
         } catch (SoapConnectionException $e) {
             throw new InvalidResourceDataException($e->getMessage(), $service->loggerSettingsArray());
         }

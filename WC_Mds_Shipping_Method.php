@@ -66,17 +66,14 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      */
     public function init()
     {
-        // Load the form fields.
-        $this->init_form_fields();
-        $this->init_settings();
-
         $this->title = $this->method_title;
         $this->enabled = get_option('enabled');
 
+        // Load the form fields.
+        $this->init_form_fields();
         $this->init_mds_collivery();
-        $this->init_ws_form_fields();
-        $this->init_instance_settings();
-        $this->mdsSettings = new MdsSettings($this->settings, $this->instance_settings);
+        $this->init_instance_form_fields();
+        $this->mdsSettings = $this->collivery_service->initSettings($this->settings, $this->instance_settings);
 
         add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
     }
@@ -96,20 +93,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      */
     public function init_form_fields()
     {
-        $this->form_fields = MdsFields::defaultFields();
-        $this->instance_form_fields = array();
+        $this->form_fields = MdsFields::getFields();
+        $this->init_settings();
     }
 
     /**
      * Next Plugin Settings after class is instantiated.
      */
-    public function init_ws_form_fields()
+    public function init_instance_form_fields()
     {
-        $this->form_fields = MdsFields::getFields($this->collivery_service);
         $this->instance_form_fields = MdsFields::instanceFields($this->collivery_service);
-
-        $this->init_settings();
-        $this->collivery_service->initSettings($this->settings);
+        $this->init_instance_settings();
     }
 
     /**

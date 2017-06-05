@@ -98,26 +98,32 @@ class MdsColliveryService
      *  Sets up the settings array by fetching all of the options out of the database.
      *
      * @param null $settings
+     * @param array $instanceSettings
+     *
+     * @return MdsSettings
      */
-    public function initSettings($settings = null)
+    public function initSettings($settings = null, $instanceSettings = array())
     {
         if (is_array($settings)) {
-            $this->settings = new MdsSettings($settings);
+            $this->settings = new MdsSettings($settings, $instanceSettings);
         } else {
             $settings = get_option('woocommerce_mds_collivery_settings', null);
 
             // If there are no settings defined, use defaults.
             if (!is_array($settings)) {
-                $form_fields = MdsFields::getFields($this);
+                $form_fields = MdsFields::getFields();
                 $settings = array_merge(
                     array_fill_keys(array_keys($form_fields), ''),
                     wp_list_pluck($form_fields, 'default')
                 );
             }
-            $this->settings = new MdsSettings($settings);
+
+            $this->settings = new MdsSettings($settings, $instanceSettings);
         }
 
-        $this->enviroment->setSettings($this->settings->settings);
+        $this->enviroment->setSettings($this->settings->settings + $instanceSettings);
+
+        return $this->settings;
     }
 
     /**
