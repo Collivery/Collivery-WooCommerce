@@ -10,6 +10,10 @@ if (!empty($placeholder)) {
 
 if (!empty($fields)) {
     foreach ($fields as $value) {
+        if (is_array($value) && isset($value['nice_contact'])) {
+            $value = $value['nice_contact'];
+        }
+
         if (count($fields) === 0 || (isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
             echo '<option value="'.$value.'" selected="selected">'.$value.'</option>';
         } else {
