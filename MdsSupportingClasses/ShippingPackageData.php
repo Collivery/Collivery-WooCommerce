@@ -2,6 +2,8 @@
 
 namespace MdsSupportingClasses;
 
+use stdClass;
+
 class ShippingPackageData
 {
     /**
@@ -46,8 +48,13 @@ class ShippingPackageData
             return $packages;
         }
 
-        $requiredFields = $this->extractRequiredFields($input, $packages);
-        if ((!isset($requiredFields->to_town_type) || !isset($requiredFields->to_town_id)) || ($requiredFields->to_town_id == '' || $requiredFields->to_town_type == '')) {
+        $extractedFields = $this->extractRequiredFields($input, $packages);
+        $requiredFields = (object) array(
+            'to_town_id' => $this->getTownId($extractedFields),
+            'to_town_type' => $this->getLocationType($extractedFields)
+        );
+
+        if (!isset($requiredFields->to_town_id) || ($requiredFields->to_town_id == '')) {
             return $packages;
         }
 
@@ -113,7 +120,7 @@ class ShippingPackageData
      * @param array $array
      *
      * @param array $packages
-     * @return object
+     * @return stdClass
      */
     public function extractRequiredFields(array $array, array $packages)
     {
@@ -148,5 +155,38 @@ class ShippingPackageData
         }
 
         return (object) compact('to_town_id', 'to_town_type');
+    }
+
+    /**
+     * @param stdClass $fields
+     * @return int|null|string
+     */
+    private function getTownId(stdClass $fields)
+    {
+        $to_town_id = $fields->to_town_id;
+
+        if (empty($fields->to_town_id) && get_current_user_id() > 0) {
+            $to_town_id = $this->service->extractUserProfileField(get_current_user_id(), 'billing_city');
+        }
+
+        return $to_town_id;
+    }
+
+    /**
+     * @param stdClass $fields
+     * @return int|null|string
+     */
+    private function getLocationType(stdClass $fields)
+    {
+        $to_town_type = $fields->to_town_type;
+
+        if (empty($fields->to_town_type) && get_current_user_id() > 0) {
+            $to_town_type = $this->service->extractUserProfileField(get_current_user_id(), 'billing_location_type');
+            if (empty($to_town_type)) {
+                $to_town_type = 15; // Private house
+            }
+        }
+
+        return $to_town_type;
     }
 }
