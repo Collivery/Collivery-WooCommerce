@@ -8,6 +8,7 @@ use MdsExceptions\InvalidColliveryDataException;
 use MdsExceptions\InvalidResourceDataException;
 use MdsExceptions\SoapConnectionException;
 use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\MdsFields;
 use MdsSupportingClasses\MdsSettings;
 
 /**
@@ -107,10 +108,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         $this->form_fields = MdsFields::getFields($this->collivery_service);
         $this->instance_form_fields = MdsFields::instanceFields($this->collivery_service);
 
-        if ($this->settings['free_default_service']) {
-            $this->init_settings();
-            $this->collivery_service = $this->collivery_service->newInstance($this->settings);
-        }
+        $this->init_settings();
+        $this->collivery_service->initSettings($this->settings);
     }
 
     /**

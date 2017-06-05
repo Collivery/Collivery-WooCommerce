@@ -90,10 +90,8 @@ class MdsColliveryService
         $this->logger = new MdsLogger();
         $this->enviroment = new EnvironmentInformationBag();
 
-        self::$instance = $this;
         $this->initSettings($settings);
         $this->initMdsCollivery();
-        self::$instance = $this;
     }
 
     /**
@@ -110,7 +108,7 @@ class MdsColliveryService
 
             // If there are no settings defined, use defaults.
             if (!is_array($settings)) {
-                $form_fields = MdsFields::getFields(self::$instance);
+                $form_fields = MdsFields::getFields($this);
                 $settings = array_merge(
                     array_fill_keys(array_keys($form_fields), ''),
                     wp_list_pluck($form_fields, 'default')
