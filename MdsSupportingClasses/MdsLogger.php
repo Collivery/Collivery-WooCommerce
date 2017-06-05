@@ -86,6 +86,7 @@ class MdsLogger
      * Gets a specific cache files contents.
      *
      * @param $name
+     * @return mixed|null
      */
     public function get($name)
     {
