@@ -81,7 +81,7 @@ class MdsColliveryService
     private function __construct($settings = null)
     {
         $this->converter = new UnitConverter();
-        $this->cache = new MdsCache(ABSPATH.'cache/mds_collivery/');
+        $this->cache = new MdsCache(ABSPATH . 'cache/mds_collivery/');
         $this->logger = new MdsLogger();
         $this->enviroment = new EnvironmentInformationBag();
 
@@ -240,28 +240,28 @@ class MdsColliveryService
     private function validatePackageField($array, $field, $type = 'int')
     {
         if (!is_array($array)) {
-            throw new InvalidCartPackageException('Unable to validate field"'.$field.'" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), array());
+            throw new InvalidCartPackageException('Unable to validate field"' . $field . '" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), array());
         }
 
         if (!isset($array[$field])) {
-            throw new InvalidCartPackageException($field.' does not exist in array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
+            throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
         }
 
         if ($type == 'int') {
             if (!is_integer($array[$field])) {
-                throw new InvalidCartPackageException($field.' is not an integer', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
+                throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
             }
         }
 
         if ($type == 'numeric') {
             if (!is_numeric($array[$field])) {
-                throw new InvalidCartPackageException($field.' is not numeric', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
+                throw new InvalidCartPackageException($field . ' is not numeric', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
             }
         }
 
         if ($type == 'array') {
             if (!is_array($array[$field])) {
-                throw new InvalidCartPackageException($field.' is not an array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
+                throw new InvalidCartPackageException($field . ' is not an array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
             }
         }
     }
@@ -351,7 +351,7 @@ class MdsColliveryService
 
                 if ($stock != '') {
                     if ($stock == 0 || $stock < $qty) {
-                        throw new ProductOutOfException($product->get_formatted_name().' is out of stock', 'isOrderInStock', $this->loggerSettingsArray(), $items);
+                        throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->loggerSettingsArray(), $items);
                     }
                 }
             }
@@ -404,7 +404,7 @@ class MdsColliveryService
             $returnedAmount = $result['price']['ex_vat'];
         }
 
-        return Money::make($returnedAmount, $this->settings->getValue('markup_'.$serviceId), $discount, $this->settings->getValue('round') == 'yes')->amount;
+        return Money::make($returnedAmount, $this->settings->getValue('markup_' . $serviceId), $discount, $this->settings->getValue('round') == 'yes')->amount;
     }
 
     /**
@@ -423,7 +423,7 @@ class MdsColliveryService
             $services = $this->collivery->getServices();
 
             if (!empty($this->settings->getValue("wording_$id"))) {
-                $reason = preg_replace('|'.preg_quote($services[$id]).'|', $this->settings->getValue("wording_$id"), $this->validated_data['time_changed_reason']);
+                $reason = preg_replace('|' . preg_quote($services[$id]) . '|', $this->settings->getValue("wording_$id"), $this->validated_data['time_changed_reason']);
             } else {
                 $reason = $this->validated_data['time_changed_reason'];
             }
@@ -534,7 +534,7 @@ class MdsColliveryService
                         'location_type' => $order->shipping_location_type,
                         'suburb' => $order->shipping_suburb,
                         'town' => $order->shipping_city,
-                        'full_name' => $order->shipping_first_name.' '.$order->shipping_last_name,
+                        'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
                         'cellphone' => preg_replace('/[^0-9]/', '', $order->shipping_phone),
                         'email' => str_replace(' ', '', $order->shipping_email),
                         'custom_id' => $order->user_id,
@@ -546,14 +546,14 @@ class MdsColliveryService
                     $collivery_to = $address['address_id'];
                     $contact_to = $address['contact_id'];
 
-                    $instructions = 'Order number: '.$order_id;
+                    $instructions = 'Order number: ' . $order_id;
                     if ($this->settings->getValue('include_product_titles') == 'yes') {
                         $count = 1;
                         $instructions .= ': ';
                         foreach ($parcels as $parcel) {
                             if (isset($parcel['description'])) {
                                 $ending = ($count == count($parcels)) ? '' : ', ';
-                                $instructions .= $parcel['quantity'].' X '.$parcel['description'].$ending;
+                                $instructions .= $parcel['quantity'] . ' X ' . $parcel['description'] . $ending;
                                 ++$count;
                             }
                         }
@@ -562,33 +562,33 @@ class MdsColliveryService
                     $orderTotal = $order->get_subtotal() + $order->get_cart_tax();
                     $riskCover = ($this->settings->getValue('risk_cover') == 'yes') && ($orderTotal > $this->settings->getValue('risk_cover_threshold', 0));
                     $colliveryOptions = array(
-                        'collivery_from' => (int) $collivery_from,
-                        'contact_from' => (int) $contact_from,
-                        'collivery_to' => (int) $collivery_to,
-                        'contact_to' => (int) $contact_to,
-                        'cust_ref' => 'Order number: '.$order_id,
+                        'collivery_from' => (int)$collivery_from,
+                        'contact_from' => (int)$contact_from,
+                        'collivery_to' => (int)$collivery_to,
+                        'contact_to' => (int)$contact_to,
+                        'cust_ref' => 'Order number: ' . $order_id,
                         'instructions' => $instructions,
                         'collivery_type' => 2,
-                        'service' => (int) $service_id,
+                        'service' => (int)$service_id,
                         'cover' => $riskCover ? 1 : 0,
                         'parcel_count' => count($parcels),
                         'parcels' => $parcels,
                     );
                     $collivery_id = $this->addCollivery($colliveryOptions);
 
-                    $collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: '.date('Y-m-d H:i', $this->validated_data['collection_time']) : '';
+                    $collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time']) : '';
 
                     if ($collivery_id) {
                         // Save the results from validation into our table
-                        $this->addColliveryToProcessedTable($collivery_id, $order->id);
-                        $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: '.$collivery_id.', please have order ready for collection'.$collection_time.'.', $processing, 'completed');
+                        $this->addColliveryToProcessedTable($collivery_id, $order->get_id());
+                        $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
                     } else {
                         throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->loggerSettingsArray(), array('data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()));
                     }
                 } catch (InvalidColliveryDataException $e) {
-                    $this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: '.$e->getMessage(), $processing, 'processing');
+                    $this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
                 } catch (InvalidAddressDataException $e) {
-                    $this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: '.$e->getMessage(), $processing, 'processing');
+                    $this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
                 } catch (InvalidServiceException $e) {
                 }
             } else {
@@ -612,7 +612,7 @@ class MdsColliveryService
         global $wpdb;
 
         // Save the results from validation into our table
-        $table_name = $wpdb->prefix.'mds_collivery_processed';
+        $table_name = $wpdb->prefix . 'mds_collivery_processed';
         $data = array(
             'status' => 1,
             'order_id' => $order_id,
@@ -638,7 +638,7 @@ class MdsColliveryService
         $location_types = $this->collivery->getLocationTypes();
 
         if (!is_numeric($array['town'])) {
-            $town_id = (int) array_search($array['town'], $towns);
+            $town_id = (int)array_search($array['town'], $towns);
         } else {
             $town_id = $array['town'];
         }
@@ -646,13 +646,13 @@ class MdsColliveryService
         $suburbs = $this->collivery->getSuburbs($town_id);
 
         if (!is_numeric($array['suburb'])) {
-            $suburb_id = (int) array_search($array['suburb'], $suburbs);
+            $suburb_id = (int)array_search($array['suburb'], $suburbs);
         } else {
             $suburb_id = $array['suburb'];
         }
 
         if (!is_numeric($array['location_type'])) {
-            $location_type_id = (int) array_search($array['location_type'], $location_types);
+            $location_type_id = (int)array_search($array['location_type'], $location_types);
         } else {
             $location_type_id = $array['location_type'];
         }
@@ -791,7 +791,7 @@ class MdsColliveryService
 			WHERE order_id=%d
 		", $orderId));
 
-        $tableName = $wpdb->prefix.'mds_collivery_processed';
+        $tableName = $wpdb->prefix . 'mds_collivery_processed';
         if ($wpdb->get_var("SHOW TABLES LIKE '$tableName'") != $tableName) {
             throw new OrderAlreadyProcessedException("Database table $tableName does not exists so we cannot confirm if the order has been processed, unable to continue", $this->loggerSettingsArray(), [
                 'order_id' => $orderId,
