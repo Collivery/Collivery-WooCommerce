@@ -104,7 +104,7 @@ class MdsColliveryService
 
             // If there are no settings defined, use defaults.
             if (!is_array($settings)) {
-                $form_fields = MdsFields::getFields();
+                $form_fields = MdsFields::getFields(self::$instance);
                 $settings = array_merge(
                     array_fill_keys(array_keys($form_fields), ''),
                     wp_list_pluck($form_fields, 'default')
