@@ -561,7 +561,7 @@ class MdsColliveryService
                     }
 
                     $orderTotal = $order->get_subtotal() + $order->get_cart_tax();
-                    $riskCover = ($this->settings->getValue('risk_cover') == 'yes') & ($orderTotal > $this->settings->getValue('risk_cover_threshold'));
+                    $riskCover = ($this->settings->getValue('risk_cover') == 'yes') && ($orderTotal > $this->settings->getValue('risk_cover_threshold', 0));
                     $colliveryOptions = array(
                         'collivery_from' => (int) $collivery_from,
                         'contact_from' => (int) $contact_from,
