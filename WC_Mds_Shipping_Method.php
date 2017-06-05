@@ -95,7 +95,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      */
     public function init_form_fields()
     {
-        $this->form_fields = MdsSettings::defaultFields();
+        $this->form_fields = MdsFields::defaultFields();
         $this->instance_form_fields = array();
     }
 
@@ -104,8 +104,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      */
     public function init_ws_form_fields()
     {
-        $this->form_fields = MdsSettings::getFields();
-        $this->instance_form_fields = MdsSettings::instanceFields();
+        $this->form_fields = MdsFields::getFields($this->collivery_service);
+        $this->instance_form_fields = MdsFields::instanceFields($this->collivery_service);
 
         if ($this->settings['free_default_service']) {
             $this->init_settings();
