@@ -19,7 +19,7 @@ use MdsSupportingClasses\View;
 </p>
 
 <form accept-charset="UTF-8" action="<?php echo admin_url('post.php?post='.$order_id.'&action=edit'); ?>" method="post" id="api_quote">
-    <input type="hidden" name="order_id" value="<?php echo $order->id; ?>">
+    <input type="hidden" name="order_id" value="<?php echo $order->get_id(); ?>">
     <div class="parallel">
         <table width="100%">
             <tr>
