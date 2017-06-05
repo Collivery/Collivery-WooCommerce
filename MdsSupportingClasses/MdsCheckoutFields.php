@@ -4,7 +4,7 @@ namespace MdsSupportingClasses;
 
 use MdsExceptions\InvalidResourceDataException;
 
-class MdsCheckoutFields extends MdsFields
+class MdsCheckoutFields
 {
     /**
      * @var array

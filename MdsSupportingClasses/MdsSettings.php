@@ -2,7 +2,7 @@
 
 namespace MdsSupportingClasses;
 
-class MdsSettings extends MdsFields
+class MdsSettings
 {
     /**
      * @var array
