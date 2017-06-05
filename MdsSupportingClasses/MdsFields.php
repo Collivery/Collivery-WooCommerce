@@ -8,11 +8,12 @@ use MdsExceptions\SoapConnectionException;
 class MdsFields
 {
     /**
+     * @param MdsColliveryService $service
      * @return array
      */
-    public static function getFields()
+    public static function getFields(MdsColliveryService $service)
     {
-        return self::instanceFields(self::defaultFields());
+        return self::instanceFields($service);
     }
 
     public static function defaultFields()
@@ -150,14 +151,16 @@ class MdsFields
     }
 
     /**
-     * @param array $fields
+     * @param MdsColliveryService $service
      *
      * @return array
      */
-    public static function instanceFields($fields = array())
+    public static function instanceFields(MdsColliveryService $service)
     {
+        $fields = self::defaultFields();
+
         try {
-            $resources = self::getResources();
+            $resources = self::getResources($service);
             foreach ($resources['services'] as $id => $title) {
                 $fields['method_'.$id] = array(
                     'title' => __($title),
@@ -210,48 +213,35 @@ class MdsFields
     }
 
     /**
-     * @param int $attempt
+     * @param MdsColliveryService $service
      *
      * @return array
-     *
      * @throws InvalidResourceDataException
      */
-    public static function getResources($attempt = 0)
+    public static function getResources(MdsColliveryService $service)
     {
-        $service = MdsColliveryService::getInstance();
-        $collivery = $service->returnColliveryClass();
         $cache = $service->returnCacheClass();
-
-        if ($attempt > 2) {
-            throw new InvalidResourceDataException(
-                'Unable to retrieve fields from the API',
-                $service->loggerSettingsArray()
-            );
+        if ($cache->has('resources')) {
+            return $cache->get('resources');
         }
 
+        $collivery = $service->returnColliveryClass();
+
         try {
-            $towns = $collivery->getTowns();
-            $location_types = $collivery->getLocationTypes();
-            $services = $collivery->getServices();
-
-            if (!is_array($towns) || !is_array($location_types) || !is_array($services)) {
-                if (!is_array($towns)) {
-                    $cache->clear('collivery.towns.ZAF');
+            foreach (['towns', 'location_types', 'services'] as $resource) {
+                ${$resource} = $collivery->{'get' . ucwords($resource)};
+                if (!is_array(${$resource})) {
+                    throw new InvalidResourceDataException(
+                        'Unable to retrieve fields from the API',
+                        $service->loggerSettingsArray()
+                    );
                 }
-                if (!is_array($location_types)) {
-                    $cache->clear('collivery.location_types');
-                }
-                if (!is_array($services)) {
-                    $cache->clear('collivery.services');
-                }
-                if ($attempt > 1) {
-                    $cache->clear('collivery.auth');
-                }
-
-                self::getResources($attempt + 1);
-            } else {
-                return compact('towns', 'location_types', 'services');
             }
+
+            $resources = compact('towns', 'location_types', 'services');
+            $cache->put('resources', $resources);
+
+            return compact('towns', 'location_types', 'services');
         } catch (SoapConnectionException $e) {
             throw new InvalidResourceDataException($e->getMessage(), $service->loggerSettingsArray());
         }
