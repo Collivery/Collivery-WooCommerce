@@ -24,12 +24,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      * @var MdsSupportingClasses\MdsCache
      */
     public $cache;
-
-    /**
-     * @var MdsSupportingClasses\UnitConverter
-     */
-    public $converter;
-
     /**
      * @var MdsSupportingClasses\MdsColliveryService
      */
@@ -93,7 +87,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
     {
         $this->collivery_service = MdsColliveryService::getInstance($this->settings);
         $this->collivery = $this->collivery_service->returnColliveryClass();
-        $this->converter = $this->collivery_service->returnConverterClass();
         $this->cache = $this->collivery_service->returnCacheClass();
     }
 
