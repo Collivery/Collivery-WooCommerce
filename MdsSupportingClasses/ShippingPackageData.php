@@ -183,7 +183,7 @@ class ShippingPackageData
         if (empty($fields->to_town_type) && get_current_user_id() > 0) {
             $to_town_type = $this->service->extractUserProfileField(get_current_user_id(), 'billing_location_type');
             if (empty($to_town_type)) {
-                $to_town_type = 15; // Private house
+                $to_town_type = 'Private House';
             }
         }
 

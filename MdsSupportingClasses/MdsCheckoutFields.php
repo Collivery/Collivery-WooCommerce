@@ -87,6 +87,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-wide', 'address-field', 'update_totals_on_change'),
                     'placeholder' => 'Please select',
                     'options' => $location_types,
+                    'default' => 'Private House',
                     'selected' => '',
                 ),
                 $prefix.'company' => array(
