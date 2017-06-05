@@ -86,8 +86,10 @@ class MdsColliveryService
         $this->logger = new MdsLogger();
         $this->enviroment = new EnvironmentInformationBag();
 
+        self::$instance = $this;
         $this->initSettings($settings);
         $this->initMdsCollivery();
+        self::$instance = $this;
     }
 
     /**
