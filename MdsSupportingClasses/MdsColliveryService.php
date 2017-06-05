@@ -68,8 +68,7 @@ class MdsColliveryService
      */
     public function newInstance($settings)
     {
-        self::$instance = new self();
-        $this->initSettings($settings);
+        self::$instance = new self($settings);
 
         return self::$instance;
     }
