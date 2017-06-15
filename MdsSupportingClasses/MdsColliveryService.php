@@ -388,14 +388,14 @@ class MdsColliveryService
 
     /**
      * @param array $array
-     * @param $serviceId
      * @param $cartSubTotal
+     * @param float $markup
      *
      * @return float
      *
      * @throws InvalidColliveryDataException
      */
-    public function getPrice(array $array, $serviceId, $cartSubTotal)
+    public function getPrice(array $array, $cartSubTotal, $markup)
     {
         if (!$result = $this->collivery->getPrice($array)) {
             throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), array('errors' => $this->collivery->getErrors(), 'data' => $array));
@@ -413,7 +413,7 @@ class MdsColliveryService
             $returnedAmount = $result['price']['ex_vat'];
         }
 
-        return Money::make($returnedAmount, $this->settings->getValue('markup_' . $serviceId), $discount, $this->settings->getValue('round') == 'yes')->amount;
+        return Money::make($returnedAmount, $markup, $discount, $this->settings->getValue('round') == 'yes')->amount;
     }
 
     /**
