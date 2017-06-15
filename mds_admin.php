@@ -547,6 +547,7 @@ function mds_register_collivery()
     $defaults = $mds->returnDefaultAddress();
     $addresses = $collivery->getAddresses();
     $total = $order->get_subtotal() + $order->get_cart_tax();
+    $riskCover = $settings->getValue('risk_cover') === 'yes';
 
     $instructions = 'Order number: '.$order_id;
     if ($settings->getValue('include_product_titles') == 'yes') {
@@ -575,5 +576,5 @@ function mds_register_collivery()
         }
     }
 
-    echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'custom_fields', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs', 'services'));
+    echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'custom_fields', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs', 'services', 'riskCover'));
 }
