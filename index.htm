@@ -17,7 +17,7 @@
 		<h1>MDS Collivery - WooCommerce Plugin Guide</h1>
 
 		<p>
-			<span style="color: #ff0000; float: right;">Rev 1.4 Created (2014-05-05) Updated (2016-10-31)</span>
+			<span style="color: #ff0000; float: right;">Rev 1.4 Created (2014-05-05) Updated (2017-07-21)</span>
 		</p>
 	</header>
 
@@ -26,7 +26,7 @@
 	</p>
 
 	<p>
-		<b>Prerequisites before installing Collivery Extension:</b><br/>• WordPress Version: From 3.8.1 To 4.6.1<br/> • WooCommerce Version: From 2.6.0 To 2.6.7<br/>• PHP Version 5.3 or above <span style="color: red; font-weight: bold;">(Warning do not install the plugin if your PHP version is below 5.3)</span>
+		<b>Prerequisites before installing Collivery Extension:</b><br/>• WordPress Version: From 4.0 To 4.8<br/> • WooCommerce Version: From 3.0 To 3.1.1<br/>• PHP Version 5.4 or above <span style="color: red; font-weight: bold;">(Warning do not install the plugin if your PHP version is below 5.4)</span>
 		<br/>• Hosting service with 'SoapClient' - Enabled<br/>• MDS Collivery - WooCommerce Plugin <a href="https://github.com/Collivery/Collivery-WooCommerce/releases/latest" target="_blank">Download Page</a>
 	</p>
 
@@ -69,7 +69,7 @@
 			<h2><a name="admin_config" href="#admin_config">Configuration</a></h2>
 		</header>
 		<p>
-			All our settings are located in WooCommerce admin section -> settings page under Shipping tab.
+			All our settings are located in WooCommerce admin section -> settings page under Shipping tab, however since Woocommerce introduced shipping zones, each zone can have its own settings and the setting page for each zone can be found on the Woocommerce shipping zones page
 		</p>
 
 		<img src="images/browse_to_settings.jpg"/><br/><br/>
@@ -85,10 +85,11 @@
 					New free delivery method which can be customized according to your clients shopping cart total and also only allow this free delivery method for local deliveries. MDS determines local deliveries by determining if both the collection and delivery address belong to the same MDS hub group, if you have any questions regarding hub groups you can contact MDS customer services.
 				</li>
 				<li>Enable or disable the <a href="#automated">automated processing feature</a>.</li>
-				<li>Include risk cover, MDS offers risk cover on the contents of your delivery by up to R5000.00</li>
+				<li>Include risk cover, MDS offers risk cover on the contents of your delivery by up to R10,000.00</li>
+				<li>Each shipping zone the plugin is added to can have its own unique settings</li>
 			</ul>
 		</p>
-		That’s all the configuring we need to go through, the rest should be self explanatory.</p>
+		<p>That’s all the configuring we need to go through, the rest should be self explanatory as each setting has a description beneath it.</p>
 	</section>
 	<section>
 		<header>
@@ -104,7 +105,7 @@
 			<h2><a name="zones_config" href="#zones_config">Shipping Zones Configuration</a></h2>
 		</header>
 		<p>
-			Our plugin is compatible with shipping zones, however you can only have it assigned to South Africa, you cannot use it to only select some provinces in South Africa.
+			Our plugin is compatible with shipping zones, however you can only have it assigned to South Africa as internationals is not currently support by our API.
 		</p>
 		<img src="images/zones.png"/><br/>
 	</section>
