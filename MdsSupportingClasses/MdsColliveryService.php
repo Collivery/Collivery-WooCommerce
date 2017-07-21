@@ -4,13 +4,15 @@ namespace MdsSupportingClasses;
 
 use WC_Order;
 use WC_Product;
+use WC_Product_Variation;
+use WC_Order_Item_Product;
 use MdsExceptions\ProductOutOfException;
 use MdsExceptions\InvalidServiceException;
+use MdsExceptions\SoapConnectionException;
 use MdsExceptions\InvalidCartPackageException;
 use MdsExceptions\InvalidAddressDataException;
 use MdsExceptions\InvalidColliveryDataException;
 use MdsExceptions\OrderAlreadyProcessedException;
-use MdsExceptions\SoapConnectionException;
 
 /**
  * MdsColliveryService.
@@ -313,8 +315,15 @@ class MdsColliveryService
     public function getOrderContent($items)
     {
         $parcels = array();
+        /**  @var WC_Order_Item_Product $item */
         foreach ($items as $item_id => $item) {
-            $product = new WC_Product($item['product_id']);
+            /** @var WC_Product|WC_Product_Variation $product */
+            if ($item->get_variation_id()) {
+                $product = new WC_Product_Variation($item->get_variation_id());
+            } else {
+                $product = new WC_Product($item['product_id']);
+            }
+
             $parcel['quantity'] = $item['item_meta']['_qty'][0];
 
             // Length conversion, mds collivery only accepts cm
@@ -353,13 +362,22 @@ class MdsColliveryService
     public function isOrderInStock($items)
     {
         try {
+            /**  @var WC_Order_Item_Product $item */
             foreach ($items as $item_id => $item) {
                 $qty = $item['item_meta']['_qty'][0];
                 $product = new WC_Product($item['product_id']);
                 $stock = $product->get_total_stock();
 
+                /** @var WC_Product|WC_Product_Variation $product */
+                if ($item->get_variation_id()) {
+                    $productVariation = new WC_Product_Variation($item->get_variation_id());
+                    if ($productVariation->get_manage_stock()) {
+                        $stock = $product->get_stock_quantity();
+                    }
+                }
+
                 if ($stock != '') {
-                    if ($stock == 0 || $stock < $qty) {
+                    if ($stock < $qty) {
                         throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->loggerSettingsArray(), $items);
                     }
                 }
