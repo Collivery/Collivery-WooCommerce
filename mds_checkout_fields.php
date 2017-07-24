@@ -1,6 +1,6 @@
 <?php
 
-if (!function_exists('custom_override_default_address_fields')) {
+if (!function_exists('mds_custom_override_default_address_fields')) {
     /**
      * Override the Billing and Shipping fields.
      *
@@ -8,17 +8,17 @@ if (!function_exists('custom_override_default_address_fields')) {
      *
      * @return array
      */
-    function custom_override_default_address_fields($address_fields)
+    function mds_custom_override_default_address_fields($address_fields)
     {
         $mdsCheckoutFields = new \MdsSupportingClasses\MdsCheckoutFields($address_fields);
 
         return $mdsCheckoutFields->getCheckoutFields();
     }
 
-    add_filter('woocommerce_default_address_fields', 'custom_override_default_address_fields');
+    add_filter('woocommerce_default_address_fields', 'mds_custom_override_default_address_fields');
 }
 
-if (!function_exists('custom_override_checkout_fields')) {
+if (!function_exists('mds_custom_override_checkout_fields')) {
     /**
      * Override the Billing and Shipping fields in Checkout.
      *
@@ -26,7 +26,7 @@ if (!function_exists('custom_override_checkout_fields')) {
      *
      * @return array
      */
-    function custom_override_checkout_fields($address_fields)
+    function mds_custom_override_checkout_fields($address_fields)
     {
         $mdsCheckoutFields = new \MdsSupportingClasses\MdsCheckoutFields($address_fields);
 
@@ -36,16 +36,16 @@ if (!function_exists('custom_override_checkout_fields')) {
         return $address_fields;
     }
 
-    add_filter('woocommerce_checkout_fields', 'custom_override_checkout_fields');
+    add_filter('woocommerce_checkout_fields', 'mds_custom_override_checkout_fields');
 }
 
-if (!function_exists('my_custom_checkout_field_update_order_meta')) {
+if (!function_exists('mds_custom_checkout_field_update_order_meta')) {
     /**
      * Save our location type field.
      *
      * @param $order_id
      */
-    function my_custom_checkout_field_update_order_meta($order_id)
+    function mds_custom_checkout_field_update_order_meta($order_id)
     {
         $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
 
@@ -60,7 +60,7 @@ if (!function_exists('my_custom_checkout_field_update_order_meta')) {
         }
     }
 
-    add_action('woocommerce_checkout_update_order_meta', 'my_custom_checkout_field_update_order_meta');
+    add_action('woocommerce_checkout_update_order_meta', 'mds_custom_checkout_field_update_order_meta');
 }
 
 if (!function_exists('generate_towns')) {
