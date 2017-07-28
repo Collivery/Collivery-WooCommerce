@@ -449,7 +449,7 @@ class MdsColliveryService
             $id = $this->validated_data['service'];
             $services = $this->collivery->getServices();
 
-            if (!empty($this->settings->getValue("wording_$id"))) {
+            if (!$this->settings->getValue("wording_$id", true)) {
                 $reason = preg_replace('|' . preg_quote($services[$id]) . '|', $this->settings->getValue("wording_$id"), $this->validated_data['time_changed_reason']);
             } else {
                 $reason = $this->validated_data['time_changed_reason'];
