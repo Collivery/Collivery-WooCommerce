@@ -321,10 +321,10 @@ class MdsColliveryService
             if ($item->get_variation_id()) {
                 $product = new WC_Product_Variation($item->get_variation_id());
             } else {
-                $product = new WC_Product($item['product_id']);
+                $product = new WC_Product($item->get_product_id());
             }
 
-            $parcel['quantity'] = $item['item_meta']['_qty'][0];
+            $parcel['quantity'] = $item->get_quantity();
 
             // Length conversion, mds collivery only accepts cm
             if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
@@ -365,7 +365,7 @@ class MdsColliveryService
             /**  @var WC_Order_Item_Product $item */
             foreach ($items as $item_id => $item) {
                 $qty = $item['item_meta']['_qty'][0];
-                $product = new WC_Product($item['product_id']);
+                $product = new WC_Product($item->get_product_id());
                 $stock = $product->get_total_stock();
 
                 /** @var WC_Product|WC_Product_Variation $product */
@@ -449,7 +449,7 @@ class MdsColliveryService
             $id = $this->validated_data['service'];
             $services = $this->collivery->getServices();
 
-            if (!empty($this->settings->getValue("wording_$id"))) {
+            if ($this->settings->getValue("wording_$id", false)) {
                 $reason = preg_replace('|' . preg_quote($services[$id]) . '|', $this->settings->getValue("wording_$id"), $this->validated_data['time_changed_reason']);
             } else {
                 $reason = $this->validated_data['time_changed_reason'];
