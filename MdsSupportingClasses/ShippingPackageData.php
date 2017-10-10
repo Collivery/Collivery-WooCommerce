@@ -77,7 +77,7 @@ class ShippingPackageData
 
         if (!isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != true) {
             $package['destination']['state'] = WC()->customer->get_billing_state();
-            $package['destination']['postcode'] = WC()->customer->get_postcode();
+            $package['destination']['postcode'] = WC()->customer->get_billing_postcode();
             $package['destination']['address'] = WC()->customer->get_billing_address_1();
             $package['destination']['address_2'] = WC()->customer->get_billing_address_2();
         } else {
