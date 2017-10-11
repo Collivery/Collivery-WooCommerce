@@ -63,9 +63,9 @@ class MdsFields
                 'default' => 'yes',
             ),
             'include_vat' => array(
-                'title' => 'MDS '.__('Include VAT'),
+                'title' => 'MDS '.__('Use Inclusive Amount'),
                 'type' => 'checkbox',
-                'description' => __('Should the price include VAT on the checkout page'),
+                'description' => __('If Woocommerce is setup to add VAT onto the shipping cost then you should uncheck this box to use the exclusive amount, this way VAT will only be applied once. If your not adding VAT onto the shipping cost using Woocommerce then always use the inclusive amount. This option only affects the price displayed on your checkout page, MDS Collivery will always bill you the inclusive amount.'),
                 'default' => 'yes',
             ),
             'method_free' => array(
