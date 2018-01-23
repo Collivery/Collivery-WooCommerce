@@ -19,6 +19,9 @@ class ShippingPackageData
      */
     protected $settings;
 
+    /** @var \WP_User */
+    protected $user;
+
     /**
      * ShippingPackageData constructor.
      */
@@ -27,6 +30,7 @@ class ShippingPackageData
         $this->service = MdsColliveryService::getInstance();
         $this->settings = $this->service->returnPluginSettings();
         $this->collivery = $this->service->returnColliveryClass();
+        $this->user = wp_get_current_user();
     }
 
     /**
@@ -90,7 +94,10 @@ class ShippingPackageData
         if (!$this->service->validPackage($package)) {
             return $packages;
         } else {
-            if ($this->settings->getValue('method_free') == 'yes' && $cart['total'] >= $this->settings->getValue('free_min_total')) {
+            if ($this->settings->getValue('method_free') == 'yes'
+                && $cart['total'] >= $this->settings->getValue('free_min_total')
+                && !$this->applyFreeDeliveryBlacklist()
+            ) {
                 $package['service'] = 'free';
                 if ($this->settings->getValue('free_local_only') == 'yes') {
                     $data = array(
@@ -188,5 +195,26 @@ class ShippingPackageData
         }
 
         return $to_town_type;
+    }
+
+    /**
+     * @return boolean
+     */
+    protected function applyFreeDeliveryBlacklist()
+    {
+        if (!$this->user->ID) {
+            return false;
+        }
+
+        $blacklist = $this->settings->getValue('free_delivery_blacklist');
+        $blacklist = explode(',', $blacklist);
+
+        foreach ($blacklist as $role) {
+            if (strtolower($role) && in_array($role, $this->user->roles)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
