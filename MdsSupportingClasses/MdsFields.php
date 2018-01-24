@@ -129,6 +129,11 @@ class MdsFields
                     'min' => 0,
                 ),
             ),
+            'free_delivery_blacklist' => array(
+                'title' => __('Exclude these roles from free delivery'),
+                'type' => 'text',
+                'description' => __('Comma separated list of roles that must be excluded from free shipping'),
+            ),
             'free_local_only' => array(
                 'title' => __('Free Delivery Local Only'),
                 'type' => 'checkbox',

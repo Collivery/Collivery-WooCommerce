@@ -333,25 +333,29 @@ jQuery(function(){
 
     var shippingMode = jQuery('select[name="woocommerce_mds_collivery_method_free"]');
     var percentageDiscount = jQuery('input[name="woocommerce_mds_collivery_shipping_discount_percentage"]');
+    var freeDeliveryBlacklist = jQuery('input[name="woocommerce_mds_collivery_free_delivery_blacklist"]');
     var freeDeliveryItems = jQuery('select[data-type="free-delivery-item"],input[data-type="free-delivery-item"]');
     var freeMinTotal = jQuery('input[name="woocommerce_mds_collivery_free_min_total"]');
 
-    shippingMode.change(function(){
+    shippingMode.change(function () {
         var mode = shippingMode.val();
-        switch(mode){
+        switch (mode) {
             case 'no':
                 freeDeliveryItems.hideParent('tr', true);
                 percentageDiscount.hideParent('tr', true);
+                freeDeliveryBlacklist.hideParent('tr', true);
                 freeMinTotal.hideParent('tr', true);
                 break;
             case 'yes':
                 percentageDiscount.hideParent('tr', true);
                 freeDeliveryItems.hideParent('tr', false);
+                freeDeliveryBlacklist.hideParent('tr', false);
                 freeMinTotal.hideParent('tr', false);
                 break;
             case 'discount':
                 freeDeliveryItems.hideParent('tr', true);
                 percentageDiscount.hideParent('tr', false);
+                freeDeliveryBlacklist.hideParent('tr', false);
                 freeMinTotal.hideParent('tr', false);
                 break;
             default:
