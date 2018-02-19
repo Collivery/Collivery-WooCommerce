@@ -37,7 +37,7 @@ class UnitConverter
             ),
         );
 
-        while (list($key, $val) = each($conversions)) {
+        foreach ($conversions as $key => $val) {
             $this->addConversion($val['base'], $val['conv']);
         }
     }
@@ -75,7 +75,7 @@ class UnitConverter
     public function addConversion($from_unit, $to_array)
     {
         if (!isset($this->conversion_table[$from_unit])) {
-            while (list($key, $val) = each($to_array)) {
+            foreach ($to_array as $key => $val) {
                 if (strstr($key, '/')) {
                     $to_units = explode('/', $key);
                     foreach ($to_units as $to_unit) {
@@ -211,7 +211,7 @@ class UnitConverter
             }
             // otherwise search intermediary
             reset($this->conversion_table);
-            while (list($convk, $i1_value) = each($this->conversion_table)) {
+            foreach ($this->conversion_table as $convk => $i1_value) {
                 // split the key into parts
                 $keyparts = preg_split('/_/', $convk);
                 // return ratio = 1 if keyparts match
