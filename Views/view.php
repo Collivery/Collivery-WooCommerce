@@ -73,7 +73,7 @@
                 </tr>
                 <tr>
                     <td>
-                        Quoted Price: R<?php echo number_format($validation_results->price->inc_vat, 2, '.', ''); ?> | Actual Price: R<?php echo number_format($tracking['total_price'] * 1.14, 2, '.', ''); ?>
+                        Quoted Price: R<?php echo number_format($validation_results->price->inc_vat, 2, '.', ''); ?> | Actual Price: R<?php echo number_format($tracking['total_price'] * 1.15, 2, '.', ''); ?>
                     </td>
                 </tr>
                 <tr>
