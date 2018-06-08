@@ -175,6 +175,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'label' => $label,
                                     'cost' => $price,
                                 ));
+                                $this->id = 'mds_'.$id;
                             }
                         }
                     }
