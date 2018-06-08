@@ -43,6 +43,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
     public function __construct($instance_id = 0)
     {
         parent::__construct($instance_id);
+        
+        $this->init();
 
         $this->id = 'mds_collivery';
         $this->method_title = __('MDS Collivery shipping');
@@ -56,7 +58,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
             'instance-settings',
         );
 
-        $this->init();
+        
 
         add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
     }
@@ -169,13 +171,13 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     $label .= ' - FREE!';
                                 }
 
+                                $this->id = 'mds_'.$id;
                                 $this->add_rate(array(
                                     'id' => 'mds_'.$id,
                                     'value' => $id,
                                     'label' => $label,
                                     'cost' => $price,
                                 ));
-                                $this->id = 'mds_'.$id;
                             }
                         }
                     }
