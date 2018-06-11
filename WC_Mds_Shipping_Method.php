@@ -168,14 +168,13 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     $price = 0.00;
                                     $label .= ' - FREE!';
                                 }
-
+                                $this->id = 'mds_'.$id;
                                 $this->add_rate(array(
                                     'id' => 'mds_'.$id,
                                     'value' => $id,
                                     'label' => $label,
                                     'cost' => $price,
                                 ));
-                                $this->id = 'mds_'.$id;
                             }
                         }
                     }
