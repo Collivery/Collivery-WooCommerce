@@ -1,14 +1,14 @@
 <?php
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', '3.1.8');
+define('MDS_VERSION', '3.1.11');
 include 'autoload.php';
 
 /*
  * Plugin Name: MDS Collivery
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 3.1.10
+ * Version: 3.1.11
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  * WC requires at least: 3.3
@@ -182,5 +182,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         }
 
         add_filter('default_checkout_country', 'mds_change_default_checkout_country');
+    }
+    
+    add_action( 'woocommerce_view_order', 'before_woocommerce_order_details', 5 );
+    function before_woocommerce_order_details($order_id){
+        global $wpdb;
+        $table_name = $wpdb->prefix.'mds_collivery_processed';
+        $data_ = $wpdb->get_results('SELECT * FROM `'.$table_name.'` WHERE order_id='.$order_id.';', OBJECT);
+        $mds = MdsColliveryService::getInstance();
+        $waybillId = (int)$data_[0]->waybill;       
+        $statusText = $mds->returnColliveryClass()->getStatus($waybillId)? $mds->returnColliveryClass()->getStatus($waybillId)['status_text']: "No Status";
+        echo "Shipping Status (MDS Collivery ".$waybillId.") : ".$statusText;
     }
 }
