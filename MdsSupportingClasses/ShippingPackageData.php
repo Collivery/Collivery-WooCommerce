@@ -185,7 +185,7 @@ class ShippingPackageData
      */
     private function getLocationType(stdClass $fields)
     {
-        $to_town_type = $fields->to_town_type;
+        $to_town_type = property_exists($fields, 'to_town_type')? $fields->to_town_type : 1;
 
         if (empty($fields->to_town_type) && get_current_user_id() > 0) {
             $to_town_type = $this->service->extractUserProfileField(get_current_user_id(), 'billing_location_type');
