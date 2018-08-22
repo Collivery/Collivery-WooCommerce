@@ -16,7 +16,7 @@
                 <select style="width: 100%;" id="<?php echo $prefix; ?>_town" name="<?php echo $prefix; ?>_town">
                     <option value="" selected="selected"></option>
                     <?php foreach ($towns as $town_id => $town): ?>
-                        <option<?php echo isset($order) && $town == $order->shipping_city ? ' selected="selected"' : ''; ?> value="<?php echo $town_id; ?>"><?php echo $town; ?></option>
+                        <option<?php echo isset($order) && $town == $order->get_shipping_city() ? ' selected="selected"' : ''; ?> value="<?php echo $town_id; ?>"><?php echo $town; ?></option>
                     <?php endforeach; ?>`
                 </select>
             </td>
@@ -28,7 +28,7 @@
             <td>
                 <select style="width: 100%;" id="<?php echo $prefix; ?>_suburb" name="<?php echo $prefix; ?>_suburb">
                     <?php foreach ($suburbs as $suburb_id => $suburb): ?>
-                        <option<?php echo isset($order) && $suburb == $order->shipping_suburb ? ' selected="selected"' : ''; ?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
+                        <option<?php echo isset($order) && $suburb == $order->get_meta('_shipping_suburb' ) ? ' selected="selected"' : ''; ?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
                     <?php endforeach; ?>`
                 </select>
             </td>
@@ -36,7 +36,7 @@
         <tr>
             <td><label for="<?php echo $prefix; ?>_company_name">Company</label></td>
             <td>
-                <input style="width: 100%;" id="<?php echo $prefix; ?>_company_name" name="<?php echo $prefix; ?>_company_name" size="30" type="text" value="<?php echo isset($order) ? $order->shipping_company : ''; ?>">
+                <input style="width: 100%;" id="<?php echo $prefix; ?>_company_name" name="<?php echo $prefix; ?>_company_name" size="30" type="text" value="<?php echo isset($order) ? $order->get_shipping_company() : ''; ?>">
             </td>
         </tr>
         <tr>
@@ -45,7 +45,7 @@
                 <select style="width: 100%;" id="<?php echo $prefix; ?>_location_type" name="<?php echo $prefix; ?>_location_type">
                     <option value="" selected="selected"></option>
                     <?php foreach ($location_types as $location_id => $location): ?>
-                        <option<?php echo isset($order) && $location == $order->shipping_location_type ? ' selected="selected"' : ''; ?> value="<?php echo $location_id; ?>"><?php echo $location; ?></option>
+                        <option<?php echo isset($order) && $location == $order->get_meta('_shipping_location_type') ? ' selected="selected"' : ''; ?> value="<?php echo $location_id; ?>"><?php echo $location; ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>
@@ -53,19 +53,19 @@
         <tr>
             <td><label for="<?php echo $prefix; ?>_building_details">Building Details</label></td>
             <td>
-                <input style="width: 100%;" id="<?php echo $prefix; ?>_building_details" name="<?php echo $prefix; ?>_building_details" size="30" type="text" value="<?php echo isset($order) ? $order->shipping_address_2 : ''; ?>"/>
+                <input style="width: 100%;" id="<?php echo $prefix; ?>_building_details" name="<?php echo $prefix; ?>_building_details" size="30" type="text" value="<?php echo isset($order) ? $order->get_shipping_address_2() : ''; ?>"/>
             </td>
         </tr>
         <tr>
             <td><label for="<?php echo $prefix; ?>_street">Street</label></td>
             <td>
-                <input style="width: 100%;" id="<?php echo $prefix; ?>_street" name="<?php echo $prefix; ?>_street" size="30" type="text" value="<?php echo isset($order) ? $order->shipping_address_1 : ''; ?>"/>
+                <input style="width: 100%;" id="<?php echo $prefix; ?>_street" name="<?php echo $prefix; ?>_street" size="30" type="text" value="<?php echo isset($order) ? $order->get_shipping_address_1() : ''; ?>"/>
             </td>
         </tr>
         <tr>
             <td><label for="<?php echo $prefix; ?>_full_name">Contact Person</label></td>
             <td>
-                <input style="width: 100%;" id="<?php echo $prefix; ?>_full_name" name="<?php echo $prefix; ?>_full_name" size="30" type="text" value="<?php echo isset($order) ? $order->shipping_first_name.' '.$order->shipping_last_name : ''; ?>"/>
+                <input style="width: 100%;" id="<?php echo $prefix; ?>_full_name" name="<?php echo $prefix; ?>_full_name" size="30" type="text" value="<?php echo isset($order) ? $order->get_shipping_first_name().' '.$order->get_shipping_last_name() : ''; ?>"/>
             </td>
         </tr>
         <tr>
@@ -77,13 +77,13 @@
         <tr>
             <td><label for="<?php echo $prefix; ?>_cellphone">Cell Phone</label></td>
             <td>
-                <input style="width: 100%;" id="<?php echo $prefix; ?>_cellphone" name="<?php echo $prefix; ?>_cellphone" size="30" type="text" value="<?php echo isset($order) ? $order->shipping_phone : ''; ?>"/>
+                <input style="width: 100%;" id="<?php echo $prefix; ?>_cellphone" name="<?php echo $prefix; ?>_cellphone" size="30" type="text" value="<?php echo isset($order) ? $order->get_billing_phone() : ''; ?>"/>
             </td>
         </tr>
         <tr>
             <td><label for="<?php echo $prefix; ?>_email">Email</label></td>
-            <td>
-                <input style="width: 100%;" id="<?php echo $prefix; ?>_email" name="<?php echo $prefix; ?>_email" size="30" type="text" value="<?php echo isset($order) ? $order->shipping_email : ''; ?>"/>
+            <td>          
+                <input style="width: 100%;" id="<?php echo $prefix; ?>_email" name="<?php echo $prefix; ?>_email" size="30" type="text" value="<?php echo isset($order) ? $order->get_billing_email() : ''; ?>"/>
             </td>
         </tr>
     </tbody>

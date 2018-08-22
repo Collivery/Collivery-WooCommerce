@@ -181,6 +181,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             return 'ZA';
         }
 
-        add_filter('default_checkout_country', 'mds_change_default_checkout_country');
+        add_filter('default_checkout_billing_country', 'mds_change_default_checkout_country');
     }
 }
