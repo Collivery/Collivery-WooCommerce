@@ -109,7 +109,7 @@
             <td>
                 <select name="contact_<?php echo $subPrefix; ?>" id="contact_<?php echo $subPrefix; ?>" class="shortenedSelect" style="max-width: 400px;">
                     <?php foreach ($contacts as $contact_id => $contact): ?>
-                        <option<?php echo isset($default_contact_id) && $default_contact_id == $contact_id || count($contacts == 1) ? ' selected="selected"' : ''; ?> value="<?php echo $contact_id; ?>"><?php echo isset($contact['nice_contact']) ? $contact['nice_contact'] : ''; ?></option>
+                        <option<?php echo isset($default_contact_id) && $default_contact_id == $contact_id || (count($contacts) == 1) ? ' selected="selected"' : ''; ?> value="<?php echo $contact_id; ?>"><?php echo isset($contact['nice_contact']) ? $contact['nice_contact'] : ''; ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>
