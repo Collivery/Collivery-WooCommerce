@@ -364,9 +364,8 @@ class MdsColliveryService
         try {
             /**  @var WC_Order_Item_Product $item */
             foreach ($items as $item_id => $item) {
-                $qty = $item['item_meta']['_qty'][0];
+                $qty = $item->get_quantity();
                 $product = new WC_Product($item->get_product_id());
-                $stock = $product->get_total_stock();
 
                 /** @var WC_Product|WC_Product_Variation $product */
                 if ($item->get_variation_id()) {
@@ -555,16 +554,16 @@ class MdsColliveryService
                     $defaults = $this->returnDefaultAddress();
 
                     $address = $this->addColliveryAddress(array(
-                        'company_name' => ($order->shipping_company != '') ? $order->shipping_company : 'Private',
-                        'building' => $order->shipping_address_2,
-                        'street' => $order->shipping_address_1,
-                        'location_type' => $order->shipping_location_type,
-                        'suburb' => $order->shipping_suburb,
-                        'town' => $order->shipping_city,
-                        'full_name' => $order->shipping_first_name . ' ' . $order->shipping_last_name,
-                        'cellphone' => preg_replace('/[^0-9]/', '', $order->shipping_phone),
-                        'email' => str_replace(' ', '', $order->shipping_email),
-                        'custom_id' => $order->user_id,
+                        'company_name' => ($order->get_shipping_company() != '') ? $order->get_shipping_company() : 'Private',
+                        'building' => $order->get_shipping_address_2(),
+                        'street' => $order->get_shipping_address_1(),
+                        'location_type' => $order->get_meta('_shipping_location_type'),
+                        'suburb' => $order->get_meta('_shipping_suburb'),
+                        'town' => $order->get_shipping_city(),
+                        'full_name' => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
+                        'cellphone' => preg_replace('/[^0-9]/', '', $order->get_billing_phone()),
+                        'email' => str_replace(' ', '', $order->get_billing_email()),
+                        'custom_id' => $order->get_user_id(),
                     ));
 
                     $collivery_from = $defaults['default_address_id'];
