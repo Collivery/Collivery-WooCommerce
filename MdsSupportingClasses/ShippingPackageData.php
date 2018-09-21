@@ -95,7 +95,7 @@ class ShippingPackageData
             return $packages;
         } else {
             if ($this->settings->getValue('method_free') == 'yes'
-                && $cart['total'] >= $this->settings->getValue('free_min_total')
+                && WC()->cart->get_cart_contents_total() >= $this->settings->getValue('free_min_total')
                 && !$this->applyFreeDeliveryBlacklist()
             ) {
                 $package['service'] = 'free';
