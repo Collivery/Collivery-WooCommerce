@@ -144,6 +144,12 @@ class MdsCheckoutFields
                     'required' => true,
                     'class' => array('form-row-wide'),
                 ),
+                $prefix.'postcode' => array(
+                    'label' => 'Postal Code',
+                    'placeholder' => 'Postal Code',
+                    'required' => false,
+                    'class' => array('form-row-wide', 'address-field', 'update_totals_on_change'),
+                ),
             );
         } catch (InvalidResourceDataException $e) {
             return $this->defaultFields;
