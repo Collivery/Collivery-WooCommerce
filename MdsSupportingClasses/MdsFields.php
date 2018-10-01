@@ -164,6 +164,16 @@ class MdsFields
                     'type' => 'checkbox',
                     'default' => 'yes',
                 );
+                $fields['fixed_price_'.$id] = array(
+                    'title' => __($title.' Fixed Price Amount'),
+                    'type' => 'number',
+                    'description' => 'Amount 0 or greater enables it, markup is then ignored. This will override any free or discounted shipping',
+                    'default' => '0',
+                    'custom_attributes' => array(
+                        'step' => 'any',
+                        'min' => '0',
+                    ),
+                );
                 $fields['markup_'.$id] = array(
                     'title' => __($title.' Markup'),
                     'type' => 'number',
