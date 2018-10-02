@@ -178,6 +178,7 @@ class MdsFields
                     'title' => __($title.' Markup'),
                     'type' => 'number',
                     'default' => '10',
+                    'description' => 'Percentage markup you would like to apply to MDS\'s Price',
                     'custom_attributes' => array(
                         'step' => 'any',
                         'min' => '0',
@@ -187,6 +188,7 @@ class MdsFields
                     'title' => __($title.' Wording'),
                     'type' => 'text',
                     'default' => $title,
+                    'description' => 'The Wording you would like on the checkout page for this service',
                     'class' => 'sectionEnd',
                 );
             }
