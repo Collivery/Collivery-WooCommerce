@@ -155,7 +155,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'service' => $id,
                                 );
 
-                                $price = $this->collivery_service->getPrice($data, WC()->cart->get_cart_contents_total(), $this->mdsSettings->getInstanceValue('markup_' . $id));
+                                $price = $this->collivery_service->getPrice($data, WC()->cart->get_cart_contents_total(), $this->mdsSettings->getInstanceValue('markup_' . $id), $this->mdsSettings->getInstanceValue('fixed_price_' . $id));
 
                                 if ($this->mdsSettings->getInstanceValue("wording_$id", $title) == $title && ($id == 1 || $id == 2)) {
                                     $title = $title.', additional 24 hours on outlying areas';
