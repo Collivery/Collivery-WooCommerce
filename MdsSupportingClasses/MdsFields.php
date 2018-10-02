@@ -164,10 +164,21 @@ class MdsFields
                     'type' => 'checkbox',
                     'default' => 'yes',
                 );
+                $fields['fixed_price_'.$id] = array(
+                    'title' => __($title.' Fixed Price Amount'),
+                    'type' => 'number',
+                    'description' => 'Amount greater than 0 enables it, markup is then ignored. This will override any free or discounted shipping',
+                    'default' => '0',
+                    'custom_attributes' => array(
+                        'step' => 'any',
+                        'min' => '0',
+                    ),
+                );
                 $fields['markup_'.$id] = array(
                     'title' => __($title.' Markup'),
                     'type' => 'number',
                     'default' => '10',
+                    'description' => 'Percentage markup you would like to apply to MDS\'s Price',
                     'custom_attributes' => array(
                         'step' => 'any',
                         'min' => '0',
@@ -177,6 +188,7 @@ class MdsFields
                     'title' => __($title.' Wording'),
                     'type' => 'text',
                     'default' => $title,
+                    'description' => 'The wording you would like on the checkout page for this service',
                     'class' => 'sectionEnd',
                 );
             }

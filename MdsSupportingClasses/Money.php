@@ -15,6 +15,11 @@ class Money
     protected $markup;
 
     /**
+     * @var int
+     */
+    protected $fixedPrice;
+
+    /**
      * @var bool
      */
     protected $shouldRound;
@@ -29,12 +34,14 @@ class Money
      *
      * @param $amount
      * @param $markup
+     * @param $fixedPrice
      * @param $discountPercentage
      * @param $shouldRound
      */
-    protected function __construct($amount, $markup, $discountPercentage, $shouldRound)
+    protected function __construct($amount, $markup, $fixedPrice, $discountPercentage, $shouldRound)
     {
         $this->markup = $markup;
+        $this->fixedPrice = $fixedPrice;
         $this->discountPercentage = $discountPercentage;
         $this->shouldRound = $shouldRound;
 
@@ -49,9 +56,9 @@ class Money
      *
      * @return Money
      */
-    public static function make($amount, $markup, $discountPercentage, $shouldRound)
+    public static function make($amount, $markup, $fixedPrice, $discountPercentage, $shouldRound)
     {
-        return new self($amount, $markup, $discountPercentage, $shouldRound);
+        return new self($amount, $markup, $fixedPrice, $discountPercentage, $shouldRound);
     }
 
     /**
@@ -61,11 +68,16 @@ class Money
      */
     private function process($amount)
     {
-        if ($this->markup > 0) {
+        if ($this->markup > 0 && !$this->fixedPrice) {
             $amount += $amount * ($this->markup / 100);
         }
 
-        return $this->applyDiscount($amount);
+        if(!$this->fixedPrice) {
+            return $this->applyDiscount($amount);
+        }else{
+            return $this->fixedPrice;
+        }
+
     }
 
     /**
