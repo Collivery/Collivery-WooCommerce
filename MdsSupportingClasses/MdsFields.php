@@ -188,7 +188,7 @@ class MdsFields
                     'title' => __($title.' Wording'),
                     'type' => 'text',
                     'default' => $title,
-                    'description' => 'The Wording you would like on the checkout page for this service',
+                    'description' => 'The wording you would like on the checkout page for this service',
                     'class' => 'sectionEnd',
                 );
             }
