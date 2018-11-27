@@ -1,7 +1,7 @@
 <?php
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', '3.1.16');
+define('MDS_VERSION', '3.1.17');
 include 'autoload.php';
 
 /*
