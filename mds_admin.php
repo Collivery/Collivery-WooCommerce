@@ -566,8 +566,8 @@ function mds_register_collivery()
     $towns = $collivery->getTowns();
     $services = $collivery->getServices();
     $location_types = $collivery->getLocationTypes();
-    $suburbs = array(0 => 'Select Town');
-    $populatedSuburbs =array_merge($suburbs,$collivery->getSuburbs(array_search($order->get_shipping_city(), $collivery->getTowns())));
+    $suburbs = array(0=> 'Select Town');
+    $populatedSuburbs = $suburbs + $collivery->getSuburbs(array_search($order->get_shipping_city(), $collivery->getTowns()));
 
     $shipping_method = null;
     foreach ($services as $id => $value) {
