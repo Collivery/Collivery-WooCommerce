@@ -66,6 +66,7 @@ jQuery(document).ready(function () {
     }
 
     function resetSelect(el, html) {
+        el.select2('destroy');
         el.html(html);
         try {
             el.select2();
