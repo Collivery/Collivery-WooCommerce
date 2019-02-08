@@ -9,15 +9,18 @@ if (!empty($placeholder)) {
 }
 
 if (!empty($fields)) {
-    foreach ($fields as $value) {
-        if (is_array($value) && isset($value['nice_contact'])) {
-            $value = $value['nice_contact'];
+    foreach ($fields as $field) {
+        if (is_array($field) && isset($field['nice_contact'])) {
+            $value = $field['contact_id'];
+            $text = $field['nice_contact'];
+        } else {
+            $text = $value = $field;
         }
 
         if (count($fields) === 0 || (isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
-            echo '<option value="'.$value.'" selected="selected">'.$value.'</option>';
+            echo '<option value="'.$value.'" selected="selected">'.$text.'</option>';
         } else {
-            echo '<option value="'.$value.'">'.$value.'</option>';
+            echo '<option value="'.$value.'">'.$text.'</option>';
         }
     }
 }
