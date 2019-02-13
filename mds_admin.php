@@ -441,7 +441,7 @@ function accept_admin_callback()
                 'collivery_to' => $collivery_to,
                 'contact_to' => $contact_to,
                 'cust_ref' => 'Order number: '.$order->get_id(),
-                'instructions' => $post['instructions'],
+                'instructions' => $post['instructions']." ".$order->get_customer_note(),
                 'collivery_type' => 2, // Package
                 'service' => $post['service'],
                 'cover' => $post['cover'],
