@@ -6,7 +6,7 @@ jQuery(document).ready(function () {
     };
 
     jQuery.each(select2fields, function (field, placeholder) {
-        var el = jQuery('#billing_' + field);
+        var el = jQuery('#billing_' + field + ', #shipping_' + field);
         try {
             el.select2({
                 placeholder: placeholder
