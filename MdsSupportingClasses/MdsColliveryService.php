@@ -442,7 +442,11 @@ class MdsColliveryService
      */
     public function addCollivery(array $array)
     {
-        $this->validated_data = $this->validateCollivery($array);
+        $this->validated_data = $validatedData = $this->validateCollivery($array);
+
+	    if (is_null($validatedData)) {
+		    return false;
+	    }
 
         if (isset($this->validated_data['time_changed']) && $this->validated_data['time_changed'] == 1) {
             $id = $this->validated_data['service'];
