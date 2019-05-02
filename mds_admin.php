@@ -389,7 +389,7 @@ function accept_admin_callback()
                 ));
 
                 // Check for any problems
-                if (!$collection_address) {
+                if ($collivery->hasErrors()) {
                     wp_send_json(array(
                         'redirect' => false,
                         'message' => '<p class="mds_response">'.implode(', ', $collivery->getErrors()).'</p>',
@@ -421,7 +421,7 @@ function accept_admin_callback()
                 ));
 
                 // Check for any problems
-                if (!$delivery_address) {
+                if ($collivery->hasErrors()) {
                     wp_send_json(array(
                         'redirect' => false,
                         'message' => '<p class="mds_response">'.implode(', ', $collivery->getErrors()).'</p>',
