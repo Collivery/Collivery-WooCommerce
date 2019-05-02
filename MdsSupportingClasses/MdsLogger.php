@@ -199,6 +199,7 @@ class MdsLogger
         if ($dir != '' && !is_dir($dir)) {
             $this->create_dir($dir_array);
             mkdir($dir);
+            chmod($dir, 755);
         }
     }
 
