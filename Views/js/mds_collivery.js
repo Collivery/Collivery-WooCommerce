@@ -57,7 +57,7 @@ jQuery(document).ready(function () {
         }
     });
 
-    jQuery('#collivery_to').click(function () {
+    jQuery('#collivery_to').change(function () {
         var data = {
             action: 'contacts_admin',
             address_id: jQuery("#collivery_to option:selected").val()
@@ -69,7 +69,7 @@ jQuery(document).ready(function () {
         });
     });
 
-    jQuery('#collivery_from').click(function () {
+    jQuery('#collivery_from').change(function () {
         var data = {
             action: 'contacts_admin',
             address_id: jQuery("#collivery_from option:selected").val()
