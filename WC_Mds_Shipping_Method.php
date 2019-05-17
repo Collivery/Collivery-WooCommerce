@@ -201,8 +201,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         $postData = $this->get_post_data();
         $userNameKey = $this->plugin_id.$this->id.'_';
         $passwordKey = $this->plugin_id.$this->id.'_';
-        $userName = $postData[$userNameKey.'mds_user'];
-        $password = $postData[$passwordKey.'mds_pass'];
+        $userName = trim($postData[$userNameKey.'mds_user']);
+        $password = trim($postData[$passwordKey.'mds_pass']);
 
         if ($this->get_option('mds_user') != $userName || $this->get_option('mds_pass') != $password) {
             if (!filter_var($userName, FILTER_VALIDATE_EMAIL)) {
