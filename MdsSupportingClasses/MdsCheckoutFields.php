@@ -131,7 +131,7 @@ class MdsCheckoutFields
                     'placeholder' => 'First Name',
                     'autocomplete' => 'given-name',
                     'required' => true,
-                    'class' => array('form-row-first'),
+                    'class' => array('form-row-wide'),
                 ),
                 $prefix.'last_name' => array(
                 	'priority' => 11,
@@ -139,7 +139,7 @@ class MdsCheckoutFields
                     'placeholder' => 'Last Name',
                     'autocomplete' => 'family-name',
                     'required' => true,
-                    'class' => array('form-row-last'),
+                    'class' => array('form-row-wide'),
                 ),
                 $prefix.'phone' => array(
                 	'priority' => 12,
