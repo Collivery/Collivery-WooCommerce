@@ -49,6 +49,7 @@ class MdsCheckoutFields
 
             return array(
                 $prefix.'country' => array(
+                	'priority' => 1,
                     'type' => 'country',
                     'label' => 'Country',
                     'required' => true,
@@ -56,6 +57,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-wide', 'address-field', 'update_totals_on_change'),
                 ),
                 $prefix.'state' => array(
+                	'priority' => 2,
                     'type' => 'state',
                     'label' => 'Province',
                     'required' => true,
@@ -65,6 +67,7 @@ class MdsCheckoutFields
                     'autocomplete' => 'address-level1',
                 ),
                 $prefix.'city' => array(
+                	'priority' => 3,
                     'type' => 'select',
                     'label' => 'Town / City',
                     'required' => true,
@@ -73,6 +76,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-wide', 'address-field', 'update_totals_on_change'),
                 ),
                 $prefix.'suburb' => array(
+                	'priority' => 4,
                     'type' => 'select',
                     'label' => 'Suburb',
                     'required' => true,
@@ -81,6 +85,7 @@ class MdsCheckoutFields
                     'options' => array('First select town/city'),
                 ),
                 $prefix.'location_type' => array(
+                	'priority' => 5,
                     'type' => 'select',
                     'label' => 'Location Type',
                     'required' => true,
@@ -91,12 +96,14 @@ class MdsCheckoutFields
                     'selected' => '',
                 ),
                 $prefix.'company' => array(
+                	'priority' => 6,
                     'label' => 'Company Name',
                     'placeholder' => 'Company (optional)',
                     'autocomplete' => 'organization',
                     'class' => array('form-row-wide'),
                 ),
                 $prefix.'address_1' => array(
+                	'priority' => 7,
                     'label' => 'Street',
                     'placeholder' => 'Street number and name.',
                     'autocomplete' => 'address-line1',
@@ -104,6 +111,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-wide'),
                 ),
                 $prefix.'address_2' => array(
+                	'priority' => 8,
                     'label' => 'Building Details',
                     'placeholder' => 'Apartment, suite, unit etc. (optional)',
                     'class' => array('form-row-wide'),
@@ -111,12 +119,14 @@ class MdsCheckoutFields
                     'required' => false,
                 ),
                 $prefix.'postcode' => array(
+                	'priority' => 9,
                     'label' => 'Postal Code',
                     'placeholder' => 'Postal Code',
                     'required' => false,
                     'class' => array('form-row-wide'),
                 ),
                 $prefix.'first_name' => array(
+                	'priority' => 10,
                     'label' => 'First Name',
                     'placeholder' => 'First Name',
                     'autocomplete' => 'given-name',
@@ -124,6 +134,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-first'),
                 ),
                 $prefix.'last_name' => array(
+                	'priority' => 11,
                     'label' => 'Last Name',
                     'placeholder' => 'Last Name',
                     'autocomplete' => 'family-name',
@@ -131,6 +142,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-last'),
                 ),
                 $prefix.'phone' => array(
+                	'priority' => 12,
                     'validate' => array('phone'),
                     'label' => 'Cell Phone',
                     'placeholder' => 'Phone number',
@@ -138,6 +150,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-wide'),
                 ),
                 $prefix.'email' => array(
+                	'priority' => 13,
                     'validate' => array('email'),
                     'label' => 'Email Address',
                     'placeholder' => 'you@yourdomain.co.za',
@@ -145,6 +158,7 @@ class MdsCheckoutFields
                     'class' => array('form-row-wide'),
                 ),
                 $prefix.'postcode' => array(
+                	'priority' => 14,
                     'label' => 'Postal Code',
                     'placeholder' => 'Postal Code',
                     'required' => false,
