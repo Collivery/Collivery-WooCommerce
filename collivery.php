@@ -183,4 +183,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         add_filter('default_checkout_billing_country', 'mds_change_default_checkout_country');
     }
+
+    if (!function_exists('mds_show_my_account_address_suburb')) {
+        function mds_show_my_account_address_suburb($address, $id, $type)
+        {
+            $suburb = get_user_meta($id, "{$type}_suburb", true);
+            $address['city'] = "$suburb, $address[city]";
+
+            return $address;
+        }
+    }
+
+    add_filter('woocommerce_my_account_my_address_formatted_address', 'mds_show_my_account_address_suburb', 10, 3);
 }
