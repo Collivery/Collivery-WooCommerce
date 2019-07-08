@@ -11,7 +11,9 @@ jQuery(document).ready(function () {
             el.select2({
                 placeholder: placeholder
             });
-        } catch(err) {}
+        } catch(err) {
+            console.log(err)
+        }
     });
 
     var ajaxUpdates = [
@@ -70,6 +72,8 @@ jQuery(document).ready(function () {
         el.html(html);
         try {
             el.select2();
-        } catch(err) {}
+        } catch(err) {
+          console.log(err)
+        }
     }
 });
