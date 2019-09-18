@@ -92,15 +92,15 @@ if (!function_exists('generate_towns')) {
                 'WC' => 'CAP',
             );
             $province = isset($provinceMap[$_POST['parentValue']]) ? $provinceMap[$_POST['parentValue']] : 'unknown';
-            echo View::make('_options', array(
+            wp_send_json(View::make('_options', array(
                 'fields' => $collivery->getTowns('ZAF', $province),
                 'placeholder' => 'Select town/city',
                 'selectedValue' => $selectedTown,
-            ));
+            )));
         } else {
-            echo View::make('_options', array(
+            wp_send_json(View::make('_options', array(
                 'placeholder' => 'First select province',
-            ));
+            )));
         }
     }
 
@@ -129,20 +129,20 @@ if (!function_exists('generate_suburbs')) {
             $fields = $collivery->getSuburbs($town_id);
 
             if (!empty($fields)) {
-                echo View::make('_options', array(
+                wp_send_json(View::make('_options', array(
                     'fields' => $fields,
                     'placeholder' => 'Select suburb',
                     'selectedValue' => $selectedSuburb,
-                ));
+                )));
             } else {
-                echo View::make('_options', array(
+                wp_send_json(View::make('_options', array(
                     'placeholder' => 'Error retrieving data from server. Please try again later...',
-                ));
+                )));
             }
         } else {
-            echo View::make('_options', array(
+            wp_send_json(View::make('_options', array(
                 'placeholder' => 'First Select Town...',
-            ));
+            )));
         }
     }
 
