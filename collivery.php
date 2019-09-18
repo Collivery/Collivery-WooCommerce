@@ -1,5 +1,7 @@
 <?php
 
+use MdsSupportingClasses\MdsColliveryService;
+
 define('_MDS_DIR_', __DIR__);
 define('MDS_VERSION', '3.1.28');
 include 'autoload.php';
@@ -16,6 +18,9 @@ include 'autoload.php';
  */
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     register_activation_hook(__FILE__, 'activate_mds');
+	$mds = MdsColliveryService::getInstance();
+	$settings = $mds->returnPluginSettings();
+
 
     if (!function_exists('activate_mds')) {
         /**
@@ -79,8 +84,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             wp_enqueue_script('mds_js');
         }
 
-        add_action('wp_enqueue_scripts', 'load_js');
-
+	    $mds = MdsColliveryService::getInstance();
+	    if ($mds->isEnabled()) {
+		    add_action( 'wp_enqueue_scripts', 'load_js' );
+	    }
         /*
          * Check for updates
          */
@@ -91,7 +98,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     if (!function_exists('add_mds_shipping_method')) {
         /**
-         * Register Chipping Plugin with WooCommerce.
+         * Register Shipping Plugin with WooCommerce.
          *
          * @param $methods
          *
@@ -145,7 +152,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
         }
 
-        add_action('woocommerce_payment_complete', 'automated_add_collivery_payment_complete');
+            if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
+	            add_action( 'woocommerce_payment_complete', 'automated_add_collivery_payment_complete' );
+            }
     }
 
     if (!function_exists('automated_add_collivery_status_processing')) {
@@ -167,7 +176,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
         }
 
-        add_action('woocommerce_order_status_processing', 'automated_add_collivery_status_processing');
+        if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
+	        add_action('woocommerce_order_status_processing', 'automated_add_collivery_status_processing');
+        }
     }
 
     if (!function_exists('mds_change_default_checkout_country')) {
@@ -181,7 +192,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             return 'ZA';
         }
 
-        add_filter('default_checkout_billing_country', 'mds_change_default_checkout_country');
+	    if ($mds->isEnabled()) {
+		    add_filter( 'default_checkout_billing_country', 'mds_change_default_checkout_country' );
+	    }
     }
 
     if (!function_exists('mds_show_my_account_address_suburb')) {
@@ -192,7 +205,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             return $address;
         }
-    }
 
     add_filter('woocommerce_my_account_my_address_formatted_address', 'mds_show_my_account_address_suburb', 10, 3);
 }
