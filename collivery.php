@@ -192,5 +192,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             return $address;
         }
 
-    add_filter('woocommerce_my_account_my_address_formatted_address', 'mds_show_my_account_address_suburb', 10, 3);
+	    add_filter('woocommerce_my_account_my_address_formatted_address', 'mds_show_my_account_address_suburb', 10, 3);
+    }
 }
