@@ -22,7 +22,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 	$settings = $mds->returnPluginSettings();
 
 
-    if (!function_exists('activate_mds')) {
+	if (!function_exists('activate_mds')) {
         /**
          * When the plugin is installed we check if the mds collivery table exists and if not creates it.
          */
@@ -64,8 +64,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
      */
     function init_mds_collivery()
     {
-        global $wpdb;
-
         // Check if 'WC_Shipping_Method' class is loaded, else exit.
         if (!class_exists('WC_Shipping_Method')) {
             return;
@@ -163,7 +161,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          *
          * @param $order_id
          *
-         * @return string
+         * @return bool|null
          */
         function automated_add_collivery_status_processing($order_id)
         {

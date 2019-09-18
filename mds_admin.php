@@ -576,5 +576,5 @@ function mds_register_collivery()
         }
     }
 
-    echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'custom_fields', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs', 'services', 'riskCover'));
+    echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs', 'services', 'riskCover'));
 }
