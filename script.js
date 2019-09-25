@@ -76,9 +76,9 @@ jQuery(document).ready(function () {
         el.select2('destroy');
         el.html(html);
         try {
-            // use `width:'resolve'` so that the width of `el` matches the wrapper element
+            // use `width:'100%'` so that the width of `el` matches the wrapper element
             el.select2({
-              width: 'resolve',
+              width: '100%',
             });
         } catch(err) {
           console.log(err)
