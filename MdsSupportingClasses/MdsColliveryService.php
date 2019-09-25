@@ -14,9 +14,6 @@ use MdsExceptions\InvalidAddressDataException;
 use MdsExceptions\InvalidColliveryDataException;
 use MdsExceptions\OrderAlreadyProcessedException;
 
-/**
- * MdsColliveryService.
- */
 class MdsColliveryService
 {
     /**
@@ -24,7 +21,7 @@ class MdsColliveryService
      */
     private static $instance;
 
-    /**
+	/**
      * @var UnitConverter
      */
     private $converter;
@@ -54,7 +51,13 @@ class MdsColliveryService
      */
     private $settings;
 
-    /**
+	/**
+	 * @var EnvironmentInformationBag
+	 */
+	private $environment;
+
+
+	/**
      * @param array|null $settings
      *
      * @return MdsColliveryService
@@ -87,10 +90,10 @@ class MdsColliveryService
      */
     private function __construct($settings = null)
     {
-        $this->converter = new UnitConverter();
-        $this->cache = new MdsCache(ABSPATH . 'cache/mds_collivery/');
-        $this->logger = new MdsLogger();
-        $this->enviroment = new EnvironmentInformationBag();
+        $this->converter   = new UnitConverter();
+        $this->cache       = new MdsCache(ABSPATH . 'cache/mds_collivery/');
+        $this->logger      = new MdsLogger();
+        $this->environment = new EnvironmentInformationBag();
 
         $this->initSettings($settings);
         $this->initMdsCollivery();
@@ -123,7 +126,7 @@ class MdsColliveryService
             $this->settings = new MdsSettings($settings, $instanceSettings);
         }
 
-        $this->enviroment->setSettings($this->settings->settings + $instanceSettings);
+        $this->environment->setSettings( $this->settings->settings + $instanceSettings);
 
         return $this->settings;
     }
@@ -134,12 +137,12 @@ class MdsColliveryService
     public function initMdsCollivery()
     {
         $colliveryInitData = array(
-            'app_name' => $this->enviroment->appName,
-            'app_version' => $this->enviroment->appVersion,
-            'app_host' => $this->enviroment->appHost,
-            'app_url' => $this->enviroment->appUrl,
-            'user_email' => $this->settings->getValue('mds_user'),
-            'user_password' => $this->settings->getValue('mds_pass'),
+	        'app_name' => $this->environment->appName,
+	        'app_version' => $this->environment->appVersion,
+	        'app_host' => $this->environment->appHost,
+	        'app_url' => $this->environment->appUrl,
+	        'user_email' => $this->settings->getValue('mds_user'),
+	        'user_password' => $this->settings->getValue('mds_pass'),
         );
 
         $this->collivery = new Collivery($colliveryInitData, $this->cache);
@@ -207,6 +210,8 @@ class MdsColliveryService
 
             return $cart;
         }
+
+        return null;
     }
 
     /**
@@ -362,6 +367,7 @@ class MdsColliveryService
     public function isOrderInStock($items)
     {
         try {
+	        $stock = 0;
             /**  @var WC_Order_Item_Product $item */
             foreach ($items as $item_id => $item) {
                 $qty = $item->get_quantity();
@@ -375,7 +381,7 @@ class MdsColliveryService
                     }
                 }
 
-                if ($stock != '') {
+                if ($stock) {
                     if ($stock < $qty) {
                         throw new ProductOutOfException($product->get_formatted_name() . ' is out of stock', 'isOrderInStock', $this->loggerSettingsArray(), $items);
                     }
@@ -403,15 +409,16 @@ class MdsColliveryService
         }
     }
 
-    /**
-     * @param array $array
-     * @param $cartSubTotal
-     * @param float $markup
-     *
-     * @return float
-     *
-     * @throws InvalidColliveryDataException
-     */
+	/**
+	 * @param array $array
+	 * @param float $cartSubTotal
+	 * @param float $markup
+	 * @param float $fixedPrice
+	 *
+	 * @return float
+	 *
+	 * @throws InvalidColliveryDataException
+	 */
     public function getPrice(array $array, $cartSubTotal, $markup, $fixedPrice)
     {
         if (!$result = $this->collivery->getPrice($array)) {
@@ -433,13 +440,14 @@ class MdsColliveryService
         return Money::make($returnedAmount, $markup, $fixedPrice, $discount, $this->settings->getValue('round') == 'yes')->amount;
     }
 
-    /**
-     * Adds the delivery request to MDS Collivery.
-     *
-     * @param array $array
-     *
-     * @return bool
-     */
+	/**
+	 * Adds the delivery request to MDS Collivery.
+	 *
+	 * @param array $array
+	 *
+	 * @return bool
+	 * @throws InvalidColliveryDataException
+	 */
     public function addCollivery(array $array)
     {
         $this->validated_data = $validatedData = $this->validateCollivery($array);
@@ -521,14 +529,14 @@ class MdsColliveryService
         return $this->collivery->validate($array);
     }
 
-    /**
-     * Auto process to send collection requests to MDS.
-     *
-     * @param $order_id
-     * @param bool $processing
-     *
-     * @return bool|null
-     */
+	/**
+	 * Auto process to send collection requests to MDS.
+	 *
+	 * @param      $order_id
+	 * @param bool $processing
+	 *
+	 * @return bool|void
+	 */
     public function automatedAddCollivery($order_id, $processing = false)
     {
         $order = new WC_Order($order_id);
@@ -635,7 +643,7 @@ class MdsColliveryService
      * @param int $collivery_id
      * @param int $order_id
      *
-     * @return bool
+     * @return void
      */
     public function addColliveryToProcessedTable($collivery_id, $order_id)
     {
@@ -933,7 +941,7 @@ class MdsColliveryService
      */
     public function loggerSettingsArray()
     {
-        return $this->enviroment->loggerFormat();
+        return $this->environment->loggerFormat();
     }
 
     /**
@@ -952,7 +960,7 @@ class MdsColliveryService
         if ($file = $this->logger->downloadErrorFile()) {
             return $file;
         } else {
-            $this->logger->error('', '', $this->enviroment->loggerFormat());
+            $this->logger->error('', '', $this->environment->loggerFormat());
             if ($file = $this->logger->downloadErrorFile()) {
                 return $file;
             }
