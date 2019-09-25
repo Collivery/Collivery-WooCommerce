@@ -39,6 +39,11 @@ jQuery(document).ready(function () {
 
     function updateSelect(fromField, field, prefix, db_prefix) {
         var fromEl = jQuery('#' + fromField), el = jQuery('#' + field);
+
+        // The width of the `el` is collapsed if a parent is overlapping it.
+        // See https://github.com/select2/select2/pull/5502
+        fromEl.data('select2').close();
+
         if (fromEl.val() !== '') {
             return ajax = jQuery.ajax({
                 type: 'POST',
@@ -71,7 +76,10 @@ jQuery(document).ready(function () {
         el.select2('destroy');
         el.html(html);
         try {
-            el.select2();
+            // use `width:'resolve'` so that the width of `el` matches the wrapper element
+            el.select2({
+              width: 'resolve',
+            });
         } catch(err) {
           console.log(err)
         }
