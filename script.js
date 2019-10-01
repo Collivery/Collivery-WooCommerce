@@ -38,11 +38,14 @@ jQuery(document).ready(function () {
     });
 
     function updateSelect(fromField, field, prefix, db_prefix) {
-        var fromEl = jQuery('#' + fromField), el = jQuery('#' + field);
+        var fromEl = jQuery('#' + fromField), el = jQuery('#' + field),
+            fromSelect2 = fromEl.data('select2');
 
         // The width of the `el` is collapsed if a parent is overlapping it.
         // See https://github.com/select2/select2/pull/5502
-        fromEl.data('select2').close();
+        if (fromSelect2) { // May be null if element is hidden
+          fromSelect2.close();
+        }
 
         if (fromEl.val() !== '') {
             return ajax = jQuery.ajax({
