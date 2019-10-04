@@ -1,3 +1,5 @@
+var colliveryFieldsValues = {};
+
 jQuery(document).ready(function () {
     var select2fields = {
         city: 'Select your city/town',
@@ -23,7 +25,7 @@ jQuery(document).ready(function () {
         {fromField: 'shipping_city', field: 'shipping_suburb', prefix: 'suburbs', db_prefix: 'shipping'}
     ];
 
-    jQuery.each(ajaxUpdates, function (index, row) {
+  jQuery.each(ajaxUpdates, function (index, row) {
         var parentEl = jQuery('#' + row.fromField);
         parentEl.on('keydown', function (e) {
             var keyCode = e.keyCode || e.which;
@@ -35,10 +37,13 @@ jQuery(document).ready(function () {
         parentEl.on('change', function () {
             updateSelect(row.fromField, row.field, row.prefix, row.db_prefix);
         });
+
+        cacheValue(row.fromField, parentEl.val());
     });
 
     function updateSelect(fromField, field, prefix, db_prefix) {
-        var fromEl = jQuery('#' + fromField), el = jQuery('#' + field),
+        var fromEl = jQuery('#' + fromField),
+            el = jQuery('#' + field),
             fromSelect2 = fromEl.data('select2');
 
         // The width of the `el` is collapsed if a parent is overlapping it.
@@ -47,7 +52,10 @@ jQuery(document).ready(function () {
           fromSelect2.close();
         }
 
-        if (fromEl.val() !== '') {
+        // Check that the value is not empty and has changed from the previous value
+        // Only if that is true is there any point in querying for new results
+        if (fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[fromField]) {
+            cacheValue(fromField, fromEl.val());
             return ajax = jQuery.ajax({
                 type: 'POST',
                 async: false,
@@ -87,4 +95,8 @@ jQuery(document).ready(function () {
           console.log(err)
         }
     }
+
+  function cacheValue (key, val) {
+    colliveryFieldsValues[key] = val;
+  }
 });
