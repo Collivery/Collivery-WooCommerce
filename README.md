@@ -6,9 +6,9 @@ MDS Collivery Shipping Module
 Documentation
 -------------
 
-Please refer to our documentation at http://collivery.github.io/Collivery-WooCommerce
+Please refer to our documentation at https://collivery.net/integration/woocommerce
 
-This plugin makes use of our [Collivery-Client](https://github.com/Collivery/Collivery-Client) which in turn makes use of our [Webservice](http://collivery.co.za/wsdocs/).
+This plugin makes use of our [Collivery-Client](https://github.com/Collivery/Collivery-Client) which in turn makes use of our [Webservice](https://collivery.net/integration/api/soap).
 
 If you wish to submit any changes, simply fork this repository and submit a pull request.
 
