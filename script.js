@@ -46,6 +46,12 @@ jQuery(document).ready(function () {
             el = jQuery('#' + field),
             fromSelect2 = fromEl.data('select2');
 
+        // Ensure we clear the town from cache in case we are changing province
+        // Else if we come back to this province and this town - the suburbs won't update
+        if (fromField.indexOf('state') != -1) {
+          cacheValue(field, '');
+        }
+
         // The width of the `el` is collapsed if a parent is overlapping it.
         // See https://github.com/select2/select2/pull/5502
         if (fromSelect2) { // May be null if element is hidden
