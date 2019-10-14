@@ -44,7 +44,7 @@ class Collivery
         );
 
         foreach ($config as $key => $value) {
-            $this->config->$key = trim($value);
+            $this->config->$key = $key === 'user_password' ? $value : trim($value);
         }
 
         if ($this->config->demo) {
