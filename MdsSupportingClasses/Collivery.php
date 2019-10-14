@@ -44,7 +44,7 @@ class Collivery
         );
 
         foreach ($config as $key => $value) {
-            $this->config->$key = $value;
+            $this->config->$key = trim($value);
         }
 
         if ($this->config->demo) {
