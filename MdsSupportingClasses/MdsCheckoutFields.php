@@ -46,6 +46,15 @@ class MdsCheckoutFields
             $resources = MdsFields::getResources($service);
             $towns = array('' => 'Select Town') + array_combine($resources['towns'], $resources['towns']);
             $location_types = array('' => 'Select Premises Type') + array_combine($resources['location_types'], $resources['location_types']);
+	        $customer = WC()->customer;
+	        $cityPrefix = $prefix ? $prefix : 'billing_';
+	        $townName = $customer->{"get_{$cityPrefix}city"}();
+	        $suburbs = array(0 => 'First select town/city');
+
+	        if ($townName) {
+		        $townId = array_search($townName, $resources['towns']);
+		        $suburbs = array_merge($suburbs, $service->returnColliveryClass()->getSuburbs($townId));
+	        }
 
             return array(
                 $prefix.'country' => array(
@@ -82,7 +91,7 @@ class MdsCheckoutFields
                     'required' => true,
                     'placeholder' => 'Please select',
                     'class' => array('form-row-wide', 'address-field'),
-                    'options' => array('First select town/city'),
+                    'options' => $suburbs,
                 ),
                 $prefix.'location_type' => array(
                     'priority' => 5,
