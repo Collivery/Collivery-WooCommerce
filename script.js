@@ -52,7 +52,7 @@ jQuery(document).ready(function () {
           cacheValue(field, '');
 
           // Clear the previously selected suburbs if the province changes
-          resetSelect($(db_prefix + '_suburb'), '<option selected="selected" value="">First Select Town...</option>');
+          resetSelect(jQuery(db_prefix + '_suburb'), '<option selected="selected" value="">First Select Town...</option>');
         }
 
         // The width of the `el` is collapsed if a parent is overlapping it.
