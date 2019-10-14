@@ -17,6 +17,7 @@ class MdsFields
                     'If you have any errors with the MDS plugin, you can download log files and email them to integration@collivery.co.za for support, clearing cache can be useful if you have empty list of towns etc'
                 ),
                 'placeholder' => admin_url().'admin.php?page=mds_download_log_files',
+                'default' => null,
             ),
             'enabled' => array(
                 'title' => __('Enabled?'),
@@ -133,6 +134,7 @@ class MdsFields
                 'title' => __('Exclude these roles from free delivery'),
                 'type' => 'text',
                 'description' => __('Comma separated list of roles that must be excluded from free shipping'),
+                'default' => null,
             ),
             'free_local_only' => array(
                 'title' => __('Free Delivery Local Only'),
