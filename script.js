@@ -50,6 +50,9 @@ jQuery(document).ready(function () {
         // Else if we come back to this province and this town - the suburbs won't update
         if (fromField.indexOf('state') != -1) {
           cacheValue(field, '');
+
+          // Clear the previously selected suburbs if the province changes
+          resetSelect(jQuery(db_prefix + '_suburb'), '<option selected="selected" value="">First Select Town...</option>');
         }
 
         // The width of the `el` is collapsed if a parent is overlapping it.
