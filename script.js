@@ -44,15 +44,16 @@ jQuery(document).ready(function () {
     function updateSelect(fromField, field, prefix, db_prefix) {
         var fromEl = jQuery('#' + fromField),
             el = jQuery('#' + field),
-            fromSelect2 = fromEl.data('select2');
+            fromSelect2 = fromEl.data('select2'),
+            isChange = fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[fromField];
 
         // Ensure we clear the town from cache in case we are changing province
         // Else if we come back to this province and this town - the suburbs won't update
-        if (fromField.indexOf('state') != -1) {
+        if (fromField.indexOf('state') != -1 && isChange) {
           cacheValue(field, '');
 
           // Clear the previously selected suburbs if the province changes
-          resetSelect(jQuery(db_prefix + '_suburb'), '<option selected="selected" value="">First Select Town...</option>');
+          resetSelect(jQuery('#' + db_prefix + '_suburb'), '<option selected="selected" value="">First Select Town...</option>');
         }
 
         // The width of the `el` is collapsed if a parent is overlapping it.
@@ -63,7 +64,7 @@ jQuery(document).ready(function () {
 
         // Check that the value is not empty and has changed from the previous value
         // Only if that is true is there any point in querying for new results
-        if (fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[fromField]) {
+        if (isChange) {
             cacheValue(fromField, fromEl.val());
             return ajax = jQuery.ajax({
                 type: 'POST',
