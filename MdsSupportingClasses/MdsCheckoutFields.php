@@ -49,7 +49,7 @@ class MdsCheckoutFields
 	        $customer = WC()->customer;
 	        $cityPrefix = $prefix ? $prefix : 'billing_';
 	        $townName = $customer->{"get_{$cityPrefix}city"}();
-	        $suburbs = array(0 => 'First select town/city');
+	        $suburbs = array('' => 'First select town/city');
 
 	        if ($townName) {
 		        $townId = array_search($townName, $resources['towns']);
