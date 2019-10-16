@@ -123,6 +123,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_default_service');
                 }
 
+	            $this->id = $id;
                 $this->add_rate(array(
                     'id' => $id,
                     'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),

@@ -12,7 +12,7 @@ use MdsSupportingClasses\View;
         <li>
             If you make changes and accept, those changes will be sent to MDS Collivery as a collection and
             delivery request, make sure your information is correct. If you have managed to pass incorrect information then you
-            can log onto <a href="https://quote.collivery.co.za/login.php" target="blank">MDS Collivery</a> to cancel or make
+            can log onto <a href="https://collivery.net/overview" target="blank">MDS Collivery</a> to cancel or make
             changes.
         </li>
     </ul>
