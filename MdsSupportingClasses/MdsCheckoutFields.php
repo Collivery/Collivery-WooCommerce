@@ -53,7 +53,7 @@ class MdsCheckoutFields
 
 	        if ($townName) {
 		        $townId = array_search($townName, $resources['towns']);
-		        $suburbs = array_merge($suburbs, $service->returnColliveryClass()->getSuburbs($townId));
+		        $suburbs = $suburbs + $service->returnColliveryClass()->getSuburbs($townId);
 	        }
 
             return array(
