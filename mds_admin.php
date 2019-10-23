@@ -554,12 +554,16 @@ function mds_register_collivery()
         $instructions .= $order->get_customer_note();
     }
     if ($this->settings->getValue('include_order_number') == 'yes') {
-        if(strlen($instructions)>0)$instructions .= ' ';
+        if(strlen($instructions)>0){
+            $instructions .= ' ';
+        }
         $instructions .= 'Order number: ' . $order_id;
     }
     if ($this->settings->getValue('include_product_titles') == 'yes') {
         $count = 1;
-        if(strlen($instructions)>0)$instructions .= ' ';
+        if(strlen($instructions)>0){
+            $instructions .= ' ';
+        }
         $instructions .= ': ';
         foreach ($parcels as $parcel) {
             if (isset($parcel['description'])) {
