@@ -43,6 +43,18 @@ class MdsFields
                 'description' => __('Includes product titles in the delivery instructions, max 4096 characters'),
                 'default' => 'no',
             ),
+            'include_order_number' => array(
+                'title' => __('Include order number'),
+                'type' => 'checkbox',
+                'description' => __('Includes order number in the delivery instructions, max 4096 characters'),
+                'default' => 'yes',
+            ),
+            'include_customer_note' => array(
+                'title' => __('Include customer note'),
+                'type' => 'checkbox',
+                'description' => __('Includes customer note in the delivery instructions, max 4096 characters'),
+                'default' => 'no',
+            ),
             'risk_cover' => array(
                 'title' => 'MDS '.__('Risk Cover'),
                 'type' => 'checkbox',
