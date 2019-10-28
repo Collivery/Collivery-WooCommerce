@@ -82,9 +82,20 @@ function mds_confirmed_orders()
 
     $table_name = $wpdb->prefix.'mds_collivery_processed';
     if (isset($post['waybill']) && $post['waybill'] != '') {
-        $colliveries = $wpdb->get_results('SELECT * FROM `'.$table_name.'` WHERE status='.$status.' and waybill='.$waybill.' ORDER BY id DESC;', OBJECT);
+        $colliveries = $wpdb->get_results(
+        	$wpdb->prepare(
+	            "SELECT * FROM `{$table_name}` WHERE status=%d and waybill=%d ORDER BY id DESC;",
+		        $status,
+	            $waybill
+	        ),
+	        OBJECT);
     } else {
-        $colliveries = $wpdb->get_results('SELECT * FROM `'.$table_name.'` WHERE status='.$status.' ORDER BY id DESC;', OBJECT);
+        $colliveries = $wpdb->get_results(
+	        $wpdb->prepare(
+	            "SELECT * FROM `{$table_name}` WHERE status=%d ORDER BY id DESC;",
+		        $status
+	        ),
+        OBJECT);
     }
 
     /** @var \MdsSupportingClasses\MdsColliveryService $mds */
@@ -103,7 +114,12 @@ function mds_confirmed_order()
     wp_enqueue_script('mds_collivery_js');
 
     $table_name = $wpdb->prefix.'mds_collivery_processed';
-    $data_ = $wpdb->get_results('SELECT * FROM `'.$table_name.'` WHERE waybill='.$_GET['waybill'].';', OBJECT);
+    $data_ = $wpdb->get_results(
+    	$wpdb->prepare(
+		    "SELECT * FROM `{$table_name}` WHERE waybill=%d;",
+		    $_GET['waybill']
+	    ),
+    OBJECT);
     $data = $data_[0];
 
     /** @var \MdsSupportingClasses\MdsColliveryService $mds */
@@ -157,7 +173,10 @@ function mds_confirmed_order()
     );
 
     if (isset($closedStatusList[$tracking['status_id']])) {
-        $wpdb->query('UPDATE `'.$table_name.'` SET `status` = 0 WHERE `waybill` = '.$data->waybill.';');
+        $wpdb->query($wpdb->prepare(
+        	"UPDATE `{$table_name}` SET `status` = 0 WHERE `waybill` = %d;",
+	        $data->waybill
+        ));
     }
 
     $image_list = glob($directory.'/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}', GLOB_BRACE);
