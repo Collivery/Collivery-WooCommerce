@@ -67,13 +67,14 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
     public function init()
     {
         $this->title = $this->method_title;
-        $this->enabled = get_option('enabled');
 
         // Load the form fields.
         $this->init_form_fields();
         $this->init_mds_collivery();
         $this->init_instance_form_fields();
         $this->mdsSettings = $this->collivery_service->initSettings($this->settings, $this->instance_settings);
+
+        $this->enabled = $this->mdsSettings->getValue('enabled', $this->enabled);
 
         add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
     }
