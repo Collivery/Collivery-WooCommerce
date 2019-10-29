@@ -38,6 +38,7 @@ class ShippingPackageData
      * @param $input
      *
      * @return mixed
+     * @throws \MdsExceptions\SoapConnectionException
      */
     public function build($packages, $input)
     {
@@ -69,6 +70,7 @@ class ShippingPackageData
         $package['method_free'] = $this->settings->getValue('method_free');
         $package['free_min_total'] = $this->settings->getValue('free_min_total');
         $package['free_local_only'] = $this->settings->getValue('free_local_only');
+        $package['shipping_cart_total'] = $this->getShippingCartTotal();
 
         $package['destination'] = array(
             'from_town_id' => (int) $defaults['address']['town_id'],
@@ -93,32 +95,29 @@ class ShippingPackageData
 
         if (!$this->service->validPackage($package)) {
             return $packages;
-        } else {
-            if ($this->settings->getValue('method_free') == 'yes'
-                && WC()->cart->get_cart_contents_total() >= $this->settings->getValue('free_min_total')
-                && !$this->applyFreeDeliveryBlacklist()
-            ) {
-                $package['service'] = 'free';
-                if ($this->settings->getValue('free_local_only') == 'yes') {
-                    $data = array(
-                            'num_package' => 1,
-                            'service' => 2,
-                            'exclude_weekend' => 1,
-                        ) + $package['destination'];
+        }
 
-                    // Query the API to test if this is a local delivery
-                    $response = $this->collivery->getPrice($data);
-                    if (isset($response['delivery_type']) && $response['delivery_type'] == 'local') {
-                        $package['local'] = 'yes';
-                    } else {
-                        $package['service'] = null;
-                        $package['local'] = 'no';
-                    }
+        if ($this->shouldBeFree() && !$this->applyFreeDeliveryBlacklist()) {
+            $package['service'] = 'free';
+            if ($this->settings->getValue('free_local_only') == 'yes') {
+                $data = array(
+                        'num_package' => 1,
+                        'service' => 2,
+                        'exclude_weekend' => 1,
+                    ) + $package['destination'];
+
+                // Query the API to test if this is a local delivery
+                $response = $this->collivery->getPrice($data);
+                if (isset($response['delivery_type']) && $response['delivery_type'] == 'local') {
+                    $package['local'] = 'yes';
+                } else {
+                    $package['service'] = null;
+                    $package['local'] = 'no';
                 }
             }
-
-            $packages[0] = $package;
         }
+
+        $packages[0] = $package;
 
         return $packages;
     }
@@ -217,5 +216,42 @@ class ShippingPackageData
         }
 
         return false;
+    }
+
+	private function shouldBeFree()
+	{
+        $freeActivated = $this->settings->getValue( 'method_free' ) == 'yes';
+        $minimum       = $this->settings->getValue( 'free_min_total' );
+        $cartTotal     = $this->getShippingCartTotal();
+
+        return $freeActivated && $cartTotal >= $minimum;
+	}
+
+    private function getShippingCartTotal() {
+        /** @var \WC_Cart $cart */
+        $cart                      = WC()->cart->get_cart();
+        $shouldExcludeVirtual      = $this->settings->getValue( 'fee_exclude_virtual' ) === 'yes';
+        $shouldExcludeDownloadable = $this->settings->getValue( 'fee_exclude_downloadable' ) === 'yes';
+        $cartTotal                 = intval(WC()->cart->get_cart_tax());
+
+        if ( $shouldExcludeVirtual ) {
+            $cart = array_filter( $cart, function ( $item ) {
+                return ! $item['data']->is_virtual();
+            } );
+        }
+        if ( $shouldExcludeDownloadable ) {
+            $cart = array_filter( $cart, function ( $item ) {
+                return ! $item['data']->is_downloadable();
+            } );
+        }
+
+        foreach ( $cart as $item ) {
+            /** @var \WC_Product $product */
+            $product      = $item['data'];
+            $productPrice = $product->get_price() * $item['quantity'];
+            $cartTotal    += $productPrice;
+        }
+
+        return $cartTotal;
     }
 }
