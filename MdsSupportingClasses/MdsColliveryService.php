@@ -409,23 +409,27 @@ class MdsColliveryService
         }
     }
 
-	/**
-	 * @param array $array
-	 * @param float $cartSubTotal
-	 * @param float $markup
-	 * @param float $fixedPrice
-	 *
-	 * @return float
-	 *
-	 * @throws InvalidColliveryDataException
-	 */
-    public function getPrice(array $array, $cartSubTotal, $markup, $fixedPrice)
+    /**
+     * @param array $array
+     * @param float $adjustedTotal
+     * @param float $markup
+     * @param float $fixedPrice
+     *
+     * @return float
+     *
+     * @throws InvalidColliveryDataException
+     * @throws SoapConnectionException
+     */
+    public function getPrice(array $array, $adjustedTotal, $markup, $fixedPrice)
     {
         if (!$result = $this->collivery->getPrice($array)) {
             throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), array('errors' => $this->collivery->getErrors(), 'data' => $array));
         }
 
-        if ($this->settings->getValue('method_free') === 'discount' && $cartSubTotal >= $this->settings->getValue('free_min_total')) {
+        $discountEnabled = $this->settings->getValue( 'method_free' ) === 'discount';
+        $overThreshold   = $adjustedTotal >= $this->settings->getValue( 'free_min_total' );
+
+        if ( $discountEnabled && $overThreshold ) {
             $discount = $this->settings->getValue('shipping_discount_percentage');
         } else {
             $discount = 0;
