@@ -55,6 +55,18 @@ class MdsFields
                 'description' => __('Includes customer note which appended to the delivery instructions which max characters is 4096'),
                 'default' => 'no',
             ),
+            'round' => array(
+                'title' => 'MDS '.__('Round Price'),
+                'type' => 'checkbox',
+                'description' => __('Rounds price up.'),
+                'default' => 'yes',
+            ),
+            'include_vat' => array(
+                'title' => 'MDS '.__('Use Inclusive Amount'),
+                'type' => 'checkbox',
+                'description' => __('If Woocommerce is setup to add VAT onto the shipping cost then you should uncheck this box to use the exclusive amount, this way VAT will only be applied once. If your not adding VAT onto the shipping cost using Woocommerce then always use the inclusive amount. This option only affects the price displayed on your checkout page, MDS Collivery will always bill you the inclusive amount.'),
+                'default' => 'yes',
+            ),
             'risk_cover' => array(
                 'title' => 'MDS '.__('Risk Cover'),
                 'type' => 'checkbox',
@@ -99,7 +111,7 @@ class MdsFields
                 'title' => __('Percentage discount for shipping'),
                 'type' => 'number',
                 'description' => __(
-                    'The percentage discount that users get when their cart total exceeds <strong>"Free Delivery Min Total"</strong>'
+                    'The percentage discount that users get when their cart total exceeds <strong>"Free/Discount Delivery Min Total"</strong>'
                 ),
                 'default' => 10,
                 'custom_attributes' => array(
@@ -107,22 +119,6 @@ class MdsFields
                     'max' => 100,
                     'step' => 0.1,
                 ),
-            ),
-            'toggle_automatic_mds_processing' => array(
-                'title' => __('Automatic MDS Processing'),
-                'type' => 'checkbox',
-                'description' => __(
-                    'When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>'
-                ),
-                'default' => 'no',
-            ),
-            'auto_accept' => array(
-                'title' => __('Auto accept'),
-                'type' => 'checkbox',
-                'description' => __(
-                    'After automatic mds processing has sent the request through to MDS, should the request be auto accepted or will you manually accept the delivery on the MDS website'
-                ),
-                'default' => 'yes',
             ),
             'wording_free' => array(
                 'title' => __('Free Delivery Wording'),
@@ -133,7 +129,7 @@ class MdsFields
                 ),
             ),
             'free_min_total' => array(
-                'title' => __('Free Delivery Min Total'),
+                'title' => __('Free/Discount Delivery Min Total'),
                 'type' => 'number',
                 'description' => __('Min order total before free delivery is included, amount is including vat.'),
                 'default' => '1000.00',
@@ -156,6 +152,22 @@ class MdsFields
                 'custom_attributes' => array(
                     'data-type' => 'free-delivery-item',
                 ),
+            ),
+            'toggle_automatic_mds_processing' => array(
+                'title' => __('Automatic MDS Processing'),
+                'type' => 'checkbox',
+                'description' => __(
+                    'When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="https://github.com/Collivery/Collivery-WooCommerce/">Manual</a>'
+                ),
+                'default' => 'no',
+            ),
+            'auto_accept' => array(
+                'title' => __('Auto accept'),
+                'type' => 'checkbox',
+                'description' => __(
+                    'After automatic mds processing has sent the request through to MDS, should the request be auto accepted or will you manually accept the delivery on the MDS website'
+                ),
+                'default' => 'yes',
             ),
         );
     }
