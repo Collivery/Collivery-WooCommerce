@@ -81,17 +81,17 @@ class MdsFields
                     ),
                 'default' => 1000.00,
             ),
-            'round' => array(
-                'title' => 'MDS '.__('Round Price'),
+            'fee_exclude_virtual' => array(
+                'title' => __('Exclude "Virtual" From Calculations'),
                 'type' => 'checkbox',
-                'description' => __('Rounds price up.'),
-                'default' => 'yes',
+                'description' => __('Do not include products marked as "virtual" in the calculation for free/discounted deliveries or towards the "Risk cover minimum".'),
+                'default' => 'no',
             ),
-            'include_vat' => array(
-                'title' => 'MDS '.__('Use Inclusive Amount'),
+            'fee_exclude_downloadable' => array(
+                'title' => __('Exclude "Downloadable" From Calculations'),
                 'type' => 'checkbox',
-                'description' => __('If Woocommerce is setup to add VAT onto the shipping cost then you should uncheck this box to use the exclusive amount, this way VAT will only be applied once. If your not adding VAT onto the shipping cost using Woocommerce then always use the inclusive amount. This option only affects the price displayed on your checkout page, MDS Collivery will always bill you the inclusive amount.'),
-                'default' => 'yes',
+                'description' => __('Do not include products marked as "downloadable" in the calculation for free/discounted deliveries or towards the "Risk cover minimum".'),
+                'default' => 'no',
             ),
             'method_free' => array(
                 'title' => __('Free Delivery mode'),
