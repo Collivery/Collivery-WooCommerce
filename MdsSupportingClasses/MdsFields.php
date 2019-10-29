@@ -22,7 +22,6 @@ class MdsFields
             'enabled' => array(
                 'title' => __('Enabled?'),
                 'type' => 'checkbox',
-                'label' => __('Enable this shipping method'),
                 'default' => 'yes',
             ),
             'mds_user' => array(
@@ -94,17 +93,14 @@ class MdsFields
                 'default' => 'no',
             ),
             'method_free' => array(
-                'title' => __('Free Delivery mode'),
-                'label' => __('Free Delivery: Enabled'),
+                'title' => __('Free/Discount Delivery mode'),
                 'type' => 'select',
+                'description' => __('Whether to offer free or discounted deliveries if the cart total exceeds the value of "Free/Discount Delivery Min Total".'),
                 'default' => 'no',
                 'options' => array(
                     'no' => __('No free deliveries'),
                     'yes' => __('Free delivery'),
-                    'discount' => _('Discount on deliveries'),
-                ),
-                'custom_attributes' => array(
-                    'title' => 'Choose shipping mode',
+                    'discount' => __('Discount on deliveries'),
                 ),
             ),
             'shipping_discount_percentage' => array(
@@ -131,7 +127,7 @@ class MdsFields
             'free_min_total' => array(
                 'title' => __('Free/Discount Delivery Min Total'),
                 'type' => 'number',
-                'description' => __('Min order total before free delivery is included, amount is including vat.'),
+                'description' => __('Minimum order total before free delivery is included, amount is including vat.'),
                 'default' => '1000.00',
                 'custom_attributes' => array(
                     'step' => .1,
@@ -186,7 +182,6 @@ class MdsFields
             foreach ($resources['services'] as $id => $title) {
                 $fields['method_'.$id] = array(
                     'title' => __($title),
-                    'label' => __($title.': Enabled'),
                     'type' => 'checkbox',
                     'default' => 'yes',
                 );
