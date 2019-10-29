@@ -139,10 +139,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                             if ($this->mdsSettings->getInstanceValue("method_$id") == 'yes') {
                                 // Now lets get the price for
                                 $riskCover = 0;
-                                $cartTotal = $package['cart']['total'];
                                 $adjustedTotal = $package['shipping_cart_total'];
                                 $riskCoverEnabled = $this->mdsSettings->getValue( 'risk_cover' ) == 'yes';
-                                $overThreshold = $cartTotal >= $this->mdsSettings->getValue( 'risk_cover_threshold', 1000 );
+                                $overThreshold = $adjustedTotal >= $this->mdsSettings->getValue( 'risk_cover_threshold', 1000 );
                                 if ( $riskCoverEnabled && $overThreshold ) {
                                     $riskCover = 1;
                                 }
