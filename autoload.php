@@ -17,7 +17,6 @@ class MdsColliveryAutoLoader
         'ParseDown' => '\MdsSupportingClasses\ParseDown',
         'UnitConverter' => '\MdsSupportingClasses\UnitConverter',
         'View' => '\MdsSupportingClasses\View',
-        'DiscountCalculator' => '\MdsSupportingClasses\DiscountCalculator',
         'ExceptionMiddleware' => '\MdsExceptions\ExceptionMiddleware',
         'InvalidAddressDataException' => '\MdsExceptions\InvalidAddressDataException',
         'InvalidCartPackageException' => '\MdsExceptions\InvalidCartPackageException',
