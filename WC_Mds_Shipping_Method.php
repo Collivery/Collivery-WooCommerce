@@ -67,13 +67,14 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
     public function init()
     {
         $this->title = $this->method_title;
-        $this->enabled = get_option('enabled');
 
         // Load the form fields.
         $this->init_form_fields();
         $this->init_mds_collivery();
         $this->init_instance_form_fields();
         $this->mdsSettings = $this->collivery_service->initSettings($this->settings, $this->instance_settings);
+
+        $this->enabled = $this->mdsSettings->getValue('enabled', $this->enabled);
 
         add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
     }
@@ -138,8 +139,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                             if ($this->mdsSettings->getInstanceValue("method_$id") == 'yes') {
                                 // Now lets get the price for
                                 $riskCover = 0;
-                                $cartTotal = $package['cart']['total'];
-                                if ($this->mdsSettings->getValue('risk_cover') == 'yes' && ($cartTotal >= $this->mdsSettings->getValue('risk_cover_threshold', 1000))) {
+                                $adjustedTotal = $package['shipping_cart_total'];
+                                $riskCoverEnabled = $this->mdsSettings->getValue( 'risk_cover' ) == 'yes';
+                                $overThreshold = $adjustedTotal >= $this->mdsSettings->getValue( 'risk_cover_threshold', 1000 );
+                                if ( $riskCoverEnabled && $overThreshold ) {
                                     $riskCover = 1;
                                 }
 
@@ -156,7 +159,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'service' => $id,
                                 );
 
-                                $price = $this->collivery_service->getPrice($data, WC()->cart->get_cart_contents_total(), $this->mdsSettings->getInstanceValue('markup_' . $id), $this->mdsSettings->getInstanceValue('fixed_price_' . $id));
+                                $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $id), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $id));
 
                                 if ($this->mdsSettings->getInstanceValue("wording_$id", $title) == $title && ($id == 1 || $id == 2)) {
                                     $title = $title.', additional 24 hours on outlying areas';

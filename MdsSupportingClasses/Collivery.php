@@ -56,7 +56,7 @@ class Collivery
     /**
      * Setup the Soap Object.
      *
-     * @return SoapClient MDS Collivery Soap Client
+     * @return bool
      */
     protected function init()
     {
@@ -79,7 +79,7 @@ class Collivery
     /**
      * Checks if the Soap Client has been set, and returns it.
      *
-     * @return SoapClient Webserver Soap Client
+     * @return SoapClient
      *
      * @throws SoapConnectionException
      */
@@ -172,8 +172,8 @@ class Collivery
 
                     return $authenticate;
                 } else {
-                    if (isset($result['error_id'])) {
-                        $this->setError($result['error_id'], $result['error']);
+                    if (isset($authenticate['error_id'])) {
+                        $this->setError($authenticate['error_id'], $authenticate['error']);
                     } else {
                         $this->setError('result_unexpected', 'No result returned.');
                     }
@@ -258,6 +258,7 @@ class Collivery
      * @param string $province Filter towns by South African Provinces
      *
      * @return array List of towns and their ID's
+     * @throws SoapConnectionException
      */
     public function getTowns($country = 'ZAF', $province = null)
     {
@@ -307,6 +308,7 @@ class Collivery
      * @param string $name Start of town/suburb name
      *
      * @return array List of towns and their ID's
+     * @throws SoapConnectionException
      */
     public function searchTowns($name)
     {
@@ -347,6 +349,7 @@ class Collivery
      * @param int $town_id ID of the Town to return suburbs for
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getSuburbs($town_id)
     {
@@ -385,6 +388,7 @@ class Collivery
      * delivery.
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getLocationTypes()
     {
@@ -421,6 +425,7 @@ class Collivery
      * Returns the available Collivery services types.
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getServices()
     {
@@ -457,6 +462,7 @@ class Collivery
      * Returns the available Parcel Type ID and value array for use in adding a collivery.
      *
      * @return array Parcel  Types
+     * @throws SoapConnectionException
      */
     public function getParcelTypes()
     {
@@ -495,6 +501,7 @@ class Collivery
      * @param int $address_id the ID of the address you wish to retrieve
      *
      * @return array Address
+     * @throws SoapConnectionException
      */
     public function getAddress($address_id)
     {
@@ -533,6 +540,7 @@ class Collivery
      * @param array $filter Filter Addresses
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getAddresses(array $filter = array())
     {
@@ -571,6 +579,7 @@ class Collivery
      * @param int $address_id Address ID
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getContacts($address_id)
     {
@@ -609,6 +618,7 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getPod($collivery_id)
     {
@@ -649,6 +659,7 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getWaybill($collivery_id)
     {
@@ -679,6 +690,7 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
+     * @throws SoapConnectionException
      */
     public function getParcelImageList($collivery_id)
     {
@@ -723,6 +735,7 @@ class Collivery
      * @return array Array containing all the information
      *               about the image including the image
      *               itself in base64
+     * @throws SoapConnectionException
      */
     public function getParcelImage($parcel_id)
     {
@@ -766,6 +779,7 @@ class Collivery
      * @param int $collivery_id Collivery ID
      *
      * @return array Collivery Status Information
+     * @throws SoapConnectionException
      */
     public function getStatus($collivery_id)
     {
@@ -806,6 +820,7 @@ class Collivery
      * @param array $data Address and Contact Information
      *
      * @return array Address ID and Contact ID
+     * @throws SoapConnectionException
      */
     public function addAddress(array $data)
     {
@@ -873,6 +888,7 @@ class Collivery
      * @param array $data New Contact Data
      *
      * @return int New Contact ID
+     * @throws SoapConnectionException
      */
     public function addContact(array $data)
     {
@@ -918,13 +934,14 @@ class Collivery
         }
     }
 
-    /**
-     * Returns the price based on the data provided.
-     *
-     * @param array $data Your Collivery Details
-     *
-     * @return array Pricing for details supplied
-     */
+	/**
+	 * Returns the price based on the data provided.
+	 *
+	 * @param array $data Your Collivery Details
+	 *
+	 * @return array Pricing for details supplied
+	 * @throws SoapConnectionException
+	 */
     public function getPrice(array $data)
     {
         $towns = $this->getTowns();
@@ -976,21 +993,22 @@ class Collivery
         }
     }
 
-    /**
-     * Validate Collivery.
-     *
-     * Returns the validated data array of all details pertaining to a collivery.
-     * This process validates the information based on services, time frames and parcel information.
-     * Dates and times may be altered during this process based on the collection and delivery towns service parameters.
-     * Certain towns are only serviced on specific days and between certain times.
-     * This function automatically alters the values.
-     * The parcels volumetric calculations are also done at this time.
-     * It is important that the data is first validated before a collivery can be added.
-     *
-     * @param array $data Properties of the new Collivery
-     *
-     * @return array The validated data
-     */
+	/**
+	 * Validate Collivery.
+	 *
+	 * Returns the validated data array of all details pertaining to a collivery.
+	 * This process validates the information based on services, time frames and parcel information.
+	 * Dates and times may be altered during this process based on the collection and delivery towns service parameters.
+	 * Certain towns are only serviced on specific days and between certain times.
+	 * This function automatically alters the values.
+	 * The parcels volumetric calculations are also done at this time.
+	 * It is important that the data is first validated before a collivery can be added.
+	 *
+	 * @param array $data Properties of the new Collivery
+	 *
+	 * @return array The validated data
+	 * @throws SoapConnectionException
+	 */
     public function validate(array $data)
     {
         $contacts_from = $this->getContacts($data['collivery_from']);
@@ -1069,6 +1087,7 @@ class Collivery
      * @param array $data Properties of the new Collivery
      *
      * @return int New Collivery ID
+     * @throws SoapConnectionException
      */
     public function addCollivery(array $data)
     {
@@ -1147,6 +1166,7 @@ class Collivery
      * @param int $collivery_id ID of the Collivery you wish to accept
      *
      * @return bool Has the Collivery been accepted
+     * @throws SoapConnectionException
      */
     public function acceptCollivery($collivery_id)
     {

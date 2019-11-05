@@ -409,23 +409,27 @@ class MdsColliveryService
         }
     }
 
-	/**
-	 * @param array $array
-	 * @param float $cartSubTotal
-	 * @param float $markup
-	 * @param float $fixedPrice
-	 *
-	 * @return float
-	 *
-	 * @throws InvalidColliveryDataException
-	 */
-    public function getPrice(array $array, $cartSubTotal, $markup, $fixedPrice)
+    /**
+     * @param array $array
+     * @param float $adjustedTotal
+     * @param float $markup
+     * @param float $fixedPrice
+     *
+     * @return float
+     *
+     * @throws InvalidColliveryDataException
+     * @throws SoapConnectionException
+     */
+    public function getPrice(array $array, $adjustedTotal, $markup, $fixedPrice)
     {
         if (!$result = $this->collivery->getPrice($array)) {
             throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), array('errors' => $this->collivery->getErrors(), 'data' => $array));
         }
 
-        if ($this->settings->getValue('method_free') === 'discount' && $cartSubTotal >= $this->settings->getValue('free_min_total')) {
+        $discountEnabled = $this->settings->getValue( 'method_free' ) === 'discount';
+        $overThreshold   = $adjustedTotal >= $this->settings->getValue( 'free_min_total' );
+
+        if ( $discountEnabled && $overThreshold ) {
             $discount = $this->settings->getValue('shipping_discount_percentage');
         } else {
             $discount = 0;
@@ -609,8 +613,11 @@ class MdsColliveryService
                         }
                     }
 
-                    $orderTotal = $order->get_subtotal() + $order->get_cart_tax();
-                    $riskCover = ($this->settings->getValue('risk_cover') == 'yes') && ($orderTotal > $this->settings->getValue('risk_cover_threshold', 0));
+                    $orderTotal = $this->getOrderTotal($order);
+
+                    $riskCoverEnabled = $this->settings->getValue( 'risk_cover' ) == 'yes';
+                    $overThreshold = $orderTotal > $this->settings->getValue( 'risk_cover_threshold', 0 );
+                    $riskCover =  $riskCoverEnabled && $overThreshold;
                     $colliveryOptions = array(
                         'collivery_from' => (int)$collivery_from,
                         'contact_from' => (int)$contact_from,
@@ -979,5 +986,33 @@ class MdsColliveryService
         }
 
         return false;
+    }
+
+    private function getOrderTotal(\WC_Order $order) {
+        $items                     = $order->get_items();
+        $shouldExcludeVirtual      = $this->settings->getValue( 'fee_exclude_virtual' ) === 'yes';
+        $shouldExcludeDownloadable = $this->settings->getValue( 'fee_exclude_downloadable' ) === 'yes';
+        $cartTotal                 = $order->get_cart_tax();
+
+        if ( $shouldExcludeVirtual ) {
+            $items = array_filter( $items, function ( \WC_Order_Item_Product $item ) {
+                return !$item->get_product()->is_virtual();
+            } );
+        }
+        if ( $shouldExcludeDownloadable ) {
+            $items = array_filter( $items, function ( $item ) {
+                return !$item->get_product()->is_virtual();
+            } );
+        }
+
+        /** @var WC_Order_Item_Product $item */
+        foreach ( $items as $item ) {
+            /** @var \WC_Product $product */
+            $product      = $item->get_product();
+            $productPrice = $product->get_price() * $item->get_quantity();
+            $cartTotal    += $productPrice;
+        }
+
+        return $cartTotal;
     }
 }

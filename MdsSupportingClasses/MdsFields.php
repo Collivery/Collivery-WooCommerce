@@ -22,7 +22,6 @@ class MdsFields
             'enabled' => array(
                 'title' => __('Enabled?'),
                 'type' => 'checkbox',
-                'label' => __('Enable this shipping method'),
                 'default' => 'yes',
             ),
             'mds_user' => array(
@@ -55,6 +54,18 @@ class MdsFields
                 'description' => __('Includes customer note which appended to the delivery instructions which max characters is 4096'),
                 'default' => 'no',
             ),
+            'round' => array(
+                'title' => 'MDS '.__('Round Price'),
+                'type' => 'checkbox',
+                'description' => __('Rounds price up.'),
+                'default' => 'yes',
+            ),
+            'include_vat' => array(
+                'title' => 'MDS '.__('Use Inclusive Amount'),
+                'type' => 'checkbox',
+                'description' => __('If Woocommerce is setup to add VAT onto the shipping cost then you should uncheck this box to use the exclusive amount, this way VAT will only be applied once. If your not adding VAT onto the shipping cost using Woocommerce then always use the inclusive amount. This option only affects the price displayed on your checkout page, MDS Collivery will always bill you the inclusive amount.'),
+                'default' => 'yes',
+            ),
             'risk_cover' => array(
                 'title' => 'MDS '.__('Risk Cover'),
                 'type' => 'checkbox',
@@ -69,37 +80,34 @@ class MdsFields
                     ),
                 'default' => 1000.00,
             ),
-            'round' => array(
-                'title' => 'MDS '.__('Round Price'),
+            'fee_exclude_virtual' => array(
+                'title' => __('Exclude "Virtual" From Calculations'),
                 'type' => 'checkbox',
-                'description' => __('Rounds price up.'),
-                'default' => 'yes',
+                'description' => __('Do not include products marked as "virtual" in the calculation for free/discounted deliveries or towards the "Risk cover minimum".'),
+                'default' => 'no',
             ),
-            'include_vat' => array(
-                'title' => 'MDS '.__('Use Inclusive Amount'),
+            'fee_exclude_downloadable' => array(
+                'title' => __('Exclude "Downloadable" From Calculations'),
                 'type' => 'checkbox',
-                'description' => __('If Woocommerce is setup to add VAT onto the shipping cost then you should uncheck this box to use the exclusive amount, this way VAT will only be applied once. If your not adding VAT onto the shipping cost using Woocommerce then always use the inclusive amount. This option only affects the price displayed on your checkout page, MDS Collivery will always bill you the inclusive amount.'),
-                'default' => 'yes',
+                'description' => __('Do not include products marked as "downloadable" in the calculation for free/discounted deliveries or towards the "Risk cover minimum".'),
+                'default' => 'no',
             ),
             'method_free' => array(
-                'title' => __('Free Delivery mode'),
-                'label' => __('Free Delivery: Enabled'),
+                'title' => __('Free/Discount Delivery mode'),
                 'type' => 'select',
+                'description' => __('Whether to offer free or discounted deliveries if the cart total exceeds the value of "Free/Discount Delivery Min Total".'),
                 'default' => 'no',
                 'options' => array(
                     'no' => __('No free deliveries'),
                     'yes' => __('Free delivery'),
-                    'discount' => _('Discount on deliveries'),
-                ),
-                'custom_attributes' => array(
-                    'title' => 'Choose shipping mode',
+                    'discount' => __('Discount on deliveries'),
                 ),
             ),
             'shipping_discount_percentage' => array(
                 'title' => __('Percentage discount for shipping'),
                 'type' => 'number',
                 'description' => __(
-                    'The percentage discount that users get when their cart total exceeds <strong>"Free Delivery Min Total"</strong>'
+                    'The percentage discount that users get when their cart total exceeds <strong>"Free/Discount Delivery Min Total"</strong>'
                 ),
                 'default' => 10,
                 'custom_attributes' => array(
@@ -107,22 +115,6 @@ class MdsFields
                     'max' => 100,
                     'step' => 0.1,
                 ),
-            ),
-            'toggle_automatic_mds_processing' => array(
-                'title' => __('Automatic MDS Processing'),
-                'type' => 'checkbox',
-                'description' => __(
-                    'When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="http://collivery.github.io/Collivery-WooCommerce/">Manual</a>'
-                ),
-                'default' => 'no',
-            ),
-            'auto_accept' => array(
-                'title' => __('Auto accept'),
-                'type' => 'checkbox',
-                'description' => __(
-                    'After automatic mds processing has sent the request through to MDS, should the request be auto accepted or will you manually accept the delivery on the MDS website'
-                ),
-                'default' => 'yes',
             ),
             'wording_free' => array(
                 'title' => __('Free Delivery Wording'),
@@ -133,9 +125,9 @@ class MdsFields
                 ),
             ),
             'free_min_total' => array(
-                'title' => __('Free Delivery Min Total'),
+                'title' => __('Free/Discount Delivery Min Total'),
                 'type' => 'number',
-                'description' => __('Min order total before free delivery is included, amount is including vat.'),
+                'description' => __('Minimum order total before free delivery is included, amount is including vat.'),
                 'default' => '1000.00',
                 'custom_attributes' => array(
                     'step' => .1,
@@ -157,6 +149,22 @@ class MdsFields
                     'data-type' => 'free-delivery-item',
                 ),
             ),
+            'toggle_automatic_mds_processing' => array(
+                'title' => __('Automatic MDS Processing'),
+                'type' => 'checkbox',
+                'description' => __(
+                    'When enabled deliveries for an order will be automatically processed. Please refer to the manual for detailed information on implications on using this <a target="_blank" href="https://github.com/Collivery/Collivery-WooCommerce/">Manual</a>'
+                ),
+                'default' => 'no',
+            ),
+            'auto_accept' => array(
+                'title' => __('Auto accept'),
+                'type' => 'checkbox',
+                'description' => __(
+                    'After automatic mds processing has sent the request through to MDS, should the request be auto accepted or will you manually accept the delivery on the MDS website'
+                ),
+                'default' => 'yes',
+            ),
         );
     }
 
@@ -174,7 +182,6 @@ class MdsFields
             foreach ($resources['services'] as $id => $title) {
                 $fields['method_'.$id] = array(
                     'title' => __($title),
-                    'label' => __($title.': Enabled'),
                     'type' => 'checkbox',
                     'default' => 'yes',
                 );
