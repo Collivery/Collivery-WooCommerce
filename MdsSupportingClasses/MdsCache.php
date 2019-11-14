@@ -115,7 +115,7 @@ class MdsCache
      */
     public function put($name, $value, $time = 1440)
     {
-        $cache = array('value' => $value, 'valid' => time() + ($time * 60));
+        $cache = ['value' => $value, 'valid' => time() + ($time * 60)];
         if (file_put_contents($this->cache_dir.$name, json_encode($cache))) {
             $this->cache[$name] = $cache;
 
@@ -210,7 +210,7 @@ class MdsCache
      */
     public function forget($name)
     {
-        $cache = array('value' => '', 'valid' => 0);
+        $cache = ['value' => '', 'valid' => 0];
         if (file_put_contents($this->cache_dir.$name, json_encode($cache))) {
             $this->cache[$name] = $cache;
 
@@ -228,7 +228,7 @@ class MdsCache
     private function directory_map()
     {
         if ($fp = @opendir($this->cache_dir)) {
-            $file_data = array();
+            $file_data = [];
 
             while (false !== ($file = readdir($fp))) {
                 // Remove '.', '..', and hidden files

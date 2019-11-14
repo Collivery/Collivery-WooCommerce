@@ -54,10 +54,10 @@ class ShippingPackageData
         }
 
         $extractedFields = $this->extractRequiredFields($input, $packages);
-        $requiredFields = (object) array(
+        $requiredFields = (object) [
             'to_town_id' => $this->getTownId($extractedFields),
             'to_town_type' => $this->getLocationType($extractedFields)
-        );
+        ];
 
         if (!isset($requiredFields->to_town_id) || ($requiredFields->to_town_id == '')) {
             return $packages;
@@ -72,14 +72,14 @@ class ShippingPackageData
         $package['free_local_only'] = $this->settings->getValue('free_local_only');
         $package['shipping_cart_total'] = $this->getShippingCartTotal();
 
-        $package['destination'] = array(
+        $package['destination'] = [
             'from_town_id' => (int) $defaults['address']['town_id'],
             'from_location_type' => (int) $defaults['address']['location_type'],
             'city' => $requiredFields->to_town_id,
             'to_town_id' => (int) array_search($requiredFields->to_town_id, $towns),
             'to_location_type' => (int) array_search($requiredFields->to_town_type, $location_types),
             'country' => 'ZA',
-        );
+        ];
 
         $customer = WC ()->customer;
         if ( !isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != true) {

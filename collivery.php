@@ -78,7 +78,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          */
         function load_js()
         {
-            wp_register_script('mds_js', plugins_url('script.js', __FILE__), array('jquery'), MDS_VERSION);
+            wp_register_script('mds_js', plugins_url('script.js', __FILE__), ['jquery'], MDS_VERSION);
             wp_enqueue_script('mds_js');
         }
 

@@ -14,7 +14,7 @@ class MdsSettings
      */
     public $instanceSettings;
 
-    public function __construct($settings = array(), $instanceSettings = array())
+    public function __construct($settings = [], $instanceSettings = [])
     {
         $this->settings = $settings;
         $this->instanceSettings = $instanceSettings;

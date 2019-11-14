@@ -4,38 +4,38 @@ namespace MdsSupportingClasses;
 
 class UnitConverter
 {
-    public $conversion_table = array();
+    public $conversion_table = [];
     public $decimal_point;
     public $thousand_separator;
-    public $bases = array();
+    public $bases = [];
 
     public function __construct()
     {
         // Kilogramme, Gramme, Milligramme, Pounds, Ounce
         // Metres, Centimetres, Millimetres, Yards, Foot, Inches
-        $conversions = array(
-            'Weight' => array(
+        $conversions = [
+            'Weight' => [
                 'base' => 'kg',
-                'conv' => array(
+                'conv' => [
                     'g' => 1000,
                     'mg' => 1000000,
                     't' => 0.001,
                     'oz' => 35.274,
                     'lb' => 2.2046,
-                ),
-            ),
-            'Distance' => array(
+                ],
+            ],
+            'Distance' => [
                 'base' => 'km',
-                'conv' => array(
+                'conv' => [
                     'm' => 1000,
                     'cm' => 100000,
                     'mm' => 1000000,
                     'in' => 39370,
                     'ft' => 3280.8,
                     'yd' => 1093.6,
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
         foreach ($conversions as $key => $val) {
             $this->addConversion($val['base'], $val['conv']);
@@ -59,9 +59,9 @@ class UnitConverter
      * Adds a conversion ratio to the conversion table.
      *
      * @param string  the name of unit from which to convert
-     * @param array   array(
-     *       "pound"=>array("ratio"=>'', "offset"=>'')
-     *        )
+     * @param array   [
+     *           "pound"=>["ratio"=>'', "offset"=>'']
+     *        ]
      *        "pound" - name of unit to set conversion ration to
      *        "ratio" - 'double' conversion ratio which, when
      *        multiplied by the number of $from_unit units produces
@@ -82,24 +82,24 @@ class UnitConverter
                         $this->bases[$from_unit][] = $to_unit;
 
                         if (!is_array($val)) {
-                            $this->conversion_table[$from_unit.'_'.$to_unit] = array('ratio' => $val, 'offset' => 0);
+                            $this->conversion_table[$from_unit.'_'.$to_unit] = ['ratio' => $val, 'offset' => 0];
                         } else {
-                            $this->conversion_table[$from_unit.'_'.$to_unit] = array(
+                            $this->conversion_table[$from_unit.'_'.$to_unit] = [
                                 'ratio' => $val['ratio'],
                                 'offset' => (isset($val['offset']) ? $val['offset'] : 0),
-                            );
+                            ];
                         }
                     }
                 } else {
                     $this->bases[$from_unit][] = $key;
 
                     if (!is_array($val)) {
-                        $this->conversion_table[$from_unit.'_'.$key] = array('ratio' => $val, 'offset' => 0);
+                        $this->conversion_table[$from_unit.'_'.$key] = ['ratio' => $val, 'offset' => 0];
                     } else {
-                        $this->conversion_table[$from_unit.'_'.$key] = array(
+                        $this->conversion_table[$from_unit.'_'.$key] = [
                             'ratio' => $val['ratio'],
                             'offset' => (isset($val['offset']) ? $val['offset'] : 0),
-                        );
+                        ];
                     }
                 }
             }
@@ -139,9 +139,9 @@ class UnitConverter
      * "base" unit being that one that has the highest hierarchical order in one
      * "logical" Conversion_Array
      * when taking $conv->addConversion('km',
-     * array('meter'=>1000, 'dmeter'=>10000, 'centimeter'=>100000,
+     * ['meter'=>1000, 'dmeter'=>10000, 'centimeter'=>100000,
      * 'millimeter'=>1000000, 'mile'=>0.62137, 'naut.mile'=>0.53996,
-     * 'inch(es)/zoll'=>39370, 'ft/foot/feet'=>3280.8, 'yd/yard'=>1093.6));
+     * 'inch(es)/zoll'=>39370, 'ft/foot/feet'=>3280.8, 'yd/yard'=>1093.6]);
      * "km" would be the logical base unit for all units of dinstance, thus,
      * if the function fails to find a direct or reverse conversion in the table
      * it is only logical to suspect that if there is a chance
