@@ -62,9 +62,10 @@ class Collivery
     {
         if (!$this->client) {
             try {
+                $wsdlUrl = getenv('COLLIVERY_URL') ?: 'https://www.collivery.co.za/wsdl/v2';
                 $this->client = new SoapClient(// Setup the soap client
-                    'http://www.collivery.co.za/wsdl/v2', // URL to WSDL File
-                    array('cache_wsdl' => WSDL_CACHE_NONE) // Don't cache the WSDL file
+                    $wsdlUrl, // URL to WSDL File
+                    ['cache_wsdl' => WSDL_CACHE_NONE] // Don't cache the WSDL file
                 );
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
