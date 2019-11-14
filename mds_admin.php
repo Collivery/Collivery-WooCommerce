@@ -1,6 +1,7 @@
 <?php
 
 use MdsExceptions\InvalidColliveryDataException;
+use MdsSupportingClasses\MdsColliveryService;
 use MdsSupportingClasses\View;
 
 /*******************************************************************************
@@ -38,7 +39,7 @@ function mds_admin_menu()
  */
 function mds_download_log_files()
 {
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     if ($file = $mds->downloadLogFiles()) {
         $file_name = basename($file);
@@ -58,7 +59,7 @@ function mds_download_log_files()
  */
 function mds_clear_cache_files()
 {
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $cache = $mds->returnCacheClass();
     $cache->delete();
@@ -98,7 +99,7 @@ function mds_confirmed_orders()
         OBJECT);
     }
 
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $services = $mds->returnColliveryClass()->getServices();
     echo View::make('index', compact('services', 'colliveries'));
@@ -122,7 +123,7 @@ function mds_confirmed_order()
     OBJECT);
     $data = $data_[0];
 
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
     $directory = getcwd().'/cache/mds_collivery/waybills/'.$data->waybill;
@@ -202,7 +203,7 @@ function mds_confirmed_order_view_pdf()
         return;
     }
 
-    $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+    $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
     $waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
 
@@ -270,7 +271,7 @@ add_action('wp_ajax_suburbs_admin', 'suburbs_admin_callback');
 function suburbs_admin_callback()
 {
     if ((isset($_POST['town'])) && ($_POST['town'] != '')) {
-        $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+        $mds = MdsColliveryService::getInstance();
         $collivery = $mds->returnColliveryClass();
         $fields = $collivery->getSuburbs($_POST['town']);
         if (!empty($fields)) {
@@ -329,7 +330,7 @@ add_action('wp_ajax_quote_admin', 'quote_admin_callback');
  */
 function quote_admin_callback()
 {
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
     $services = $collivery->getServices();
@@ -384,7 +385,7 @@ add_action('wp_ajax_accept_admin', 'accept_admin_callback');
  */
 function accept_admin_callback()
 {
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
     $post = $_POST;
@@ -558,7 +559,7 @@ function mds_register_collivery()
     $order = new WC_Order($_GET['post_id']);
     $order_id = $_GET['post_id'];
 
-    /** @var \MdsSupportingClasses\MdsColliveryService $mds */
+    /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
     $settings = $mds->returnPluginSettings();
