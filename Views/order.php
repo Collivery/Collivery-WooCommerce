@@ -3,7 +3,7 @@ use MdsSupportingClasses\View;
 
 ?>
 
-<p>
+<div>
     <b>Please Note:</b>
     <ul>
         <li>
@@ -16,7 +16,7 @@ use MdsSupportingClasses\View;
             changes.
         </li>
     </ul>
-</p>
+</div>
 
 <form accept-charset="UTF-8" action="<?php echo admin_url('post.php?post='.$order->get_id().'&action=edit'); ?>" method="post" id="api_quote">
     <input type="hidden" name="order_id" value="<?php echo $order->get_id(); ?>">
