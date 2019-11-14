@@ -106,7 +106,7 @@ class Collivery
     /**
      * Authenticate and set the token.
      *
-     * @return string
+     * @return array
      */
     protected function authenticate()
     {
@@ -122,7 +122,7 @@ class Collivery
             $this->user_id = $authCache['user_id'];
             $this->token = $authCache['token'];
 
-            return true;
+            return $authCache;
         } else {
             return $this->makeAuthenticationRequest();
         }
@@ -133,7 +133,7 @@ class Collivery
      *
      * @param null|array $settings
      *
-     * @return array|bool
+     * @return array
      */
     private function makeAuthenticationRequest($settings = null)
     {
@@ -183,7 +183,7 @@ class Collivery
             }
         }
 
-        return false;
+        return [];
     }
 
     /**
@@ -294,7 +294,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
@@ -322,7 +322,7 @@ class Collivery
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
 
-                return false;
+                return [];
             }
 
             if (isset($result)) {
@@ -338,7 +338,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
@@ -361,7 +361,7 @@ class Collivery
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
 
-                return false;
+                return [];
             }
 
             if (isset($result['suburbs'])) {
@@ -377,7 +377,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
