@@ -38,12 +38,12 @@ class MdsCheckoutFields
             }
         }
 
-        if ($prefix) {
-            $prefix = $prefix.'_';
-        }
-
         try {
             $resources = MdsFields::getResources($service);
+
+            if ($prefix) {
+                $prefix = $prefix.'_';
+            }
             $towns = ['' => 'Select Town'] + array_combine($resources['towns'], $resources['towns']);
             $location_types = ['' => 'Select Premises Type'] + array_combine($resources['location_types'], $resources['location_types']);
 	        $customer = WC()->customer;
@@ -175,7 +175,7 @@ class MdsCheckoutFields
                 ],
             ];
         } catch (InvalidResourceDataException $e) {
-            return $this->defaultFields;
+            return $prefix ? $this->defaultFields[$prefix] : $this->defaultFields;
         }
     }
 }
