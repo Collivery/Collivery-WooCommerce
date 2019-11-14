@@ -101,11 +101,11 @@ class ShippingPackageData
         if ($this->shouldBeFree() && !$this->applyFreeDeliveryBlacklist()) {
             $package['service'] = 'free';
             if ($this->settings->getValue('free_local_only') == 'yes') {
-                $data = array(
+                $data = [
                         'num_package' => 1,
                         'service' => 2,
                         'exclude_weekend' => 1,
-                    ) + $package['destination'];
+                    ] + $package['destination'];
 
                 // Query the API to test if this is a local delivery
                 $response = $this->collivery->getPrice($data);
