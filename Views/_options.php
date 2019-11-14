@@ -9,12 +9,10 @@ if (!empty($placeholder)) {
 }
 
 if (!empty($fields)) {
-    foreach ($fields as $field) {
-        if (is_array($field) && isset($field['nice_contact'])) {
-            $value = $field['contact_id'];
-            $text = $field['nice_contact'];
-        } else {
-            $text = $value = $field;
+    foreach ($fields as $value => $text) {
+        if (is_array($text) && isset($text['nice_contact'])) {
+            $value = $text['contact_id'];
+            $text = $text['nice_contact'];
         }
 
         if (count($fields) === 0 || (isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
