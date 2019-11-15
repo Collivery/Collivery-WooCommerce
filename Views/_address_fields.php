@@ -28,7 +28,7 @@
             <td>
                 <select style="width: 100%;" id="<?php echo $prefix; ?>_suburb" name="<?php echo $prefix; ?>_suburb">
                     <?php foreach ($suburbs as $suburb_id => $suburb): ?>
-                        <option<?php echo isset($order) && $suburb == $order->get_meta('_shipping_suburb' ) ? ' selected="selected"' : ''; ?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
+                        <option<?php echo isset($order) && $suburb_id == $order->get_meta('_shipping_suburb' ) ? ' selected="selected"' : ''; ?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
                     <?php endforeach; ?>`
                 </select>
             </td>
