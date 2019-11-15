@@ -643,8 +643,9 @@ class MdsColliveryService
 
         $instructions = isset($overrides['instructions']) ? $overrides['instructions'] : '';
         $customReference  = '';
+        $orderNumberPrefix = $this->settings->getValue('order_number_prefix');
         if ($this->settings->getValue('include_order_number') == 'yes') {
-            $customReference = 'Order number : ' . $order->get_id();
+            $customReference = $orderNumberPrefix.' ' . $order->get_id();
             $instructions .= $customReference;
         }
         if ($this->settings->getValue('include_customer_note') == 'yes') {
