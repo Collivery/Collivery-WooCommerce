@@ -366,3 +366,16 @@ jQuery(function() {
 
     shippingMode.change();
 });
+
+// Order number prefix show/hide
+jQuery(function() {
+    var orderNumber = jQuery('input[name="woocommerce_mds_collivery_include_order_number"]');
+    var prefixRadios = jQuery('input[name~="woocommerce_mds_collivery_order_number_prefix"]');
+
+    orderNumber.change(function () {
+        var isOn = Boolean(orderNumber.attr('checked'));
+        isOn ? prefixRadios.hideParent('tr', false) : prefixRadios.hideParent('tr', true);
+    });
+
+    orderNumber.change();
+});

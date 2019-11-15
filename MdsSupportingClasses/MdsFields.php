@@ -48,6 +48,18 @@ class MdsFields
                 'description' => __('Includes order number which appended to the delivery instructions which max characters is 4096'),
                 'default' => 'yes',
             ],
+            'order_number_prefix' => [
+                'title' => __('Prefix for order number'),
+                'type' => 'radio',
+                'description' => __('Text before the order number'),
+                'default' => 'Order Number',
+                'options' => [
+                    '' => __('None'),
+                    '#' => __('#'),
+                    'Ord.'  => __('Ord.'),
+                    'Order Number' => __('Order Number'),
+                ],
+            ],
             'include_customer_note' => [
                 'title' => __('Include customer note'),
                 'type' => 'checkbox',
