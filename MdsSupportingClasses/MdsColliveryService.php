@@ -1018,4 +1018,37 @@ class MdsColliveryService
 
         return $cartTotal;
     }
+
+    /**
+     * @param string|int $town
+     * @param string     $suburbName
+     *
+     * @return int|null
+     * @throws SoapConnectionException
+     */
+    public function searchSuburbByName( $town, $suburbName )
+    {
+        if(empty($town) || empty($suburbName)) {
+            return;
+        }
+
+        if (is_numeric($suburbName)) {
+            return (int) $suburbName;
+        }
+
+        $collivery = $this->returnColliveryClass();
+
+        if(!is_numeric($town)) {
+            $towns     = $collivery->searchTowns($town);
+            $towns     = array_keys($towns['towns']);
+            $town      = reset($towns);
+        }
+
+        $suburbs = $collivery->getSuburbs($town);
+        $suburb  = array_filter($suburbs, function ($name) use ($suburbName) {
+          return trim(strtolower($name)) === trim(strtolower($suburbName));
+        });
+
+        return reset(array_keys($suburb));
+    }
 }

@@ -1,7 +1,7 @@
 <?php
 
 if (!empty($placeholder)) {
-    if ((isset($selectedValue) || !isset($fields[$selectedValue])) || count($fields) > 1) {
+    if ((!isset($selectedValue) || !isset($fields[$selectedValue])) || count($fields) > 1) {
         echo '<option value="" selected="selected">'.$placeholder.'</option>';
     } else {
         echo '<option value="">'.$placeholder.'</option>';
@@ -9,15 +9,13 @@ if (!empty($placeholder)) {
 }
 
 if (!empty($fields)) {
-    foreach ($fields as $field) {
-        if (is_array($field) && isset($field['nice_contact'])) {
-            $value = $field['contact_id'];
-            $text = $field['nice_contact'];
-        } else {
-            $text = $value = $field;
+    foreach ($fields as $value => $text) {
+        if (is_array($text) && isset($text['nice_contact'])) {
+            $value = $text['contact_id'];
+            $text = $text['nice_contact'];
         }
 
-        if (count($fields) === 0 || (isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
+        if ((isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
             echo '<option value="'.$value.'" selected="selected">'.$text.'</option>';
         } else {
             echo '<option value="'.$value.'">'.$text.'</option>';
