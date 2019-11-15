@@ -194,11 +194,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          *
          * @param $order_id
          *
-         * @return string
+         * @return void
          */
         function automated_add_collivery_payment_complete($order_id)
         {
-	        return MdsColliveryService::getInstance()->automatedAddCollivery($order_id);
+	        MdsColliveryService::getInstance()->automatedOrderToCollivery($order_id);
         }
 
             if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
@@ -212,11 +212,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          *
          * @param $order_id
          *
-         * @return bool|null
+         * @return void
          */
         function automated_add_collivery_status_processing($order_id)
         {
-	        return MdsColliveryService::getInstance()->automatedAddCollivery($order_id, true);
+	        MdsColliveryService::getInstance()->automatedOrderToCollivery($order_id, true);
         }
 
         if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
