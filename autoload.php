@@ -5,7 +5,7 @@ class MdsColliveryAutoLoader
     /**
      * @var array
      */
-    protected static $classMap = array(
+    protected static $classMap = [
         'MdsCollivery' => '\MdsSupportingClasses\Collivery',
         'EnvironmentInformationBag' => '\MdsSupportingClasses\EnvironmentInformationBag',
         'GitHubPluginUpdater' => '\MdsSupportingClasses\GitHubPluginUpdater',
@@ -25,7 +25,7 @@ class MdsColliveryAutoLoader
         'InvalidServiceException' => '\MdsExceptions\InvalidServiceException',
         'OrderAlreadyProcessedException' => '\MdsExceptions\OrderAlreadyProcessedException',
         'ProductOutOfStockException' => '\MdsExceptions\ProductOutOfStockException',
-    );
+    ];
 
     /**
      * @param $class

@@ -11,7 +11,7 @@ class Collivery
     protected $token;
     protected $client;
     protected $config;
-    protected $errors = array();
+    protected $errors = [];
     protected $check_cache = 2;
 
     protected $default_address_id;
@@ -24,7 +24,7 @@ class Collivery
      * @param array $config Configuration Array
      * @param Class $cache  Caching Class with functions has, get, put, forget
      */
-    public function __construct(array $config = array(), $cache = null)
+    public function __construct(array $config = [], $cache = null)
     {
         if (is_null($cache)) {
             $cache_dir = array_key_exists('cache_dir', $config) ? $config['cache_dir'] : null;
@@ -33,7 +33,7 @@ class Collivery
             $this->cache = $cache;
         }
 
-        $this->config = (object) array(
+        $this->config = (object) [
             'app_name' => 'Default App Name', // Application Name
             'app_version' => '0.0.1',            // Application Version
             'app_host' => '', // Framework/CMS name and version, eg 'Wordpress 3.8.1 WooCommerce 2.0.20' / 'Joomla! 2.5.17 VirtueMart 2.0.26d'
@@ -41,7 +41,7 @@ class Collivery
             'user_email' => 'api@collivery.co.za',
             'user_password' => 'api123',
             'demo' => false,
-        );
+        ];
 
         foreach ($config as $key => $value) {
             $this->config->$key = $key === 'user_password' ? $value : trim($value);
@@ -62,9 +62,10 @@ class Collivery
     {
         if (!$this->client) {
             try {
+                $wsdlUrl = getenv('COLLIVERY_URL') ?: 'https://www.collivery.co.za/wsdl/v2';
                 $this->client = new SoapClient(// Setup the soap client
-                    'http://www.collivery.co.za/wsdl/v2', // URL to WSDL File
-                    array('cache_wsdl' => WSDL_CACHE_NONE) // Don't cache the WSDL file
+                    $wsdlUrl, // URL to WSDL File
+                    ['cache_wsdl' => WSDL_CACHE_NONE] // Don't cache the WSDL file
                 );
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
@@ -106,7 +107,7 @@ class Collivery
     /**
      * Authenticate and set the token.
      *
-     * @return string
+     * @return array
      */
     protected function authenticate()
     {
@@ -122,7 +123,7 @@ class Collivery
             $this->user_id = $authCache['user_id'];
             $this->token = $authCache['token'];
 
-            return true;
+            return $authCache;
         } else {
             return $this->makeAuthenticationRequest();
         }
@@ -133,7 +134,7 @@ class Collivery
      *
      * @param null|array $settings
      *
-     * @return array|bool
+     * @return array
      */
     private function makeAuthenticationRequest($settings = null)
     {
@@ -150,13 +151,13 @@ class Collivery
         if ($this->init()) {
             try {
                 $authenticate = $this->client->authenticate($user_email, $user_password, $token,
-                    array(
+                    [
                         'name' => $this->config->app_name.' mds/collivery/class',
                         'version' => $this->config->app_version,
                         'host' => $this->config->app_host,
                         'url' => $this->config->app_url,
                         'lang' => 'PHP '.phpversion(),
-                    ));
+                    ]);
 
                 if (is_array($authenticate) && isset($authenticate['token'])) {
                     if ($this->check_cache != 0) {
@@ -183,7 +184,7 @@ class Collivery
             }
         }
 
-        return false;
+        return [];
     }
 
     /**
@@ -237,7 +238,7 @@ class Collivery
      */
     public function getProvinces()
     {
-        return array(
+        return [
             'CAP' => 'Western Cape',
             'EC' => 'Eastern Cape',
             'GAU' => 'Gauteng',
@@ -247,7 +248,7 @@ class Collivery
             'NP' => 'Limpopo',
             'NW' => 'North-West',
             'OFS' => 'Free State',
-        );
+        ];
     }
 
     /**
@@ -294,7 +295,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
@@ -322,7 +323,7 @@ class Collivery
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
 
-                return false;
+                return [];
             }
 
             if (isset($result)) {
@@ -338,7 +339,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
@@ -361,7 +362,7 @@ class Collivery
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
 
-                return false;
+                return [];
             }
 
             if (isset($result['suburbs'])) {
@@ -377,7 +378,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
@@ -542,7 +543,7 @@ class Collivery
      * @return array
      * @throws SoapConnectionException
      */
-    public function getAddresses(array $filter = array())
+    public function getAddresses(array $filter = [])
     {
         if (($this->check_cache == 2) && empty($filter) && $this->cache->has('collivery.addresses.'.$this->client_id)) {
             return $this->cache->get('collivery.addresses.'.$this->client_id);
@@ -1237,7 +1238,7 @@ class Collivery
      */
     public function clearErrors()
     {
-        $this->errors = array();
+        $this->errors = [];
     }
 
     /**
@@ -1300,9 +1301,9 @@ class Collivery
      */
     public function getCurrentUsernameAndPassword()
     {
-        return array(
+        return [
             'email' => $this->config->user_email,
             'password' => $this->config->user_password,
-        );
+        ];
     }
 }

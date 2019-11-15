@@ -50,15 +50,15 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         $this->admin_page_heading = __('MDS Collivery shipping');
         $this->admin_page_description = __('Seamlessly integrate your website with MDS Collivery');
 
-        $this->supports = array(
+        $this->supports = [
             'settings',
             'shipping-zones',
             'instance-settings',
-        );
+        ];
 
         $this->init();
 
-        add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
+        add_action('woocommerce_update_options_shipping_'.$this->id, [$this, 'process_admin_options']);
     }
 
     /**
@@ -76,7 +76,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
         $this->enabled = $this->mdsSettings->getValue('enabled', $this->enabled);
 
-        add_action('woocommerce_update_options_shipping_'.$this->id, array($this, 'process_admin_options'));
+        add_action('woocommerce_update_options_shipping_'.$this->id, [$this, 'process_admin_options']);
     }
 
     /**
@@ -114,7 +114,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      *
      * @throws InvalidResourceDataException
      */
-    public function calculate_shipping($package = array())
+    public function calculate_shipping($package = [])
     {
         if (isset($package['destination']['from_town_id']) && $this->collivery_service->validPackage($package)) {
             if (isset($package['service']) && $package['service'] == 'free') {
@@ -125,11 +125,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                 }
 
 	            $this->id = $id;
-                $this->add_rate(array(
+                $this->add_rate([
                     'id' => $id,
                     'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),
                     'cost' => 0.0,
-                ));
+                ]);
             } elseif (!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
                 try {
                     $services = $this->collivery->getServices();
@@ -146,7 +146,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     $riskCover = 1;
                                 }
 
-                                $data = array(
+                                $data = [
                                     'to_town_id' => $package['destination']['to_town_id'],
                                     'from_town_id' => $package['destination']['from_town_id'],
                                     'to_location_type' => $package['destination']['to_location_type'],
@@ -157,7 +157,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'parcels' => $package['cart']['products'],
                                     'exclude_weekend' => 1,
                                     'service' => $id,
-                                );
+                                ];
 
                                 $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $id), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $id));
 
@@ -173,12 +173,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     $label .= ' - FREE!';
                                 }
                                 $this->id = 'mds_'.$id;
-                                $this->add_rate(array(
+                                $this->add_rate([
                                     'id' => 'mds_'.$id,
                                     'value' => $id,
                                     'label' => $label,
                                     'cost' => $price,
-                                ));
+                                ]);
                             }
                         }
                     }
@@ -213,10 +213,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                 $error = 'Your MDS Username is not a valid email address, unable to save your Your MDS Username or Password';
             } else {
                 $newAuthentication = $this->collivery->isNewInstanceAuthenticated(
-                    array(
+                    [
                         'email' => $postData[$this->plugin_id.$this->id.'_mds_user'],
                         'password' => $postData[$this->plugin_id.$this->id.'_mds_pass'],
-                    )
+                    ]
                 );
                 try {
                     if (!$newAuthentication) {

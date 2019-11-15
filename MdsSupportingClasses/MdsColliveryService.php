@@ -107,7 +107,7 @@ class MdsColliveryService
      *
      * @return MdsSettings
      */
-    public function initSettings($settings = null, $instanceSettings = array())
+    public function initSettings($settings = null, $instanceSettings = [])
     {
         if (is_array($settings)) {
             $this->settings = new MdsSettings($settings, $instanceSettings);
@@ -136,14 +136,14 @@ class MdsColliveryService
      */
     public function initMdsCollivery()
     {
-        $colliveryInitData = array(
+        $colliveryInitData = [
 	        'app_name' => $this->environment->appName,
 	        'app_version' => $this->environment->appVersion,
 	        'app_host' => $this->environment->appHost,
 	        'app_url' => $this->environment->appUrl,
 	        'user_email' => $this->settings->getValue('mds_user'),
 	        'user_password' => $this->settings->getValue('mds_pass'),
-        );
+        ];
 
         $this->collivery = new Collivery($colliveryInitData, $this->cache);
     }
@@ -159,13 +159,13 @@ class MdsColliveryService
     public function getCartContent($package)
     {
         if (isset($package['contents']) && sizeof($package['contents']) > 0) {
-            $cart = array(
+            $cart = [
                 'count' => 0,
                 'total' => 0,
                 'weight' => 0,
                 'max_weight' => 0,
-                'products' => array(),
-            );
+                'products' => [],
+            ];
 
             foreach ($package['contents'] as $item_id => $values) {
                 $_product = $values['data']; // = WC_Product class
@@ -256,7 +256,7 @@ class MdsColliveryService
     private function validatePackageField($array, $field, $type = 'int')
     {
         if (!is_array($array)) {
-            throw new InvalidCartPackageException('Unable to validate field"' . $field . '" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), array());
+            throw new InvalidCartPackageException('Unable to validate field"' . $field . '" as its parent is not an array, possible due to when the cart page loads', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), []);
         }
 
         if (!isset($array[$field])) {
@@ -291,19 +291,19 @@ class MdsColliveryService
      */
     public function buildPackageFromCart($cart)
     {
-        $package = array();
+        $package = [];
 
         if (!empty($cart)) {
             foreach ($cart as $item) {
                 $product = $item['data'];
 
-                $package['contents'][$item['product_id']] = array(
+                $package['contents'][$item['product_id']] = [
                     'data' => $item['data'],
                     'quantity' => $item['quantity'],
                     'price' => $product->get_price(),
                     'line_subtotal' => $product->get_price() * $item['quantity'],
                     'weight' => (float)$product->get_weight() * $item['quantity'],
-                );
+                ];
             }
         }
 
@@ -319,7 +319,7 @@ class MdsColliveryService
      */
     public function getOrderContent($items)
     {
-        $parcels = array();
+        $parcels = [];
         /**  @var WC_Order_Item_Product $item */
         foreach ($items as $item_id => $item) {
             /** @var WC_Product|WC_Product_Variation $product */
@@ -423,7 +423,7 @@ class MdsColliveryService
     public function getPrice(array $array, $adjustedTotal, $markup, $fixedPrice)
     {
         if (!$result = $this->collivery->getPrice($array)) {
-            throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), array('errors' => $this->collivery->getErrors(), 'data' => $array));
+            throw new InvalidColliveryDataException('Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), ['errors' => $this->collivery->getErrors(), 'data' => $array]);
         }
 
         $discountEnabled = $this->settings->getValue( 'method_free' ) === 'discount';
@@ -569,7 +569,7 @@ class MdsColliveryService
                     $parcels = $this->getOrderContent($order->get_items());
                     $defaults = $this->returnDefaultAddress();
 
-                    $address = $this->addColliveryAddress(array(
+                    $address = $this->addColliveryAddress([
                         'company_name' => ($order->get_shipping_company() != '') ? $order->get_shipping_company() : 'Private',
                         'building' => $order->get_shipping_address_2(),
                         'street' => $order->get_shipping_address_1(),
@@ -580,7 +580,7 @@ class MdsColliveryService
                         'cellphone' => preg_replace('/[^0-9]/', '', $order->get_billing_phone()),
                         'email' => str_replace(' ', '', $order->get_billing_email()),
                         'custom_id' => $order->get_user_id(),
-                    ));
+                    ]);
 
                     $collivery_from = $defaults['default_address_id'];
                     list($contact_from) = array_keys($defaults['contacts']);
@@ -618,7 +618,7 @@ class MdsColliveryService
                     $riskCoverEnabled = $this->settings->getValue( 'risk_cover' ) == 'yes';
                     $overThreshold = $orderTotal > $this->settings->getValue( 'risk_cover_threshold', 0 );
                     $riskCover =  $riskCoverEnabled && $overThreshold;
-                    $colliveryOptions = array(
+                    $colliveryOptions = [
                         'collivery_from' => (int)$collivery_from,
                         'contact_from' => (int)$contact_from,
                         'collivery_to' => (int)$collivery_to,
@@ -630,7 +630,7 @@ class MdsColliveryService
                         'cover' => $riskCover ? 1 : 0,
                         'parcel_count' => count($parcels),
                         'parcels' => $parcels,
-                    );
+                    ];
                     $collivery_id = $this->addCollivery($colliveryOptions);
 
                     $collection_time = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time']) : '';
@@ -640,7 +640,7 @@ class MdsColliveryService
                         $this->addColliveryToProcessedTable($collivery_id, $order->get_id());
                         $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery_id . ', please have order ready for collection' . $collection_time . '.', $processing, 'completed');
                     } else {
-                        throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->loggerSettingsArray(), array('data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()));
+                        throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedAddCollivery', $this->loggerSettingsArray(), ['data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()]);
                     }
                 } catch (InvalidColliveryDataException $e) {
                     $this->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: ' . $e->getMessage(), $processing, 'processing');
@@ -670,12 +670,12 @@ class MdsColliveryService
 
         // Save the results from validation into our table
         $table_name = $wpdb->prefix . 'mds_collivery_processed';
-        $data = array(
+        $data = [
             'status' => 1,
             'order_id' => $order_id,
             'validation_results' => json_encode($this->returnColliveryValidatedData()),
             'waybill' => $collivery_id,
-        );
+        ];
 
         $wpdb->insert($table_name, $data);
     }
@@ -734,7 +734,7 @@ class MdsColliveryService
             throw new InvalidAddressDataException('Invalid email address', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
         }
 
-        $newAddress = array(
+        $newAddress = [
             'company_name' => $array['company_name'],
             'building' => $array['building'],
             'street' => $array['street'],
@@ -746,19 +746,19 @@ class MdsColliveryService
             'cellphone' => preg_replace('/[^0-9]/', '', $array['cellphone']),
             'custom_id' => $array['custom_id'],
             'email' => $array['email'],
-        );
+        ];
 
         // Before adding an address lets search MDS and see if we have already added this address
-        $searchAddresses = $this->searchAndMatchAddress(array(
+        $searchAddresses = $this->searchAndMatchAddress([
             'custom_id' => $array['custom_id'],
             'suburb_id' => $suburb_id,
             'town_id' => $town_id,
-        ), $newAddress);
+        ], $newAddress);
 
         if (is_array($searchAddresses)) {
             return $searchAddresses;
         } else {
-            $this->cache->clear(array('addresses', 'contacts'));
+            $this->cache->clear(['addresses', 'contacts']);
 
             return $this->collivery->addAddress($newAddress);
         }
@@ -778,7 +778,7 @@ class MdsColliveryService
         if (!empty($searchAddresses)) {
             $match = true;
 
-            $matchAddressFields = array(
+            $matchAddressFields = [
                 'company_name' => 'company_name',
                 'building_details' => 'building',
                 'street' => 'street',
@@ -786,7 +786,7 @@ class MdsColliveryService
                 'suburb_id' => 'suburb_id',
                 'town_id' => 'town_id',
                 'custom_id' => 'custom_id',
-            );
+            ];
 
             foreach ($searchAddresses as $address) {
                 foreach ($matchAddressFields as $mdsField => $newField) {
@@ -826,7 +826,10 @@ class MdsColliveryService
             return false;
         }
 
-        return array('towns' => array_combine($towns, $towns), 'location_types' => array_combine($location_types, $location_types));
+        return [
+            'towns' => array_combine($towns, $towns),
+            'location_types' => array_combine($location_types, $location_types)
+        ];
     }
 
     /**
@@ -935,15 +938,15 @@ class MdsColliveryService
                 return false;
             }
 
-            $data = array(
+            $data = [
                 'address' => $default_address,
                 'default_address_id' => $default_address_id,
                 'contacts' => $this->collivery->getContacts($default_address_id),
-            );
+            ];
 
             return $data;
         } catch (SoapConnectionException $e) {
-            return array();
+            return [];
         }
     }
 

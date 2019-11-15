@@ -44,14 +44,14 @@ class MdsLogger
      * @param $settings
      * @param array $extraData
      */
-    public function error($function, $error, $settings, $extraData = array())
+    public function error($function, $error, $settings, $extraData = [])
     {
-        $this->put('error', array_filter(array(
+        $this->put('error', array_filter([
             'function' => $function,
             'error' => $error,
             'settings' => $settings,
             'data' => $extraData,
-        )));
+        ]));
     }
 
     /**
@@ -60,26 +60,26 @@ class MdsLogger
      * @param $settings
      * @param array $extraData
      */
-    public function warning($function, $error, $settings, $extraData = array())
+    public function warning($function, $error, $settings, $extraData = [])
     {
-        $this->put('warning', array_filter(array(
+        $this->put('warning', array_filter([
             'function' => $function,
             'error' => $error,
             'settings' => $settings,
             'data' => $extraData,
-        )));
+        ]));
     }
 
     /**
      * @param $message
      * @param array $data
      */
-    public function success($message, $data = array())
+    public function success($message, $data = [])
     {
-        $this->put('success', array_filter(array(
+        $this->put('success', array_filter([
             'message' => $message,
             'data' => $data,
-        )));
+        ]));
     }
 
     /**
@@ -102,9 +102,9 @@ class MdsLogger
      */
     public function zipLogFiles()
     {
-        $files = array();
+        $files = [];
 
-        foreach (array('warning', 'error') as $name) {
+        foreach (['warning', 'error'] as $name) {
             if (file_exists($this->getLogDirectory().$name)) {
                 $files[] = $this->getLogDirectory().$name;
             }
@@ -127,7 +127,7 @@ class MdsLogger
 
             return $zip_path;
         } else {
-            $this->error('MdsLogger:zipLogFiles', 'Unable to create zip file', array());
+            $this->error('MdsLogger:zipLogFiles', 'Unable to create zip file', []);
         }
 
         return false;
@@ -175,7 +175,7 @@ class MdsLogger
             }
         }
 
-        if (file_put_contents($this->getLogDirectory().$name, json_encode(array(time() => $value), JSON_PRETTY_PRINT), FILE_APPEND)) {
+        if (file_put_contents($this->getLogDirectory().$name, json_encode([time() => $value], JSON_PRETTY_PRINT), FILE_APPEND)) {
             return true;
         } else {
             return false;

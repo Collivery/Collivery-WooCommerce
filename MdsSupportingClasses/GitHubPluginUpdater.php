@@ -26,9 +26,9 @@ class GitHubPluginUpdater
         $this->repo = $gitHubProjectName;
         $this->accessToken = $accessToken;
 
-        add_filter('pre_set_site_transient_update_plugins', array($this, 'setTransitent'));
-        add_filter('plugins_api', array($this, 'setPluginInfo'), 10, 3);
-        add_filter('upgrader_post_install', array($this, 'postInstall'), 10, 3);
+        add_filter('pre_set_site_transient_update_plugins', [$this, 'setTransitent']);
+        add_filter('plugins_api', [$this, 'setPluginInfo'], 10, 3);
+        add_filter('upgrader_post_install', [$this, 'postInstall'], 10, 3);
     }
 
     /**
@@ -56,7 +56,7 @@ class GitHubPluginUpdater
 
         // We need the access token for private repositories
         if (!empty($this->accessToken)) {
-            $url = add_query_arg(array('access_token' => $this->accessToken), $url);
+            $url = add_query_arg(['access_token' => $this->accessToken], $url);
         }
 
         // Get the results
@@ -98,7 +98,7 @@ class GitHubPluginUpdater
 
             // Include the access token for private GitHub repos
             if (!empty($this->accessToken)) {
-                $package = add_query_arg(array('access_token' => $this->accessToken), $package);
+                $package = add_query_arg(['access_token' => $this->accessToken], $package);
             }
 
             $obj = new \stdClass();
@@ -146,7 +146,7 @@ class GitHubPluginUpdater
         // Include the access token for private GitHub repos
         if (!empty($this->accessToken)) {
             $downloadLink = add_query_arg(
-                array('access_token' => $this->accessToken),
+                ['access_token' => $this->accessToken],
                 $downloadLink
             );
         }
@@ -156,12 +156,12 @@ class GitHubPluginUpdater
         require_once plugin_dir_path(__FILE__).'ParseDown.php';
 
         // Create tabs in the lightbox
-        $response->sections = array(
+        $response->sections = [
             'description' => $this->pluginData['Description'],
             'changelog' => class_exists('ParseDown')
                     ? ParseDown::instance()->parse($this->githubAPIResult->body)
                     : $this->githubAPIResult->body,
-        );
+        ];
 
         // Gets the required version of WP if available
         $matches = null;

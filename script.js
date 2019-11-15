@@ -69,7 +69,7 @@ jQuery(document).ready(function () {
             return ajax = jQuery.ajax({
                 type: 'POST',
                 async: false,
-                timeout: 3000,
+                timeout: 10000,
                 url: woocommerce_params.ajax_url,
                 data: {
                     action: 'mds_collivery_generate_' + prefix,
