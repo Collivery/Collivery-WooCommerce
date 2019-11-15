@@ -3,7 +3,7 @@
 use MdsSupportingClasses\MdsColliveryService;
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', '3.6.0');
+define('MDS_VERSION', '3.7.0');
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
 
@@ -11,7 +11,7 @@ require_once ABSPATH.'wp-includes/functions.php';
  * Plugin Name: MDS Collivery
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 3.6.0
+ * Version: 3.7.0
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  * WC requires at least: 3.5
