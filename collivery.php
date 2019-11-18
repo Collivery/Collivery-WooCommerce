@@ -3,7 +3,7 @@
 use MdsSupportingClasses\MdsColliveryService;
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', '3.6.0');
+define('MDS_VERSION', '3.7.0');
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
 
@@ -11,7 +11,7 @@ require_once ABSPATH.'wp-includes/functions.php';
  * Plugin Name: MDS Collivery
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 3.6.0
+ * Version: 3.7.0
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  * WC requires at least: 3.5
@@ -194,11 +194,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          *
          * @param $order_id
          *
-         * @return string
+         * @return void
          */
         function automated_add_collivery_payment_complete($order_id)
         {
-	        return MdsColliveryService::getInstance()->automatedAddCollivery($order_id);
+	        MdsColliveryService::getInstance()->automatedOrderToCollivery($order_id);
         }
 
             if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
@@ -212,11 +212,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
          *
          * @param $order_id
          *
-         * @return bool|null
+         * @return void
          */
         function automated_add_collivery_status_processing($order_id)
         {
-	        return MdsColliveryService::getInstance()->automatedAddCollivery($order_id, true);
+	        MdsColliveryService::getInstance()->automatedOrderToCollivery($order_id, true);
         }
 
         if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {

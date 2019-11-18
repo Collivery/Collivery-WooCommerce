@@ -387,121 +387,27 @@ function accept_admin_callback()
 {
     /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
-    $collivery = $mds->returnColliveryClass();
-    $post = $_POST;
+    $overrides = $_POST;
+    $order = new WC_Order($overrides['order_id']);
 
     try {
-        $order = new WC_Order($post['order_id']);
-        if (!$mds->hasOrderBeenProcessed($order->get_id())) {
-            // Check which collection address we using and if we need to add the address to collivery api
-            if ($post['which_collection_address'] == 'default') {
-                $collection_address = $mds->addColliveryAddress([
-                    'company_name' => ($post['collection_company_name'] != '') ? $post['collection_company_name'] : 'Private',
-                    'building' => $post['collection_building_details'],
-                    'street' => $post['collection_street'],
-                    'location_type' => $post['collection_location_type'],
-                    'suburb' => $post['collection_suburb'],
-                    'town' => $post['collection_town'],
-                    'full_name' => $post['collection_full_name'],
-                    'phone' => preg_replace('/[^0-9]/', '', $post['collection_phone']),
-                    'cellphone' => preg_replace('/[^0-9]/', '', $post['collection_cellphone']),
-                    'email' => $post['collection_email'],
-                ]);
+        $colliveryId = $mds->orderToCollivery($order, $overrides);
+        $validatedData = $mds->returnColliveryValidatedData();
+        $collection_time = (isset($validatedData['collection_time']))
+            ? ' anytime from: ' . date('Y-m-d H:i', $validatedData['collection_time'])
+            : '';
 
-                // Check for any problems
-                if ($collivery->hasErrors()) {
-                    wp_send_json([
-                        'redirect' => false,
-                        'message' => '<p class="mds_response">'.implode(', ', $collivery->getErrors()).'</p>',
-                    ]);
-                } else {
-                    // set the collection address and contact from the returned array
-                    $collivery_from = $collection_address['address_id'];
-                    $contact_from = $collection_address['contact_id'];
-                }
-            } else {
-                $collivery_from = $post['collivery_from'];
-                $contact_from = $post['contact_from'];
-            }
+        $message = "Order has been sent to MDS Collivery, Waybill Number: {$colliveryId}, please have order ready for collection{$collection_time}.";
 
-            // Check which delivery address we using and if we need to add the address to collivery api
-            if ($post['which_delivery_address'] == 'default') {
-                $delivery_address = $mds->addColliveryAddress([
-                    'company_name' => ($post['delivery_company_name'] != '') ? $post['delivery_company_name'] : 'Private',
-                    'building' => $post['delivery_building_details'],
-                    'street' => $post['delivery_street'],
-                    'location_type' => $post['delivery_location_type'],
-                    'suburb' => $post['delivery_suburb'],
-                    'town' => $post['delivery_town'],
-                    'full_name' => $post['delivery_full_name'],
-                    'phone' => preg_replace('/[^0-9]/', '', $post['delivery_phone']),
-                    'cellphone' => preg_replace('/[^0-9]/', '', $post['delivery_cellphone']),
-                    'email' => $post['delivery_email'],
-                    'custom_id' => $order->get_user_id(),
-                ]);
-
-                // Check for any problems
-                if ($collivery->hasErrors()) {
-                    wp_send_json([
-                        'redirect' => false,
-                        'message' => '<p class="mds_response">'.implode(', ', $collivery->getErrors()).'</p>',
-                    ]);
-                } else {
-                    $collivery_to = $delivery_address['address_id'];
-                    $contact_to = $delivery_address['contact_id'];
-                }
-            } else {
-                $collivery_to = $post['collivery_to'];
-                $contact_to = $post['contact_to'];
-            }
-
-            $collivery_id = $mds->addCollivery([
-                'collivery_from' => $collivery_from,
-                'contact_from' => $contact_from,
-                'collivery_to' => $collivery_to,
-                'contact_to' => $contact_to,
-                'cust_ref' => 'Order number: '.$order->get_id(),
-                'instructions' => $post['instructions']." ".$order->get_customer_note(),
-                'collivery_type' => 2, // Package
-                'service' => $post['service'],
-                'cover' => $post['cover'],
-                'collection_time' => strtotime($post['collection_time']),
-                'parcel_count' => count($post['parcels']),
-                'parcels' => $post['parcels'],
-            ]);
-
-            // Check for any problems validating
-            if (!$collivery_id) {
-                $mds->updateStatusOrAddNote($order, 'There was a problem sending this the delivery request to MDS Collivery, you will need to manually process.', true, 'processing');
-
-                wp_send_json([
-                    'redirect' => false,
-                    'message' => '<p class="mds_response">'.implode(', ', $collivery->getErrors()).'</p>',
-                ]);
-            } else {
-                $validatedData = $mds->returnColliveryValidatedData();
-                $collection_time = (isset($validatedData['collection_time'])) ? ' anytime from: '.date('Y-m-d H:i', $validatedData['collection_time']) : '';
-
-                // Save the results from validation into our table
-                $mds->addColliveryToProcessedTable($collivery_id, $order->get_id());
-                $message = 'Order has been sent to MDS Collivery, Waybill Number: '.$collivery_id.', please have order ready for collection'.$collection_time.'.';
-                $mds->updateStatusOrAddNote($order, $message, false, 'completed');
-
-                wp_send_json([
-                    'redirect' => true,
-                    'message' => '<p class="mds_response">'.$message.' You will be redirect to your order in 5 seconds.</p>',
-                ]);
-            }
-        } else {
-            wp_send_json([
-                'redirect' => false,
-                'message' => '<p class="mds_response">Sorry, this order has already been processed.</p>',
-            ]);
-        }
-    } catch (Exception $e) {
+        wp_send_json([
+            'redirect' => true,
+            'message'  => '<p class="mds_response">' . $message . ' You will be redirect to your order in 5 seconds.</p>',
+        ]);
+    } catch (\Exception $e) {
+        $mds->updateStatusOrAddNote($order, $e->getMessage(), true, 'processing');
         wp_send_json([
             'redirect' => false,
-            'message' => '<p class="mds_response">'.$e->getMessage().'</p>',
+            'message'  => '<p class="mds_response">' . $e->getMessage() . '</p>',
         ]);
     }
 }
@@ -540,7 +446,7 @@ function mds_enqueue_admin_js()
 {
     wp_register_script('jquery.datetimepicker.min_js', plugin_dir_url(__FILE__).'/Views/js/jquery.datetimepicker.min.js');
     wp_enqueue_script('jquery.datetimepicker.min_js');
-    wp_register_script('mds_collivery_js', plugin_dir_url(__FILE__).'/Views/js/mds_collivery.js');
+    wp_register_script('mds_collivery_js', plugin_dir_url(__FILE__).'/Views/js/mds_collivery.js', ['jquery'], MDS_VERSION);
     wp_enqueue_script('mds_collivery_js');
     wp_register_script('jquery.validate.min_js', plugin_dir_url(__FILE__).'/Views/js/jquery.validate.min.js');
     wp_enqueue_script('jquery.validate.min_js');

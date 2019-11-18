@@ -107,6 +107,65 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         $this->init_instance_settings();
     }
 
+    public function generate_radio_html($name, array $options) {
+        $fieldName = esc_attr($this->get_field_key($name));
+        $defaults  = [
+            'title'             => '',
+            'label'             => '',
+            'disabled'          => false,
+            'class'             => '',
+            'css'               => '',
+            'type'              => 'radio',
+            'desc_tip'          => false,
+            'description'       => '',
+            'default'           => false,
+            'custom_attributes' => [],
+            'options'           => [],
+        ];
+
+        $options = wp_parse_args($options, $defaults);
+
+        if (!$options['label']) {
+            $options['label'] = $options['title'];
+        }
+
+        ob_start();
+        ?>
+        <tr valign="top">
+            <th scope="row" class="titledesc">
+                <label for="<?php echo $fieldName; ?>">
+                    <?php echo wp_kses_post($options['title']); ?><?php echo $this->get_tooltip_html($options); ?>
+                </label>
+            </th>
+            <td class="forminp">
+                <fieldset>
+                    <legend class="screen-reader-text"><span><?php echo wp_kses_post($options['title']); ?></span></legend>
+                        <?php foreach ($options['options'] as $key => $text): ?>
+                        <?php $uniqid = $fieldName.'_'.esc_attr($key); ?>
+                            <label for="<?php echo $uniqid; ?>">
+                                <input
+                                    <?php disabled($options['disabled'], true); ?>
+                                    class="<?php echo esc_attr($options['class']); ?>"
+                                    type="radio"
+                                    name="<?php echo $fieldName; ?>"
+                                    id="<?php echo $uniqid; ?>"
+                                    style="<?php echo esc_attr($options['css']); ?>"
+                                    value="<?php echo esc_attr($key); ?>"
+                                    <?php checked($this->get_option($name), $key); ?>
+                                    <?php echo $this->get_custom_attribute_html($options);?> />
+
+                                <?php echo esc_attr($text); ?>
+                          </label> <br>
+                        <?php endforeach; ?>
+                    <?php echo $this->get_description_html($options); ?>
+                </fieldset>
+            </td>
+        </tr>
+        <?php
+
+        return ob_get_clean();
+    }
+
     /**
      * Function used by Woocommerce to fetch shipping price.
      *

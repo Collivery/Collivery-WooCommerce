@@ -295,42 +295,44 @@ function form_validate() {
     }
 }
 
-// remove parcel
-function remove_parcel(id) {
-    jQuery('#item' + id).remove();
-}
+(function(jQuery){
+  jQuery.fn.hideParent = function(parent, hide){
+    if(hide === true)
+      this.parents(parent).fadeOut('fast');
+    else
+      this.parents(parent).fadeIn('fast');
 
-jQuery(function(){
-    var downloadSetting = jQuery("#woocommerce_mds_collivery_downloadLogs");
-    if(downloadSetting.length > 0) {
-        var url = downloadSetting.attr('placeholder');
-        var downloadButton = document.createElement('a');
-        downloadButton.setAttribute('href', url);
-        downloadButton.setAttribute('class', 'button-primary');
-        downloadButton.innerHTML = 'Download Error Logs';
-        downloadButton.setAttribute('id', 'woocommerce_mds_collivery_downloadLogs');
-        downloadSetting.replaceWith(downloadButton);
+    return this;
+  };
 
-        var clearCacheButton = document.createElement('a');
-        clearCacheButton.innerHTML = 'Clear Cache';
-        clearCacheButton.setAttribute('class', 'button-primary');
-        clearCacheButton.setAttribute('id', 'woocommerce_mds_collivery_clearCache');
-        clearCacheButton.setAttribute('href', url.replace('mds_download_log_files', 'mds_clear_cache_files'));
-        jQuery(clearCacheButton).css('margin-right', '10px').insertBefore('#woocommerce_mds_collivery_downloadLogs');
-    }
+})(jQuery);
 
-    (function(jQuery){
-        jQuery.fn.hideParent = function(parent, hide){
-            if(hide === true)
-                this.parents(parent).fadeOut('fast');
-            else
-                this.parents(parent).fadeIn('fast');
+// Download logs / Clear Cache
+jQuery(function() {
+  var downloadSetting = jQuery("#woocommerce_mds_collivery_downloadLogs");
+  if (downloadSetting.length > 0) {
+    var url = downloadSetting.attr('placeholder');
+    var downloadButton = document.createElement('a');
+    downloadButton.setAttribute('href', url);
+    downloadButton.setAttribute('class', 'button-primary');
+    downloadButton.innerHTML = 'Download Error Logs';
+    downloadButton.setAttribute('id', 'woocommerce_mds_collivery_downloadLogs');
+    downloadSetting.replaceWith(downloadButton);
 
-            return this;
-        };
+    var clearCacheButton = document.createElement('a');
+    clearCacheButton.innerHTML = 'Clear Cache';
+    clearCacheButton.setAttribute('class', 'button-primary');
+    clearCacheButton.setAttribute('id', 'woocommerce_mds_collivery_clearCache');
+    clearCacheButton.setAttribute('href',
+        url.replace('mds_download_log_files', 'mds_clear_cache_files'));
+    jQuery(clearCacheButton)
+        .css('margin-right', '10px')
+        .insertBefore('#woocommerce_mds_collivery_downloadLogs');
+  }
+})
 
-    })(jQuery);
-
+// Shipping mode show/hide
+jQuery(function() {
     var shippingMode = jQuery('select[name="woocommerce_mds_collivery_method_free"]');
     var percentageDiscount = jQuery('input[name="woocommerce_mds_collivery_shipping_discount_percentage"]');
     var freeDeliveryBlacklist = jQuery('input[name="woocommerce_mds_collivery_free_delivery_blacklist"]');
@@ -363,4 +365,17 @@ jQuery(function(){
     });
 
     shippingMode.change();
+});
+
+// Order number prefix show/hide
+jQuery(function() {
+    var orderNumber = jQuery('input[name="woocommerce_mds_collivery_include_order_number"]');
+    var prefixRadios = jQuery('input[name~="woocommerce_mds_collivery_order_number_prefix"]');
+
+    orderNumber.change(function () {
+        var isOn = Boolean(orderNumber.attr('checked'));
+        isOn ? prefixRadios.hideParent('tr', false) : prefixRadios.hideParent('tr', true);
+    });
+
+    orderNumber.change();
 });
