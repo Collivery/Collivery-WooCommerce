@@ -31,14 +31,15 @@
             <tbody>
             <?php if (count($colliveries) > 0):
                 $count = 0;
-                foreach ($colliveries as $key => $order):
+                /** @var \stdClass $order */
+                foreach ($colliveries as $order):
                     $validation_results = json_decode($order->validation_results);
                     ++$count;
                     ?>
                     <tr <?php if ($count % 2 == 0) {
                         echo ' class="alt" ';
                     } ?>>
-                        <td><?php echo $order->get_id(); ?></td>
+                        <td><?php echo $order->id; ?></td>
                         <td><a href="<?php echo get_admin_url().'admin.php?page=mds_confirmed&waybill='.$order->waybill; ?>"><?php echo $order->waybill; ?></a></td>
                         <td><?php echo $validation_results->cust_ref; ?></td>
                         <td><?php echo $services[$validation_results->service]; ?></td>
