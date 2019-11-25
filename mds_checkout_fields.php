@@ -89,8 +89,10 @@ if ($mds->isEnabled()) {
 					'WC'  => 'CAP',
 				];
 				$province    = isset( $provinceMap[ $_POST['parentValue'] ] ) ? $provinceMap[ $_POST['parentValue'] ] : 'unknown';
-				wp_send_json( View::make( '_options', [
-					'fields'        => $collivery->getTowns( 'ZAF', $province ),
+                $towns      = $collivery->getTowns('ZAF', $province);
+                $towns       = array_combine($towns, $towns);
+                wp_send_json( View::make( '_options', [
+					'fields'        => $towns,
 					'placeholder'   => 'Select town/city',
 					'selectedValue' => $selectedTown,
 				] ) );
@@ -121,7 +123,9 @@ if ($mds->isEnabled()) {
 
 			if ( ( isset( $_POST['parentValue'] ) ) && ( $_POST['parentValue'] != '' ) ) {
 				$collivery = $mds->returnColliveryClass();
-				$town_id   = array_search( $_POST['parentValue'], $collivery->getTowns() );
+				$town_id   = is_numeric($_POST['parentValue']) ?
+                    $_POST['parentValue'] :
+                    array_search( $_POST['parentValue'], $collivery->getTowns() );
 				$fields    = $collivery->getSuburbs( $town_id );
 
 				if ( ! empty( $fields ) ) {
