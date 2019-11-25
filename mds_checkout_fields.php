@@ -89,8 +89,10 @@ if ($mds->isEnabled()) {
 					'WC'  => 'CAP',
 				];
 				$province    = isset( $provinceMap[ $_POST['parentValue'] ] ) ? $provinceMap[ $_POST['parentValue'] ] : 'unknown';
-				wp_send_json( View::make( '_options', [
-					'fields'        => $collivery->getTowns( 'ZAF', $province ),
+                $towns      = $collivery->getTowns('ZAF', $province);
+                $towns       = array_combine($towns, $towns);
+                wp_send_json( View::make( '_options', [
+					'fields'        => $towns,
 					'placeholder'   => 'Select town/city',
 					'selectedValue' => $selectedTown,
 				] ) );
