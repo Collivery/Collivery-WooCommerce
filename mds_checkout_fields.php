@@ -123,7 +123,9 @@ if ($mds->isEnabled()) {
 
 			if ( ( isset( $_POST['parentValue'] ) ) && ( $_POST['parentValue'] != '' ) ) {
 				$collivery = $mds->returnColliveryClass();
-				$town_id   = array_search( $_POST['parentValue'], $collivery->getTowns() );
+				$town_id   = is_numeric($_POST['parentValue']) ?
+                    $_POST['parentValue'] :
+                    array_search( $_POST['parentValue'], $collivery->getTowns() );
 				$fields    = $collivery->getSuburbs( $town_id );
 
 				if ( ! empty( $fields ) ) {
