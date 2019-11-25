@@ -68,7 +68,7 @@ jQuery(document).ready(function () {
             cacheValue(fromField, fromEl.val());
             return ajax = jQuery.ajax({
                 type: 'POST',
-                async: false,
+                async: true,
                 timeout: 10000,
                 url: woocommerce_params.ajax_url,
                 data: {
