@@ -175,7 +175,7 @@ class MdsLogger
             }
         }
 
-        if (file_put_contents($this->getLogDirectory().$name, json_encode([time() => $value], JSON_PRETTY_PRINT), FILE_APPEND)) {
+        if (file_put_contents($this->getLogDirectory().$name, json_encode([date('Y-m-d H:i:s') => $value], JSON_PRETTY_PRINT), FILE_APPEND)) {
             return true;
         } else {
             return false;
