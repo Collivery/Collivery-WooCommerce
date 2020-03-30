@@ -452,7 +452,7 @@ class MdsColliveryService
     {
         $this->validated_data = $validatedData = $this->validateCollivery($array);
 
-	    if (is_null($validatedData)) {
+	    if (empty($validatedData)) {
 		    return false;
 	    }
 
