@@ -1059,7 +1059,7 @@ class Collivery
             } catch (SoapFault $e) {
                 $this->catchSoapFault($e);
 
-                return false;
+                return [];
             }
 
             if (is_array($result)) {
@@ -1075,7 +1075,7 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
 
-                return false;
+                return [];
             }
         }
     }
