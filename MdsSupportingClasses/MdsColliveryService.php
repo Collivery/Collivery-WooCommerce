@@ -707,7 +707,8 @@ class MdsColliveryService
 
             return $colliveryId;
         } else {
-            throw new InvalidColliveryDataException('Collivery did not return a waybill id', 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['data' => $colliveryOptions, 'errors' => $this->collivery->getErrors()]);
+            $errors = $this->collivery->getErrors();
+            throw new InvalidColliveryDataException('Error sending to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['data' => $colliveryOptions, 'errors' => $errors]);
         }
     }
 
