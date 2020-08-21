@@ -48,13 +48,7 @@ class MdsCheckoutFields
             $location_types = ['' => 'Select Premises Type'] + array_combine($resources['location_types'], $resources['location_types']);
 	        $customer = WC()->customer;
 	        $cityPrefix = $prefix ? $prefix : 'billing_';
-            
-            $townName = '';
-
-            if ($customer) {
-	            $townName = $customer->{"get_{$cityPrefix}city"}();
-	        }
-
+	        $townName = $customer->{"get_{$cityPrefix}city"}();
 	        $suburbs = ['' => 'First select town/city'];
 
 	        if ($townName) {
