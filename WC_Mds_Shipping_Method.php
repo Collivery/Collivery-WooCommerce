@@ -194,47 +194,48 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     $services = $this->collivery->getServices();
                     if (is_array($services)) {
                         // Get pricing for each service
-                        foreach ($services as $id => $title) {
-                            if ($this->mdsSettings->getInstanceValue("method_$id") == 'yes') {
+                        foreach ($services as $service) {//$id => $title) {
+                            if ($this->mdsSettings->getInstanceValue("method_".$service['id']) == 'yes') {
                                 // Now lets get the price for
-                                $riskCover = 0;
+                                $riskCover = false;
                                 $adjustedTotal = $package['shipping_cart_total'];
                                 $riskCoverEnabled = $this->mdsSettings->getValue( 'risk_cover' ) == 'yes';
                                 $overThreshold = $adjustedTotal >= $this->mdsSettings->getValue( 'risk_cover_threshold', 1000 );
                                 if ( $riskCoverEnabled && $overThreshold ) {
-                                    $riskCover = 1;
+                                    $riskCover = true;
                                 }
 
                                 $data = [
-                                    'to_town_id' => $package['destination']['to_town_id'],
-                                    'from_town_id' => $package['destination']['from_town_id'],
-                                    'to_location_type' => $package['destination']['to_location_type'],
-                                    'from_location_type' => $package['destination']['from_location_type'],
-                                    'cover' => $riskCover,
-                                    'weight' => $package['cart']['weight'],
-                                    'num_package' => $package['cart']['count'],
+                                    'delivery_town' => $package['destination']['to_town_id'],
+                                    'collection_town' => $package['destination']['from_town_id'],
+                                    'delivery_location_type' => $package['destination']['to_location_type'],
+                                    'collection_location_type' => $package['destination']['from_location_type'],
+                                    'risk_cover' => $riskCover,
+                                    //'weight' => $package['cart']['weight'],
+                                    //'num_package' => $package['cart']['count'],
                                     'parcels' => $package['cart']['products'],
-                                    'exclude_weekend' => 1,
-                                    'service' => $id,
+                                    'exclude_weekend' => true,
+                                    'services' => array($service['id']),
                                 ];
-
-                                $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $id), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $id));
-
-                                if ($this->mdsSettings->getInstanceValue("wording_$id", $title) == $title && ($id == 1 || $id == 2)) {
-                                    $title = $title.', additional 24 hours on outlying areas';
+                                
+                                // Looks like it's being executed here;
+                                $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $service['id']), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $service['id']));
+                                
+                                if ($this->mdsSettings->getInstanceValue("wording_".$service['id'], $service['text']) == $service['text'] && ($service['id'] == 1 || $service['id'] == 2)) {
+                                    $service['text'] = $service['text'].', additional 24 hours on outlying areas';
                                 } else {
-                                    $title = $this->mdsSettings->getInstanceValue("wording_$id");
+                                    $service['text'] = $this->mdsSettings->getInstanceValue("wording_".$service['id']);
                                 }
 
-                                $label = $title;
+                                $label = $service['text'];
                                 if ($price <= 0) {
                                     $price = 0.00;
                                     $label .= ' - FREE!';
                                 }
-                                $this->id = 'mds_'.$id;
+                                $this->id = 'mds_'.$service['id'];
                                 $this->add_rate([
-                                    'id' => 'mds_'.$id,
-                                    'value' => $id,
+                                    'id' => 'mds_'.$service['id'],
+                                    'value' => $service['id'],
                                     'label' => $label,
                                     'cost' => $price,
                                 ]);

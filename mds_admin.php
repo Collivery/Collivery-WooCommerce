@@ -101,7 +101,7 @@ function mds_confirmed_orders()
 
     /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
-    $services = $mds->returnColliveryClass()->getServices();
+    $services = $mds->returnColliveryClass()->make_key_value_array($mds->returnColliveryClass()->getServices(), 'id', 'text');
     echo View::make('index', compact('services', 'colliveries'));
 }
 
@@ -126,7 +126,29 @@ function mds_confirmed_order()
     /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
+    $settings = $mds->returnPluginSettings();
     $directory = getcwd().'/cache/mds_collivery/waybills/'.$data->waybill;
+
+    $order = wc_get_order($data->order_id);
+
+    // Getting Total Weight;
+
+    $total_weight = 0;
+    foreach ($order->get_items() as $item_id => $product_item) {
+        $qty = $product_item->get_quantity();
+        $product = $product_item->get_product();
+        $product_weight = $product->get_weight();
+
+        $total_weight += floatval($product_weight) * floatval($qty);
+    }
+
+    // Shipping Cost
+    $shipping_total = $order->get_shipping_total();
+    if ($settings->getValue('include_vat') === 'yes') {
+        $shipping_total *= 1.15;
+    }
+
+    $quoted_data = array("Shipping_Total" => $shipping_total, "Total_Weight" => $total_weight);
 
     // Do we have images of the parcels
     if ($pod = $collivery->getPod($data->waybill)) {
@@ -134,7 +156,7 @@ function mds_confirmed_order()
             mkdir($directory, 0755, true);
         }
 
-        file_put_contents($directory.'/'.$pod['filename'], base64_decode($pod['file']));
+        file_put_contents($directory.'/'.$pod['file_name'], base64_decode($pod['image']));
     }
 
     // Do we have proof of delivery
@@ -157,12 +179,33 @@ function mds_confirmed_order()
 
     // Get our tracking information
     $tracking = $collivery->getStatus($data->waybill);
-    $validation_results = json_decode($data->validation_results);
+    $collivery->logError("Checking Value of Tracking in mds_admin.php => ".json_encode($tracking));
+    $tracking = $tracking[count($tracking)-1]; // The Last status update.
 
-    $collection_address = $collivery->getAddress($validation_results->collivery_from);
-    $destination_address = $collivery->getAddress($validation_results->collivery_to);
-    $collection_contacts = $collivery->getContacts($validation_results->collivery_from);
-    $destination_contacts = $collivery->getContacts($validation_results->collivery_to);
+    $validation_results = json_decode($data->validation_results);
+    if (isset($validation_results->data)) {
+        $validation_results = $validation_results->data;
+
+        $collection_address = $collivery->getAddress($validation_results->collection_address_id);
+        $destination_address = $collivery->getAddress($validation_results->delivery_address_id);
+        $collection_contacts = $collivery->getContacts($validation_results->collection_contact_id);
+        $destination_contacts = $collivery->getContacts($validation_results->delivery_contact_id);
+    } else {
+        $collection_address = $collivery->getAddress($validation_results->collivery_from);
+        $destination_address = $collivery->getAddress($validation_results->collivery_to);
+        $collection_contacts = $collivery->getContacts($validation_results->contact_from);
+        $destination_contacts = $collivery->getContacts($validation_results->contact_to);
+    }
+
+    if (!isset($validation_results->risk_cover) && isset($validation_results->cover)) {
+        $validation_results->risk_cover = $validation_results->cover;
+    } else if (!isset($validation_results->risk_cover) && !isset($validation_results->cover)) {
+        $validation_results->risk_cover = false;
+        $waybill = $collivery->getCollivery($data->waybill);
+        if (isset($waybill['risk_cover'])) {
+            $validation_results->risk_cover = $waybill['risk_cover'];
+        }
+    }
 
     $closedStatusList = [
         '6' => 'Invoiced',
@@ -180,7 +223,7 @@ function mds_confirmed_order()
         ));
     }
 
-    $image_list = glob($directory.'/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}', GLOB_BRACE);
+    $image_list = glob($directory.'/*.{jpg,JPG,jpeg,JPEG,gif,GIF,png,PNG}', GLOB_BRACE); // Empty
 
     echo View::make('view', compact(
         'data',
@@ -190,7 +233,8 @@ function mds_confirmed_order()
         'collection_address',
         'destination_address',
         'collection_contacts',
-        'destination_contacts'
+        'destination_contacts',
+        'quoted_data'
     ));
 }
 
@@ -206,6 +250,7 @@ function mds_confirmed_order_view_pdf()
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
     $waybill_number = !empty($_GET['waybill']) ? $_GET['waybill'] : 0;
+    $file = false;
 
     if (isset($_GET['type'])) {
         if ($_GET['type'] === 'pod') {
@@ -217,12 +262,12 @@ function mds_confirmed_order_view_pdf()
         }
     }
 
-    if ($mds->getColliveryErrors()) {
+    if ($mds->getColliveryErrors() || $file == false) {
         echo View::make('document_not_found', ['url' => get_admin_url().'admin.php?page=mds_confirmed&waybill='.$waybill_number, 'urlText' => 'Back to MDS Confirmed Page']);
     } else {
-        header('Content-Type: application/pdf');
+        header('Content-Type: '.$file['mime']);
         header('Content-Length: '.$file['size']);
-        echo base64_decode($file['file']);
+        echo base64_decode($file['image']);
         exit;
     }
 }
@@ -276,7 +321,7 @@ function suburbs_admin_callback()
         $fields = $collivery->getSuburbs($_POST['town']);
         if (!empty($fields)) {
             wp_die(View::make('_options', [
-                'fields' => $fields,
+                'fields' => $collivery->make_key_value_array($fields, 'id', 'name'),//make_key_value_array($fields, 'id', 'name'),
                 'placeholder' => 'Select suburb',
             ]));
         } else {
@@ -299,13 +344,14 @@ add_action('wp_ajax_contacts_admin', 'contacts_admin_callback');
  */
 function contacts_admin_callback()
 {
+    $mds = MdsColliveryService::getInstance();
+    $collivery = $mds->returnColliveryClass();
     if ((isset($_POST['address_id'])) && ($_POST['address_id'] != '')) {
-        $mds = MdsColliveryService::getInstance();
-        $collivery = $mds->returnColliveryClass();
+        
         $fields = $collivery->getContacts($_POST['address_id']);
         if (!empty($fields)) {
             wp_die(View::make('_options', [
-                'fields' => $fields,
+                'fields' => $collivery->make_key_value_array($fields, 'id', 'full_name', true),
                 'placeholder' => 'Select contact',
             ]));
         } else {
@@ -333,43 +379,43 @@ function quote_admin_callback()
     /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $collivery = $mds->returnColliveryClass();
-    $services = $collivery->getServices();
+    $services = $collivery->make_key_value_array($collivery->getServices(), 'id', 'text');
     $post = $_POST;
 
     // Now lets get the price for
     $data = [
-        'num_package' => count($post['parcels']),
-        'service' => $post['service'],
+        'services' => array($post['service']),
         'parcels' => $post['parcels'],
-        'exclude_weekend' => 1,
-        'cover' => $post['cover'],
+        'exclude_weekend' => true,
+        'risk_cover' => $post['cover'],
     ];
 
     // Check which collection address we using
     if ($post['which_collection_address'] == 'default') {
-        $data['from_town_id'] = $post['collection_town'];
-        $data['from_location_type'] = $post['collection_location_type'];
+        $data['collection_town'] = $post['collection_town'];
+        $data['collection_location_type'] = $post['collection_location_type'];
     } else {
-        $data['collivery_from'] = $post['collivery_from'];
-        $data['contact_from'] = $post['contact_from'];
+        $data['collection_address'] = $post['collivery_from'];
+        //$data['contact_from'] = $post['contact_from'];
     }
 
     // Check which delivery address we using
     if ($post['which_delivery_address'] == 'default') {
-        $data['to_town_id'] = $post['delivery_town'];
-        $data['to_location_type'] = $post['delivery_location_type'];
+        $data['delivery_town'] = $post['delivery_town'];
+        $data['delivery_location_type'] = $post['delivery_location_type'];
     } else {
-        $data['collivery_to'] = $post['collivery_to'];
-        $data['contact_to'] = $post['contact_to'];
+        $data['delivery_address'] = $post['collivery_to'];
+        //$data['contact_to'] = $post['contact_to'];
     }
 
     try {
+        
         $response = $collivery->getPrice($data);
-        if (!isset($response['service'])) {
-            throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->loggerSettingsArray(), ['data' => $data, 'errors' => $mds->getColliveryErrors()]);
+        if (!isset($response['data'][0]['service_type'])) {
+            throw new InvalidColliveryDataException('Unable to get response from MDS API', 'quote_admin_callback', $mds->loggerSettingsArray(), ['data' => $data, 'errors' => $mds->getColliveryErrors(), 'results' => $response]);
         }
 
-        wp_die('<p class="mds_response"><b>Service: </b>'.$services[$response['service']].' - Price incl: R'.$response['price']['inc_vat'].'</p>');
+        wp_die('<p class="mds_response"><b>Service: </b>'.$services[$response['data'][0]['service_type']].' - Price incl: R'.($response['data'][0]['total']*1.15).'</p>');
     } catch (InvalidColliveryDataException $e) {
         wp_die('<p class="mds_response"><b>Error: </b>'.$e->getMessage().'</p>');
     }
@@ -391,19 +437,18 @@ function accept_admin_callback()
     $order = new WC_Order($overrides['order_id']);
 
     try {
-        $colliveryId = $mds->orderToCollivery($order, $overrides);
-        $validatedData = $mds->returnColliveryValidatedData();
-        $collection_time = (isset($validatedData['collection_time']))
-            ? ' anytime from: ' . date('Y-m-d H:i', $validatedData['collection_time'])
+        $collivery = $mds->orderToCollivery($order, $overrides);
+        $collection_time = (isset($collivery['data']['collection_time']))
+            ? ' anytime from: ' . date('Y-m-d H:i', $collivery['data']['collection_time'])
             : '';
-
+        $colliveryId = $collivery['data']['id'];
         $message = "Order has been sent to MDS Collivery, Waybill Number: {$colliveryId}, please have order ready for collection{$collection_time}.";
 
         wp_send_json([
             'redirect' => true,
             'message'  => '<p class="mds_response">' . $message . ' You will be redirect to your order in 5 seconds.</p>',
         ]);
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $mds->updateStatusOrAddNote($order, $e->getMessage(), true, 'processing');
         wp_send_json([
             'redirect' => false,
@@ -471,6 +516,7 @@ function mds_register_collivery()
     $settings = $mds->returnPluginSettings();
     $parcels = $mds->getOrderContent($order->get_items());
     $defaults = $mds->returnDefaultAddress();
+    $defaults['contacts'] = $collivery->make_key_value_array($defaults['contacts'], 'id', 'full_name', true);
     $addresses = $collivery->getAddresses();
     $total = $order->get_subtotal() + $order->get_cart_tax();
     $riskCover = $settings->getValue('risk_cover') === 'yes';
@@ -501,11 +547,13 @@ function mds_register_collivery()
     }
 
     $include_product_titles = true;
-    $towns = $collivery->getTowns();
-    $services = $collivery->getServices();
-    $location_types = $collivery->getLocationTypes();
+
+    $towns = $collivery->make_key_value_array($collivery->getTowns(), 'id', 'name');
+    $services = $collivery->make_key_value_array($collivery->getServices(), 'id', 'text');
+    $location_types = $collivery->make_key_value_array($collivery->getLocationTypes(), 'id', 'name');
+
     $suburbs = [0 => 'Select Town'];
-    $populatedSuburbs = $suburbs + $collivery->getSuburbs(array_search($order->get_shipping_city(), $collivery->getTowns()));
+    $populatedSuburbs = $suburbs + $collivery->make_key_value_array($collivery->getSuburbs(array_search($order->get_shipping_city(), $towns)), 'id', 'name');
 
     $shipping_method = null;
     foreach ($services as $id => $value) {

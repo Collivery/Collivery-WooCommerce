@@ -28,7 +28,7 @@
             <td>
                 <select style="width: 100%;" id="<?php echo $prefix; ?>_suburb" name="<?php echo $prefix; ?>_suburb">
                     <?php foreach ($suburbs as $suburb_id => $suburb): ?>
-                        <option<?php echo isset($order) && $suburb_id == $order->get_meta('_shipping_suburb' ) ? ' selected="selected"' : ''; ?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
+                        <option<?php echo isset($order) && ($suburb_id == $order->get_meta('_shipping_suburb') || $suburb == $order->get_meta('_shipping_suburb')) ? ' selected="selected"' : ''; ?> value="<?php echo $suburb_id; ?>"><?php echo $suburb; ?></option>
                     <?php endforeach; ?>`
                 </select>
             </td>
@@ -45,7 +45,7 @@
                 <select style="width: 100%;" id="<?php echo $prefix; ?>_location_type" name="<?php echo $prefix; ?>_location_type">
                     <option value="" selected="selected"></option>
                     <?php foreach ($location_types as $location_id => $location): ?>
-                        <option<?php echo isset($order) && $location == $order->get_meta('_shipping_location_type') ? ' selected="selected"' : ''; ?> value="<?php echo $location_id; ?>"><?php echo $location; ?></option>
+                        <option<?php echo isset($order) && ($location == $order->get_meta('_shipping_location_type') || $location_id == $order->get_meta('_shipping_location_type')) ? ' selected="selected"' : ''; ?> value="<?php echo $location_id; ?>"><?php echo $location; ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>
@@ -97,9 +97,9 @@
             <td>
                 <select name="collivery_<?php echo $subPrefix; ?>" id="collivery_<?php echo $subPrefix; ?>" class="shortenedSelect" style="max-width: 400px;">
                     <?php foreach ($addresses as $address): if (!is_array($address)) {
-    continue;
-}?>
-                        <option<?php echo isset($default_address_id) && $default_address_id == $address['address_id'] ? ' selected="selected"' : ''; ?> value="<?php echo  $address['address_id']; ?>"><?php echo isset($address['nice_address']) ? $address['nice_address'] : ''; ?></option>
+                                continue;
+                            }?>
+                        <option<?php echo isset($default_address_id) && $default_address_id == $address['id'] ? ' selected="selected"' : ''; ?> value="<?php echo  $address['id']; ?>"><?php echo isset($address['text']) ? $address['text'] : ''; ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>
@@ -109,7 +109,7 @@
             <td>
                 <select name="contact_<?php echo $subPrefix; ?>" id="contact_<?php echo $subPrefix; ?>" class="shortenedSelect" style="max-width: 400px;">
                     <?php foreach ($contacts as $contact_id => $contact): ?>
-                        <option<?php echo isset($default_contact_id) && $default_contact_id == $contact_id || (count($contacts) == 1) ? ' selected="selected"' : ''; ?> value="<?php echo $contact_id; ?>"><?php echo isset($contact['nice_contact']) ? $contact['nice_contact'] : ''; ?></option>
+                        <option<?php echo isset($default_contact_id) && $default_contact_id == $contact_id || (count($contacts) == 1) ? ' selected="selected"' : ''; ?> value="<?php echo $contact_id; ?>"><?php echo isset($contact) ? $contact : ''; ?></option>
                     <?php endforeach; ?>
                 </select>
             </td>

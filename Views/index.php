@@ -41,11 +41,21 @@
                     } ?>>
                         <td><?php echo $order->id; ?></td>
                         <td><a href="<?php echo get_admin_url().'admin.php?page=mds_confirmed&waybill='.$order->waybill; ?>"><?php echo $order->waybill; ?></a></td>
-                        <td><?php echo $validation_results->cust_ref; ?></td>
-                        <td><?php echo $services[$validation_results->service]; ?></td>
-                        <td><?php echo date('Y-m-d H:m', $validation_results->collection_time); ?></td>
-                        <td><?php echo $validation_results->instructions; ?></td>
-                        <td><?php echo "R ".number_format($validation_results->price->ex_vat,2); ?></td>
+                        <?php if (isset($validation_results->data)) {
+                            $validation_results = $validation_results->data; ?>
+                            <td><?php echo $validation_results->customer_reference; ?></td>
+                            <td><?php echo $services[$validation_results->service_type_id]; ?></td>
+                            <td><?php echo date('Y-m-d H:m', $validation_results->collection_time); ?></td>
+                            <td><?php echo $validation_results->special_instructions; ?></td>
+                            <td><?php echo "R ".number_format($validation_results->total_price,2); ?></td>
+                        <?php } else { ?>
+                            <td><?php echo $validation_results->cust_ref; ?></td>
+                            <td><?php echo $services[$validation_results->service]; ?></td>
+                            <td><?php echo date('Y-m-d H:m', $validation_results->collection_time); ?></td>
+                            <td><?php echo $validation_results->instructions; ?></td>
+                            <td><?php echo "R ".number_format($validation_results->price->ex_vat,2); ?></td> 
+                        <?php } ?>
+                        
                     </tr>
                 <?php
                 endforeach;

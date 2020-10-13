@@ -1,4 +1,5 @@
 var colliveryFieldsValues = {};
+var overrideChange = false;
 
 jQuery(document).ready(function () {
     var select2fields = {
@@ -47,6 +48,10 @@ jQuery(document).ready(function () {
             fromSelect2 = fromEl.data('select2'),
             isChange = fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[fromField];
 
+        if (overrideChange) {
+            overrideChange = false;
+            isChange = true;
+        }
         // Ensure we clear the town from cache in case we are changing province
         // Else if we come back to this province and this town - the suburbs won't update
         if (fromField.indexOf('state') != -1 && isChange) {
@@ -90,6 +95,15 @@ jQuery(document).ready(function () {
                     resetSelect(el, '<option selected="selected" value="">Loading...</option>');
                 }
             });
+        } else if (prefix === 'towns'){
+            if (jQuery('#billing_suburb').length > 0) {
+                if (jQuery('#billing_suburb')[0].options.length > 0) {
+                    if (jQuery('#billing_suburb')[0].options[0].innerText == "First select town/city") {
+                        overrideChange = true;
+                        updateSelect(field, db_prefix + '_suburb', 'suburbs', db_prefix);
+                    }
+                }   
+            }
         }
     }
 
