@@ -88,11 +88,16 @@ if ($mds->isEnabled()) {
 					'NW'  => 'NW',
 					'WC'  => 'CAP',
 				];
-				$province    = isset( $provinceMap[ $_POST['parentValue'] ] ) ? $provinceMap[ $_POST['parentValue'] ] : 'unknown';
+				$province    = 'unknown';//isset( $provinceMap[ $_POST['parentValue'] ] ) ? $provinceMap[ $_POST['parentValue'] ] : 'unknown';
                 $towns      = $collivery->getTowns('ZAF', $province);
-                $towns       = array_combine($towns, $towns);
+
+				$key_value_array = [];
+				foreach ($towns as $item) {
+					$key_value_array[$item['id']] = $item['name'];
+				}
+
                 wp_send_json( View::make( '_options', [
-					'fields'        => $towns,
+					'fields'        => $key_value_array,
 					'placeholder'   => 'Select town/city',
 					'selectedValue' => $selectedTown,
 				] ) );
@@ -123,14 +128,32 @@ if ($mds->isEnabled()) {
 
 			if ( ( isset( $_POST['parentValue'] ) ) && ( $_POST['parentValue'] != '' ) ) {
 				$collivery = $mds->returnColliveryClass();
+
+				$towns = $collivery->getTowns();
+
+				$key_value_array = [];
+
+				foreach ($towns as $item) {
+					$key_value_array[$item['id']] = $item['name'];
+				}
+				
+
 				$town_id   = is_numeric($_POST['parentValue']) ?
                     $_POST['parentValue'] :
-                    array_search( $_POST['parentValue'], $collivery->getTowns() );
-				$fields    = $collivery->getSuburbs( $town_id );
+					array_search( $_POST['parentValue'], $key_value_array );
+					
+
+				$fields   = $collivery->getSuburbs( $town_id );
 
 				if ( ! empty( $fields ) ) {
+
+					$key_value_array = [];
+					foreach ($fields as $item) {
+						$key_value_array[$item['id']] = $item['name'];
+					}
+
 					wp_send_json( View::make( '_options', [
-						'fields'        => $fields,
+						'fields'        => $key_value_array,
 						'placeholder'   => 'Select suburb',
 						'selectedValue' => $selectedSuburb,
 					] ) );
@@ -149,4 +172,5 @@ if ($mds->isEnabled()) {
 		add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
 		add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
 	}
+	
 }

@@ -31,7 +31,7 @@ use MdsSupportingClasses\View;
                         'suburbs' => ['' => 'Select Suburb'] + $suburbs,
                         'contacts' => ['' => 'Select Contact'] + $defaults['contacts'],
                         'addresses' => ['' => 'Select Address'] + $addresses,
-                        'default_address_id' => $defaults['default_address_id'],
+                        'default_address_id' => $defaults['default_address_id']
                     ]); ?>
                 </td>
                 <td style="min-width:20%; max-width:40%; vertical-align: top; padding: 0 10px;">

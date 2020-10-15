@@ -419,7 +419,14 @@ class MdsColliveryService
     public function getPrice(array $array, $adjustedTotal, $markup, $fixedPrice)
     {
         if (!$result = $this->collivery->getPrice($array)) {
-            throw new InvalidColliveryDataException('There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), ['errors' => $this->collivery->getErrors(), 'data' => $array]);
+            if ($result == null) {
+                $this->initMdsCollivery();
+                if (!$result = $this->collivery->getPrice($array)) {
+                    throw new InvalidColliveryDataException('There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), ['errors' => $this->collivery->getErrors(), 'data' => $array ]);
+                }
+            } else {
+                throw new InvalidColliveryDataException('There was a problem sending this the delivery request to MDS Collivery, you will need to manually process. Error: Unable to get price from MDS', 'MdsColliveryService::getPrice', $this->loggerSettingsArray(), ['errors' => $this->collivery->getErrors(), 'data' => $array ]);
+            }
         }
 
         $discountEnabled = $this->settings->getValue( 'method_free' ) === 'discount';
@@ -431,12 +438,12 @@ class MdsColliveryService
             $discount = 0;
         }
 
-        if ($this->settings->getValue('include_vat') === 'yes') {
-            $returnedAmount = $result['price']['inc_vat'];
-        } else {
-            $returnedAmount = $result['price']['ex_vat'];
-        }
+        $returnedAmount = $result['data'][0]['total'];
 
+        if ($this->settings->getValue('include_vat') === 'yes') {
+            $returnedAmount *= 1.15;
+        }
+        
         return Money::make($returnedAmount, $markup, $fixedPrice, $discount, $this->settings->getValue('round') == 'yes')->amount;
     }
 
@@ -474,13 +481,13 @@ class MdsColliveryService
             }
         }
 
-        $collivery_id = $this->collivery->addCollivery($this->validated_data);
+        $collivery_object = $this->collivery->addCollivery($this->validated_data);
 
         if ($this->settings->getValue('auto_accept', 'yes') === 'yes') {
-            return ($this->collivery->acceptCollivery($collivery_id)) ? $collivery_id : false;
+            return ($this->collivery->acceptCollivery($collivery_object['data']['id'])) ? $collivery_object : false;
         }
 
-        return $collivery_id;
+        return $collivery_object;
     }
 
     /**
@@ -526,7 +533,7 @@ class MdsColliveryService
             throw new InvalidColliveryDataException('Invalid parcels', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
         }
 
-        return $this->collivery->validate($array);
+        return $array;
     }
 
     /**
@@ -542,6 +549,9 @@ class MdsColliveryService
      * @throws SoapConnectionException
      */
     public function orderToCollivery(WC_Order $order, array $overrides) {
+
+        
+
         if ($this->hasOrderBeenProcessed($order->get_id())) {
             throw new OrderAlreadyProcessedException('Could not add MDS Collivery waybill, order already sent to MDS.', $this->loggerSettingsArray(), [
                 'order_id' => $order->get_id(),
@@ -578,7 +588,7 @@ class MdsColliveryService
 
         if (!isset($overrides['which_collection_address']) && !isset($overrides['collivery_from'])) {
             $collivery_from = $defaults['default_address_id'];
-            list($contact_from) = array_keys($defaults['contacts']);
+            $contact_from = $defaults['contacts']['id'];
         } elseif (isset($overrides['which_collection_address']) && $overrides['which_collection_address'] === 'saved') {
             $collivery_from = $overrides['collivery_from'];
             $contact_from   = $overrides['contact_from'];
@@ -598,8 +608,8 @@ class MdsColliveryService
                 'email'         => $overrides['collection_email'],
             ]);
 
-            $collivery_from = $collectionAddress['address_id'];
-            $contact_from = $collectionAddress['contact_id'];
+            $collivery_from = $collectionAddress['id'];
+            $contact_from = $collectionAddress['contacts'][0]['id'];
         }
 
         if (!isset($overrides['which_delivery_address']) && !isset($overrides['collivery_to'])) {
@@ -615,8 +625,8 @@ class MdsColliveryService
                 'email'         => str_replace(' ', '', $order->get_billing_email()),
                 'custom_id'     => $order->get_user_id(),
             ]);
-            $collivery_to = $deliveryAddress['address_id'];
-            $contact_to   = $deliveryAddress['contact_id'];
+            $collivery_to = $deliveryAddress['id'];
+            $contact_to   = $deliveryAddress['contacts'][0]['id'];
         } elseif (isset($overrides['which_delivery_address']) && $overrides['which_delivery_address'] === 'saved') {
             $collivery_to = $overrides['collivery_to'];
             $contact_to   = $overrides['contact_to'];
@@ -636,8 +646,8 @@ class MdsColliveryService
                 'email'         => $overrides['delivery_email'],
                 'custom_id'     => $order->get_user_id(),
             ]);
-            $collivery_to = $deliveryAddress['address_id'];
-            $contact_to   = $deliveryAddress['contact_id'];
+            $collivery_to = $deliveryAddress['id'];
+            $contact_to   = $deliveryAddress['contacts'][0]['id'];
         }
 
 
@@ -693,22 +703,21 @@ class MdsColliveryService
         ];
 
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
-            $colliveryOptions['collection_time'] = strtotime($overrides['collection_time']);
+            $colliveryOptions['collection_time'] = $overrides['collection_time'];
         }
 
-        $colliveryId     = $this->addCollivery($colliveryOptions);
+        $collivery     = $this->addCollivery($colliveryOptions);
 
-        $collectionTime = (isset($this->validated_data['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $this->validated_data['collection_time']) : '';
-
-        if ($colliveryId) {
+        $collectionTime = (isset($collivery['data']['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $collivery['data']['collection_time']) : '';
+        if ($collivery['data']['id']) {
             // Save the results from validation into our table
-            $this->addColliveryToProcessedTable($colliveryId, $order->get_id());
-            $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $colliveryId . ', please have order ready for collection' . $collectionTime . '.', $processing, 'completed');
+            $this->addColliveryToProcessedTable($collivery, $order->get_id());
+            $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection' . $collectionTime . '.', $processing, 'completed');
 
-            return $colliveryId;
+            return $collivery;
         } else {
             $errors = $this->collivery->getErrors();
-            throw new InvalidColliveryDataException('Error sending to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['data' => $colliveryOptions, 'errors' => $errors]);
+            throw new InvalidColliveryDataException('Error sending to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['data' => $colliveryOptions, 'errors' => $errors, 'result' => $collivery]);
         }
     }
 
@@ -750,7 +759,7 @@ class MdsColliveryService
      *
      * @return void
      */
-    public function addColliveryToProcessedTable($collivery_id, $order_id)
+    public function addColliveryToProcessedTable($collivery, $order_id)
     {
         global $wpdb;
 
@@ -759,8 +768,8 @@ class MdsColliveryService
         $data = [
             'status' => 1,
             'order_id' => $order_id,
-            'validation_results' => json_encode($this->returnColliveryValidatedData()),
-            'waybill' => $collivery_id,
+            'validation_results' => json_encode($collivery),
+            'waybill' => $collivery['data']['id'],
         ];
 
         $wpdb->insert($table_name, $data);
@@ -787,7 +796,7 @@ class MdsColliveryService
             $town_id = $array['town'];
         }
 
-        $suburbs = $this->collivery->getSuburbs($town_id);
+        $suburbs = $this->collivery->make_key_value_array($this->collivery->getSuburbs($town_id), 'id', 'name');
 
         if (!is_numeric($array['suburb'])) {
             $suburb_id = (int)array_search($array['suburb'], $suburbs);
@@ -828,11 +837,12 @@ class MdsColliveryService
             'location_type' => $location_type_id,
             'suburb_id' => $suburb_id,
             'town_id' => $town_id,
-            'full_name' => $array['full_name'],
-            'phone' => (!empty($array['phone'])) ? preg_replace('/[^0-9]/', '', $array['phone']) : '',
-            'cellphone' => preg_replace('/[^0-9]/', '', $array['cellphone']),
-            'custom_id' => $array['custom_id'],
-            'email' => $array['email'],
+            'contact' => array(
+                'full_name' => $array['full_name'], 
+                'cellphone' => preg_replace('/[^0-9]/', '', $array['cellphone']), 
+                'work_phone' => (!empty($array['phone'])) ? preg_replace('/[^0-9]/', '', $array['phone']) : '',
+                'email_address' => $array['email']),
+            'custom_id' => $array['custom_id']
         ];
 
         // Before adding an address lets search MDS and see if we have already added this address
@@ -1030,11 +1040,17 @@ class MdsColliveryService
             $data = [
                 'address' => $default_address,
                 'default_address_id' => $default_address_id,
-                'contacts' => $this->collivery->getContacts($default_address_id),
             ];
+
+            if (!isset($default_address['contacts'])) {
+                $data['contacts'] = $this->collivery->getContacts($default_address_id);
+            } else {
+                $data['contacts'] = $default_address['contacts'];
+            }
 
             return $data;
         } catch (SoapConnectionException $e) {
+            new SoapConnectionException($e->getMessage());
             return [];
         }
     }
@@ -1133,11 +1149,13 @@ class MdsColliveryService
             $town      = reset($towns);
         }
 
-        $suburbs = $collivery->getSuburbs($town);
+        $suburbs = $collivery->make_key_value_array($collivery->getSuburbs($town), 'id', 'name');
         $suburb  = array_filter($suburbs, function ($name) use ($suburbName) {
           return trim(strtolower($name)) === trim(strtolower($suburbName));
         });
 
-        return reset(array_keys($suburb));
+        $suburb_id = array_keys($suburb);
+
+        return reset($suburb_id);
     }
 }
