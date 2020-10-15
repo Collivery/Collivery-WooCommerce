@@ -179,7 +179,6 @@ function mds_confirmed_order()
 
     // Get our tracking information
     $tracking = $collivery->getStatus($data->waybill);
-    $collivery->logError("Checking Value of Tracking in mds_admin.php => ".json_encode($tracking));
     $tracking = $tracking[count($tracking)-1]; // The Last status update.
 
     $validation_results = json_decode($data->validation_results);
@@ -396,7 +395,6 @@ function quote_admin_callback()
         $data['collection_location_type'] = $post['collection_location_type'];
     } else {
         $data['collection_address'] = $post['collivery_from'];
-        //$data['contact_from'] = $post['contact_from'];
     }
 
     // Check which delivery address we using
@@ -405,7 +403,6 @@ function quote_admin_callback()
         $data['delivery_location_type'] = $post['delivery_location_type'];
     } else {
         $data['delivery_address'] = $post['collivery_to'];
-        //$data['contact_to'] = $post['contact_to'];
     }
 
     try {

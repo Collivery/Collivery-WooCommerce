@@ -194,7 +194,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     $services = $this->collivery->getServices();
                     if (is_array($services)) {
                         // Get pricing for each service
-                        foreach ($services as $service) {//$id => $title) {
+                        foreach ($services as $service) {
                             if ($this->mdsSettings->getInstanceValue("method_".$service['id']) == 'yes') {
                                 // Now lets get the price for
                                 $riskCover = false;
@@ -211,8 +211,6 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'delivery_location_type' => $package['destination']['to_location_type'],
                                     'collection_location_type' => $package['destination']['from_location_type'],
                                     'risk_cover' => $riskCover,
-                                    //'weight' => $package['cart']['weight'],
-                                    //'num_package' => $package['cart']['count'],
                                     'parcels' => $package['cart']['products'],
                                     'exclude_weekend' => true,
                                     'services' => array($service['id']),

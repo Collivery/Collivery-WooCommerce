@@ -3,7 +3,6 @@
 namespace MdsSupportingClasses;
 
 use MdsExceptions\SoapConnectionException;
-use SoapClient; // Use PHP Soap Client
 use SoapFault;  // Use PHP Soap Fault
 
 class Collivery
@@ -116,10 +115,6 @@ class Collivery
             $query = rtrim($query, '&');
             $m_client = curl_init($url.'?'.$query);
         }
-        
-        // TODO: REMOVE
-        // TEST on DEV Environment without this line at some point, to ensure it works. Or potentially ask for a workaround.
-        curl_setopt($m_client, CURLOPT_SSL_VERIFYPEER, false);
 
         curl_setopt($m_client, CURLOPT_RETURNTRANSFER, true);
 
@@ -799,34 +794,30 @@ class Collivery
      */
     public function getStatus($collivery_id)
     {
-        if (($this->check_cache == 2) && $this->cache->has('collivery.status.'.$this->client_id.'.'.$collivery_id)) {
-            return $this->cache->get('collivery.status.'.$this->client_id.'.'.$collivery_id);
+        try {
+            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, array("api_token" => ""), 'GET');
+        } catch (SoapFault $e) {
+            $this->catchSoapFault($e);
+
+            return false;
+        }
+
+        if (isset($result['data'])) {
+            if (isset($result['error'])) {
+                $this->setError($result['error']['http_code'], $result['error']['message']);
+            } elseif ($this->check_cache != 0) {
+                $this->cache->put('collivery.status.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
+            }
+
+            return $result['data'];
         } else {
-            try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, array("api_token" => ""), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
-
-                return false;
-            }
-
-            if (isset($result['data'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache != 0) {
-                    $this->cache->put('collivery.status.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
-                }
-
-                return $result['data'];
+            if (isset($result['error'])) {
+                $this->setError($result['error']['http_code'], $result['error']['message']);
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                $this->setError('result_unexpected', 'No result returned.');
             }
+
+            return false;
         }
     }
 

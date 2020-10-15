@@ -12,7 +12,7 @@
                         Waybill:
                     </td>
                     <td>
-                         <a href="<?php echo get_admin_url().'admin.php?page=mds-confirmed-order-view-pdf&waybill='.$data->waybill.'&type=waybill'; ?>" rel="wrapped_waybill" class="show_waybill">View PDF</a>
+                         <a target="_blank" href="<?php echo get_admin_url().'admin.php?page=mds-confirmed-order-view-pdf&waybill='.$data->waybill.'&type=waybill'; ?>" rel="wrapped_waybill" class="show_waybill">View PDF</a>
                     </td>
                 </tr>
                 <tr>
@@ -72,7 +72,7 @@
                 </tr>
                 <tr>
                     <td>
-                        Proof of delivery: <?php echo '<a href="'.get_admin_url().'admin.php?page=mds-confirmed-order-view-pdf&waybill='.$data->waybill.'&type=pod" rel="wrapped_waybill" class="show_waybill">'.'View POD'.'</a>'; ?>
+                        Proof of delivery: <?php echo '<a target="_blank" href="'.get_admin_url().'admin.php?page=mds-confirmed-order-view-pdf&waybill='.$data->waybill.'&type=pod" rel="wrapped_waybill" class="show_waybill">'.'View POD'.'</a>'; ?>
                     </td>
                 </tr>
                 <?php if (!empty($image_list)): ?>

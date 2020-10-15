@@ -145,7 +145,6 @@ class ShippingPackageData
      */
     public function extractRequiredFields(array $array, array $packages)
     {
-        //$array = $array[0];
     	$to_town_id = $to_town_type = null;
         if (isset($array['post_data'])) {
             parse_str($array['post_data'], $postData);
