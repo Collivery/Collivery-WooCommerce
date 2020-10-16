@@ -234,22 +234,6 @@ class Collivery
     }
 
     /**
-     * Returns true or false if current instance authenticated.
-     *
-     * @return bool
-     */
-    public function isCurrentInstanceAuthenticated()
-    {
-        try {
-            if ($this->consumeAPI("https://api.collivery.co.za/v3/service_types", array("api_token" => ""), 'GET')) {
-                return true;
-            }
-        } catch (CurlConnectionException $e) {
-            return false;
-        }
-    }
-
-    /**
      * Returns the md5 string of the config array.
      *
      * @return string
