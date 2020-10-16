@@ -1041,11 +1041,6 @@ class Collivery
         }
     }
 
-    public function logError($functionName, $message, $settings, $data) {
-        $logger = new MdsLogger();
-        $logger->error($functionName, $message, $settings, $data);
-    }
-
     /**
      * Handle error messages in Exception.
      *
