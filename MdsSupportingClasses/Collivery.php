@@ -2,8 +2,8 @@
 
 namespace MdsSupportingClasses;
 
-use MdsExceptions\SoapConnectionException;
-use SoapFault;  // Use PHP Soap Fault
+use MdsExceptions\CurlConnectionException;
+use MdsLogger;
 
 class Collivery
 {
@@ -121,12 +121,17 @@ class Collivery
         try {
             $result = curl_exec($client);
             
-
             if (curl_errno($client)) {
                 $errno = curl_errno($client);
                 $errmsg = curl_error($client);
-                new SoapConnectionException("URL:".$url." RESULT:".$result);
-                new SoapConnectionException("CODE:".$errno." MSG:".$errmsg);
+                curl_close($client);
+
+                throw new CurlConnectionException("ConsumeAPI()", "Error executing request", [
+                    "Code" => $errno,
+                    "Message" => $errmsg,
+                    "URL" => $url,
+                    "Result" => $result
+                ]);
             }
 
             curl_close($client);
@@ -150,9 +155,8 @@ class Collivery
             }
 
             return json_decode($result, true);
-        } catch (SoapFault $e) {
-            new SoapConnectionException("URL:".$url." DATA:".json_encode($data)." CATCH:".$e->faultstring);
-            $this->catchSoapFault($e);
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
         }
 
         return [];
@@ -206,8 +210,8 @@ class Collivery
                     $this->setError('result_unexpected', 'No result returned.');
                 }
             }
-        } catch (SoapFault $e) {
-            $this->catchSoapFault($e);
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
         }
 
         return [];
@@ -240,9 +244,7 @@ class Collivery
             if ($this->consumeAPI("https://api.collivery.co.za/v3/service_types", array("api_token" => ""), 'GET')) {
                 return true;
             }
-        } catch (SoapFault $e) {
-            return false;
-        } catch (SoapConnectionException $e) {
+        } catch (CurlConnectionException $e) {
             return false;
         }
     }
@@ -285,7 +287,7 @@ class Collivery
      * @param string $province Filter towns by South African Provinces
      *
      * @return array List of towns and their ID's
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getTowns($country = 'ZAF', $province = null)
     {
@@ -296,8 +298,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", array("country" => $country, "per_page" => "0"), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -315,13 +317,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return [];
+                return $this->checkError($result);
             }
         }
     }
@@ -335,7 +331,7 @@ class Collivery
      * @param string $name Start of town/suburb name
      *
      * @return array List of towns and their ID's
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function searchTowns($name)
     {
@@ -346,8 +342,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", array("search" => $name), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return [];
             }
@@ -359,13 +355,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return [];
+                return $this->checkError($result);
             }
         }
     }
@@ -376,7 +366,7 @@ class Collivery
      * @param int $town_id ID of the Town to return suburbs for
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getSuburbs($town_id)
     {
@@ -385,8 +375,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/suburbs", array("town_id" => $town_id), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return [];
             }
@@ -398,13 +388,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return [];
+                return $this->checkError($result);
             }
         }
     }
@@ -415,7 +399,7 @@ class Collivery
      * delivery.
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getLocationTypes()
     {
@@ -424,8 +408,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/location_types", array("api_token" => ""), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
                 
                 return false;
             }
@@ -437,13 +421,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No results returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -452,7 +430,7 @@ class Collivery
      * Returns the available Collivery services types.
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getServices()
     {
@@ -461,8 +439,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/service_types", array("api_token" => ""), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -474,13 +452,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No services returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -491,7 +463,7 @@ class Collivery
      * @param int $address_id the ID of the address you wish to retrieve
      *
      * @return array Address
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getAddress($address_id)
     {
@@ -500,8 +472,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/address/".$address_id, array("api_token" => ""), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -513,13 +485,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No address_id returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -530,7 +496,7 @@ class Collivery
      * @param array $filter Filter Addresses
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getAddresses($filter = [])
     {
@@ -542,8 +508,8 @@ class Collivery
                     $filter= array("per_page" => "0");
                 }
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/address", $filter, 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -555,13 +521,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No address_id returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -572,7 +532,7 @@ class Collivery
      * @param int $address_id Address ID
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getContacts($address_id)
     {
@@ -581,8 +541,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/contacts", array("address_id" => $address_id), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -594,13 +554,7 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -611,7 +565,7 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getPod($collivery_id)
     {
@@ -620,8 +574,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/proofs_of_delivery/", array("waybill_id" => $collivery_id, "per_page" => "0"), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -644,13 +598,7 @@ class Collivery
 
                 return false;
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -661,14 +609,14 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getWaybill($collivery_id)
     {
         try {
             $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill_documents/".$collivery_id."/waybill", array("api_token" => ""), 'GET');
-        } catch (SoapFault $e) {
-            $this->catchSoapFault($e);
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
 
             return false;
         }
@@ -676,13 +624,7 @@ class Collivery
         if (isset($result['data'])) {
             return $result['data'];
         } else {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            } else {
-                $this->setError('result_unexpected', 'No result returned.');
-            }
-
-            return false;
+            return $this->checkError($result);
         }
     }
 
@@ -692,7 +634,7 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getParcelImageList($collivery_id)
     {
@@ -701,8 +643,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/parcel_images", array("waybill_id" => $collivery_id), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -716,13 +658,7 @@ class Collivery
 
                 return $result['images'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -737,7 +673,7 @@ class Collivery
      * @return array Array containing all the information
      *               about the image including the image
      *               itself in base64
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getParcelImage($parcel_id)
     {
@@ -746,8 +682,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/parcel_images/".$parcel_id, array("api_token" => ""), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -761,13 +697,7 @@ class Collivery
 
                 return $result['image'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -781,14 +711,14 @@ class Collivery
      * @param int $collivery_id Collivery ID
      *
      * @return array Collivery Status Information
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getStatus($collivery_id)
     {
         try {
             $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, array("api_token" => ""), 'GET');
-        } catch (SoapFault $e) {
-            $this->catchSoapFault($e);
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
 
             return false;
         }
@@ -802,13 +732,7 @@ class Collivery
 
             return $result['data'];
         } else {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            } else {
-                $this->setError('result_unexpected', 'No result returned.');
-            }
-
-            return false;
+            return $this->checkError($result);
         }
     }
 
@@ -818,7 +742,7 @@ class Collivery
      * @param array $data Address and Contact Information
      *
      * @return array Address ID and Contact ID
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function addAddress(array $data)
     {
@@ -866,8 +790,8 @@ class Collivery
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/address", $data, 'POST');
                 $this->cache->forget('collivery.addresses.'.$this->client_id);
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -875,13 +799,7 @@ class Collivery
             if (isset($result['data']['id'])) {
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No address_id returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -892,7 +810,7 @@ class Collivery
      * @param array $data New Contact Data
      *
      * @return int New Contact ID
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function addContact(array $data)
     {
@@ -918,8 +836,8 @@ class Collivery
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/contacts", $data, 'POST');
                 $this->cache->forget('collivery.addresses.'.$this->client_id);
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
                 
                 return false;
             }
@@ -927,13 +845,7 @@ class Collivery
             if (isset($result['contact_id'])) {
                 return $result;
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No contact_id returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -944,7 +856,7 @@ class Collivery
 	 * @param array $data Your Collivery Details
 	 *
 	 * @return array Pricing for details supplied
-	 * @throws SoapConnectionException
+	 * @throws Exception
 	 */
     public function getPrice(array $data)
     {
@@ -977,8 +889,8 @@ class Collivery
 
         try {
             $result = $this->consumeAPI("https://api.collivery.co.za/v3/quote", $data, 'POST');
-        } catch (SoapFault $e) {
-            $this->catchSoapFault($e);
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
             return false;
         }
 
@@ -988,12 +900,7 @@ class Collivery
             }
             return $result;
         } else {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            } else {
-                $this->setError('result_unexpected', 'No result returned.');
-            }
-            return false;
+            return $this->checkError($result);
         }
     }
 
@@ -1005,7 +912,7 @@ class Collivery
      * @param array $data Properties of the new Collivery
      *
      * @return int New Collivery ID
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function addCollivery(array $data)
     {
@@ -1063,10 +970,8 @@ class Collivery
 
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill", $newObject, 'POST');
-                new SoapConnectionException("New Object => ".json_encode($newObject));
-                new SoapConnectionException("The Result => ".json_encode($result));
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -1078,13 +983,7 @@ class Collivery
 
                 return $result;
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
@@ -1096,14 +995,14 @@ class Collivery
      * @param int $collivery_id ID of the Collivery you wish to accept
      *
      * @return bool Has the Collivery been accepted
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function acceptCollivery($collivery_id)
     {
         try {
             $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, array("status_id" => 3), 'PUT');
-        } catch (SoapFault $e) {
-            $this->catchSoapFault($e);
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
 
             return false;
         }
@@ -1119,13 +1018,7 @@ class Collivery
                 return false;
             }
         } else {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            } else {
-                $this->setError('result_unexpected', 'No result returned.');
-            }
-
-            return false;
+            return $this->checkError($result);
         }
     }
 
@@ -1135,7 +1028,7 @@ class Collivery
      * @param int $collivery_id Collivery waybill number
      *
      * @return array
-     * @throws SoapConnectionException
+     * @throws Exception
      */
     public function getCollivery(int $collivery_id)
     {
@@ -1144,8 +1037,8 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill/".$collivery_id, array("api_token" => ""), 'GET');
-            } catch (SoapFault $e) {
-                $this->catchSoapFault($e);
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
                 return false;
             }
@@ -1159,29 +1052,41 @@ class Collivery
 
                 return $result['data'];
             } else {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } else {
-                    $this->setError('result_unexpected', 'No result returned.');
-                }
-
-                return false;
+                return $this->checkError($result);
             }
         }
     }
 
-    public function logError($message) {
-        new SoapConnectionException($message);
+    public function logError($functionName, $message, $settings, $data) {
+        $logger = new MdsLogger();
+        $logger->error($functionName, $message, $settings, $data);
     }
 
     /**
-     * Handle error messages in SoapFault.
+     * Handle error messages in Exception.
      *
-     * @param SoapFault $e SoapFault Object
+     * @param Exception $e Exception Object
      */
-    protected function catchSoapFault($e)
+    protected function catchException($e)
     {
-        $this->setError($e->faultcode, $e->faultstring);
+        $this->setError($e->getCode(), $e->getMessage());
+    }
+
+    /**
+     * The Else in nearly every function found here, will set an error and return false
+     * 
+     * @param Array $data - The Result that was returned by the API
+     * 
+     * @return Boolean false
+     */
+    private function checkError($data) {
+        if (isset($data['error'])) {
+            $this->setError($data['error']['http_code'], $data['error']['message']);
+        } else {
+            $this->setError('result_unexpected', 'No result returned.');
+        }
+
+        return false;
     }
 
     /**

@@ -8,7 +8,7 @@ use WC_Product_Variation;
 use WC_Order_Item_Product;
 use MdsExceptions\ProductOutOfException;
 use MdsExceptions\InvalidServiceException;
-use MdsExceptions\SoapConnectionException;
+use MdsExceptions\CurlConnectionException;
 use MdsExceptions\InvalidCartPackageException;
 use MdsExceptions\InvalidAddressDataException;
 use MdsExceptions\InvalidColliveryDataException;
@@ -414,7 +414,7 @@ class MdsColliveryService
      * @return float
      *
      * @throws InvalidColliveryDataException
-     * @throws SoapConnectionException
+     * @throws CurlConnectionException
      */
     public function getPrice(array $array, $adjustedTotal, $markup, $fixedPrice)
     {
@@ -546,7 +546,7 @@ class MdsColliveryService
      * @throws InvalidServiceException
      * @throws OrderAlreadyProcessedException
      * @throws ProductOutOfException
-     * @throws SoapConnectionException
+     * @throws CurlConnectionException
      */
     public function orderToCollivery(WC_Order $order, array $overrides) {
 
@@ -746,7 +746,7 @@ class MdsColliveryService
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
         } catch (InvalidAddressDataException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
-        } catch (SoapConnectionException $e) {
+        } catch (CurlConnectionException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
         }
     }
@@ -783,7 +783,7 @@ class MdsColliveryService
      * @return array
      *
      * @throws InvalidAddressDataException
-     * @throws SoapConnectionException
+     * @throws CurlConnectionException
      */
     public function addColliveryAddress(array $array)
     {
@@ -1049,8 +1049,7 @@ class MdsColliveryService
             }
 
             return $data;
-        } catch (SoapConnectionException $e) {
-            new SoapConnectionException($e->getMessage());
+        } catch (CurlConnectionException $e) {
             return [];
         }
     }
@@ -1129,7 +1128,7 @@ class MdsColliveryService
      * @param string     $suburbName
      *
      * @return int|null
-     * @throws SoapConnectionException
+     * @throws CurlConnectionException
      */
     public function searchSuburbByName( $town, $suburbName )
     {

@@ -38,7 +38,7 @@ class ShippingPackageData
      * @param $input
      *
      * @return mixed
-     * @throws \MdsExceptions\SoapConnectionException
+     * @throws \MdsExceptions\CurlConnectionException
      */
     public function build($packages, $input)
     {   

@@ -3,7 +3,7 @@
 namespace MdsSupportingClasses;
 
 use MdsExceptions\InvalidResourceDataException;
-use MdsExceptions\SoapConnectionException;
+use MdsExceptions\CurlConnectionException;
 
 class MdsFields
 {
@@ -290,7 +290,7 @@ class MdsFields
             $cache->put('resources', $resources);
 
             return $resources;
-        } catch (SoapConnectionException $e) {
+        } catch (CurlConnectionException $e) {
             throw new InvalidResourceDataException($e->getMessage(), $service->loggerSettingsArray());
         }
     }

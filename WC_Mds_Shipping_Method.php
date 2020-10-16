@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 
 use MdsExceptions\InvalidColliveryDataException;
 use MdsExceptions\InvalidResourceDataException;
-use MdsExceptions\SoapConnectionException;
+use MdsExceptions\CurlConnectionException;
 use MdsSupportingClasses\MdsColliveryService;
 use MdsSupportingClasses\MdsFields;
 use MdsSupportingClasses\MdsSettings;
@@ -240,7 +240,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                             }
                         }
                     }
-                } catch (SoapConnectionException $e) {
+                } catch (CurlConnectionException $e) {
                 } catch (InvalidColliveryDataException $e) {
                 }
             }
@@ -259,42 +259,33 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         }
 
         $error = false;
-        $newAuthentication = true;
+        $authentication = true;
         $postData = $this->get_post_data();
         $userNameKey = $this->plugin_id.$this->id.'_';
         $passwordKey = $this->plugin_id.$this->id.'_';
         $userName = trim($postData[$userNameKey.'mds_user']);
         $password = trim($postData[$passwordKey.'mds_pass']);
 
-        if ($this->get_option('mds_user') != $userName || $this->get_option('mds_pass') != $password) {
-            if (!filter_var($userName, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Your MDS Username is not a valid email address, unable to save your Your MDS Username or Password';
-            } else {
-                $newAuthentication = $this->collivery->isNewInstanceAuthenticated(
-                    [
-                        'email' => $postData[$this->plugin_id.$this->id.'_mds_user'],
-                        'password' => $postData[$this->plugin_id.$this->id.'_mds_pass'],
-                    ]
-                );
-                try {
-                    if (!$newAuthentication) {
-                        throw new InvalidColliveryDataException(
-                            'Incorrect MDS account details, username and password discarded',
-                            'WC_Mds_Shipping_Method::validate_settings_fields',
-                            $this->collivery_service->loggerSettingsArray(),
-                            $postData
-                        );
-                    }
-                } catch (InvalidColliveryDataException $e) {
-                    $error = $e->getMessage();
+        if (!filter_var($userName, FILTER_VALIDATE_EMAIL)) {
+            $error = 'Your MDS Username is not a valid email address, unable to save your Your MDS Username or Password';
+        } else {
+            $authentication = $this->collivery->makeAuthenticationRequest([
+                'email' => $userName,
+                'password' => $password,
+            ]);
+    
+            try {
+                if (!$authentication) {
+                    throw new InvalidColliveryDataException(
+                        'Incorrect MDS account details, username and password discarded',
+                        'WC_Mds_Shipping_Method::validate_settings_fields',
+                        $this->collivery_service->loggerSettingsArray(),
+                        $postData
+                    );
                 }
+            } catch (InvalidColliveryDataException $e) {
+                $error = $e->getMessage();
             }
-        } elseif (!$this->collivery->isCurrentInstanceAuthenticated()) {
-            $this->add_error(
-                'Your current MDS Username and or password was not valid, we have replaced them with the default'
-            );
-            $postData[$userNameKey.'mds_user'] = 'api@collivery.co.za';
-            $postData[$passwordKey.'mds_pass'] = 'api123';
         }
 
         if ($error) {
