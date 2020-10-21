@@ -126,7 +126,7 @@ class Collivery
                 $errmsg = curl_error($client);
                 curl_close($client);
 
-                throw new CurlConnectionException("ConsumeAPI()", "Error executing request", [
+                throw new CurlConnectionException("Error executing request", "ConsumeAPI()", [
                     "Code" => $errno,
                     "Message" => $errmsg,
                     "URL" => $url,
@@ -183,10 +183,10 @@ class Collivery
 
         try {
 
-            $authenticate = $this->consumeAPI('https://api.collivery.co.za/v3/login', array(
+            $authenticate = $this->consumeAPI('https://api.collivery.co.za/v3/login', [
                 "email" => $user_email,
                 "password" => $user_password
-            ), 'POST', true);
+            ], 'POST', true);
 
             $authenticate = $authenticate['data'];
             
@@ -281,7 +281,7 @@ class Collivery
             return $this->cache->get('collivery.towns.'.$country.'.'.$province);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", array("country" => $country, "per_page" => "0"), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", ["country" => $country, "per_page" => "0"], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -325,7 +325,7 @@ class Collivery
             return $this->cache->get('collivery.search_towns.'.$name);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", array("search" => $name), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", ["search" => $name], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -358,7 +358,7 @@ class Collivery
             return $this->cache->get('collivery.suburbs.'.$town_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/suburbs", array("town_id" => $town_id), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/suburbs", ["town_id" => $town_id], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -391,7 +391,7 @@ class Collivery
             return $this->cache->get('collivery.location_types');
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/location_types", array("api_token" => ""), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/location_types", ["api_token" => ""], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
                 
@@ -422,7 +422,7 @@ class Collivery
             return $this->cache->get('collivery.services');
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/service_types", array("api_token" => ""), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/service_types", ["api_token" => ""], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -455,7 +455,7 @@ class Collivery
             return $this->cache->get('collivery.address.'.$this->client_id.'.'.$address_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/address/".$address_id, array("api_token" => ""), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/address/".$address_id, ["api_token" => ""], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -489,7 +489,7 @@ class Collivery
         } else {
             try {
                 if (empty($filter)) {
-                    $filter= array("per_page" => "0");
+                    $filter= ["per_page" => "0"];
                 }
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/address", $filter, 'GET');
             } catch (CurlConnectionException $e) {
@@ -524,7 +524,7 @@ class Collivery
             return $this->cache->get('collivery.contacts.'.$this->client_id.'.'.$address_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/contacts", array("address_id" => $address_id), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/contacts", ["address_id" => $address_id], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -557,7 +557,7 @@ class Collivery
             return $this->cache->get('collivery.pod.'.$this->client_id.'.'.$collivery_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/proofs_of_delivery/", array("waybill_id" => $collivery_id, "per_page" => "0"), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/proofs_of_delivery/", ["waybill_id" => $collivery_id, "per_page" => "0"], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -570,7 +570,7 @@ class Collivery
                 
                 foreach ($result as $document) {
                     if ($document['type'] == "POD") {
-                        $result = $this->consumeAPI($document['image_url'], array("api_token" => ""), 'GET');
+                        $result = $this->consumeAPI($document['image_url'], ["api_token" => ""], 'GET');
                         if (isset($result['data'])) {
                             if ($this->check_cache) {
                                 $this->cache->put('collivery.pod.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 24);
@@ -598,7 +598,7 @@ class Collivery
     public function getWaybill($collivery_id)
     {
         try {
-            $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill_documents/".$collivery_id."/waybill", array("api_token" => ""), 'GET');
+            $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill_documents/".$collivery_id."/waybill", ["api_token" => ""], 'GET');
         } catch (CurlConnectionException $e) {
             $this->catchException($e);
 
@@ -626,7 +626,7 @@ class Collivery
             return $this->cache->get('collivery.parcel_image_list.'.$this->client_id.'.'.$collivery_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/parcel_images", array("waybill_id" => $collivery_id), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/parcel_images", ["waybill_id" => $collivery_id], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -665,7 +665,7 @@ class Collivery
             return $this->cache->get('collivery.parcel_image.'.$this->client_id.'.'.$parcel_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/parcel_images/".$parcel_id, array("api_token" => ""), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/parcel_images/".$parcel_id, ["api_token" => ""], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -700,7 +700,7 @@ class Collivery
     public function getStatus($collivery_id)
     {
         try {
-            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, array("api_token" => ""), 'GET');
+            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, ["api_token" => ""], 'GET');
         } catch (CurlConnectionException $e) {
             $this->catchException($e);
 
@@ -765,14 +765,13 @@ class Collivery
         }
 
         if (isset($data["custom_id"]) && is_integer($data["custom_id"])) {
-            if ($data["custom_id"] == 0) {
-                $data["custom_id"] = null;
-            }
+            $data["custom_id"] = $data["custom_id"] == 0 || $data["custom_id"] == "0" ? null : $data["custom_id"];
         }
 
         if (!$this->hasErrors()) {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/address", $data, 'POST');
+                new CurlConnectionException("Checking New Address Response", "Collivery::addAddress()", [$data, $result]);
                 $this->cache->forget('collivery.addresses.'.$this->client_id);
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
@@ -938,7 +937,7 @@ class Collivery
 
             $newObject = [];
 
-            $newObject = array(
+            $newObject = [
                 "service" => $data["service"],
                 "parcels" => $data["parcels"],
                 "collection_address" => $data["collivery_from"],
@@ -950,7 +949,7 @@ class Collivery
                 "risk_cover" => $data["cover"],
                 "special_instructions" => $data["instructions"],
                 "reference" => $data["cust_ref"]
-            );
+            ];
 
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill", $newObject, 'POST');
@@ -984,7 +983,7 @@ class Collivery
     public function acceptCollivery($collivery_id)
     {
         try {
-            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, array("status_id" => 3), 'PUT');
+            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, ["status_id" => 3], 'PUT');
         } catch (CurlConnectionException $e) {
             $this->catchException($e);
 
@@ -1020,7 +1019,7 @@ class Collivery
             return $this->cache->get('collivery.waybill.'.$this->client_id.'.'.$collivery_id);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill/".$collivery_id, array("api_token" => ""), 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/waybill/".$collivery_id, ["api_token" => ""], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
@@ -1184,5 +1183,15 @@ class Collivery
         
 
         return $key_value_array;
+    }
+
+
+    /**
+     * Returns the Collivery User Id for the credentials used by the store owner.
+     * 
+     * @return Integer - The User Id;
+     */
+    public function getColliveryUserId() {
+        return $this->authenticate()['id'];
     }
 }

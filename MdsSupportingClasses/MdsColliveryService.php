@@ -608,6 +608,11 @@ class MdsColliveryService
                 'email'         => $overrides['collection_email'],
             ]);
 
+            if (!is_array($collectionAddress)) {
+                $errors = $this->collivery->getErrors();
+                throw new InvalidColliveryDataException('Error sending to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['overrides' => $overrides, 'errors' => $errors]);
+            }
+
             $collivery_from = $collectionAddress['id'];
             $contact_from = $collectionAddress['contacts'][0]['id'];
         }
@@ -623,8 +628,14 @@ class MdsColliveryService
                 'full_name'     => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
                 'cellphone'     => preg_replace('/[^0-9]/', '', $order->get_billing_phone()),
                 'email'         => str_replace(' ', '', $order->get_billing_email()),
-                'custom_id'     => $order->get_user_id(),
+                'custom_id'     => ($this->collivery->getColliveryUserId().$order->get_user_id().hash("adler32", str_replace(' ', '', $order->get_billing_email()))),
             ]);
+
+            if (!is_array($deliveryAddress)) {
+                $errors = $this->collivery->getErrors();
+                throw new InvalidColliveryDataException('Error sending to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['overrides' => $overrides, 'errors' => $errors]);
+            }
+
             $collivery_to = $deliveryAddress['id'];
             $contact_to   = $deliveryAddress['contacts'][0]['id'];
         } elseif (isset($overrides['which_delivery_address']) && $overrides['which_delivery_address'] === 'saved') {
@@ -644,8 +655,14 @@ class MdsColliveryService
                 'phone'         => preg_replace('/[^0-9]/', '', $overrides['delivery_phone']),
                 'cellphone'     => preg_replace('/[^0-9]/', '', $overrides['delivery_cellphone']),
                 'email'         => $overrides['delivery_email'],
-                'custom_id'     => $order->get_user_id(),
+                'custom_id'     => ($this->collivery->getColliveryUserId().$order->get_user_id().hash("adler32", $overrides['delivery_email'])),
             ]);
+
+            if (!is_array($deliveryAddress)) {
+                $errors = $this->collivery->getErrors();
+                throw new InvalidColliveryDataException('Error sending to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['overrides' => $overrides, 'errors' => $errors]);
+            }
+
             $collivery_to = $deliveryAddress['id'];
             $contact_to   = $deliveryAddress['contacts'][0]['id'];
         }
@@ -787,7 +804,7 @@ class MdsColliveryService
      */
     public function addColliveryAddress(array $array)
     {
-        $towns = $this->collivery->getTowns();
+        $towns = $this->collivery->make_key_value_array($this->collivery->getTowns(), 'id', 'name');
         $location_types = $this->collivery->getLocationTypes();
 
         if (!is_numeric($array['town'])) {
@@ -811,15 +828,15 @@ class MdsColliveryService
         }
 
         if (empty($array['location_type']) || !isset($location_types[$location_type_id])) {
-            throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
+            throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), [$array, $location_types, $location_type_id]);
         }
 
         if (empty($array['town']) || !isset($towns[$town_id])) {
-            throw new InvalidAddressDataException('Invalid town', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
+            throw new InvalidAddressDataException('Invalid town', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), [$array, $towns, $town_id]);
         }
 
         if (empty($array['suburb']) || !isset($suburbs[$suburb_id])) {
-            throw new InvalidAddressDataException('Invalid suburb', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), $array);
+            throw new InvalidAddressDataException('Invalid suburb', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), [$array, $suburbs, $suburb_id, $town_id]);
         }
 
         if (empty($array['cellphone']) || !is_numeric($array['cellphone'])) {
@@ -837,40 +854,46 @@ class MdsColliveryService
             'location_type' => $location_type_id,
             'suburb_id' => $suburb_id,
             'town_id' => $town_id,
-            'contact' => array(
+            'contact' => [
                 'full_name' => $array['full_name'], 
                 'cellphone' => preg_replace('/[^0-9]/', '', $array['cellphone']), 
                 'work_phone' => (!empty($array['phone'])) ? preg_replace('/[^0-9]/', '', $array['phone']) : '',
-                'email_address' => $array['email']),
+                'email_address' => $array['email']],
             'custom_id' => $array['custom_id']
         ];
 
         // Before adding an address lets search MDS and see if we have already added this address
         $searchAddresses = $this->searchAndMatchAddress([
-            'custom_id' => $array['custom_id'],
-            'suburb_id' => $suburb_id,
-            'town_id' => $town_id,
-        ], $newAddress);
+            'custom_id' => $array['custom_id']
+        ], $newAddress, $array['custom_id'], 0);
 
         if (is_array($searchAddresses)) {
             return $searchAddresses;
         } else {
             $this->cache->clear(['addresses', 'contacts']);
-
+            $newAddress['custom_id'] = $searchAddresses;
             return $this->collivery->addAddress($newAddress);
         }
     }
 
     /**
      * Searches for an address and matches each important field.
+     * If it doesn't matches, it tries again adding a character to the end of the custom_id which increments each try.
+     * If a matches it returns the new Address
+     * If it doesn't match and an address isn't found with the new custom_id it returns the custom_id so that it can be added.
      *
      * @param array $filters
      * @param array $newAddress
+     * @param string $original_custom_id
+     * @param integer $counter
      *
-     * @return bool
+     * @return array|string (returns address found or custom_id to use when inserting new address)
      */
-    public function searchAndMatchAddress(array $filters, array $newAddress)
+    public function searchAndMatchAddress(array $filters, array $newAddress, $original_custom_id, $counter)
     {
+        if ($counter > 0) {
+            $filters['custom_id'] = $original_custom_id.$counter;
+        }
         $searchAddresses = $this->collivery->getAddresses($filters);
         if (!empty($searchAddresses)) {
             $match = true;
@@ -902,11 +925,16 @@ class MdsColliveryService
                     return $address;
                 }
             }
+
+            if (!$match) {
+                $counter++;
+                return $this->searchAndMatchAddress($filters, $newAddress, $original_custom_id, $counter);
+            }
         } else {
             $this->collivery->clearErrors();
         }
 
-        return false;
+        return $filters['custom_id'];
     }
 
     /**

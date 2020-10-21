@@ -213,7 +213,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'risk_cover' => $riskCover,
                                     'parcels' => $package['cart']['products'],
                                     'exclude_weekend' => true,
-                                    'services' => array($service['id']),
+                                    'services' => [$service['id']],
                                 ];
                                 
                                 // Looks like it's being executed here;

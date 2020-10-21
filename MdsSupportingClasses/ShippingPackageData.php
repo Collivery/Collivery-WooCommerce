@@ -55,7 +55,7 @@ class ShippingPackageData
 
 
         $extractedFields = $this->extractRequiredFields($input, $packages);
-        $requiredFields = array("to_town_id" => $this->getTownId($extractedFields), "to_town_type" => $this->getLocationType($extractedFields));
+        $requiredFields = ["to_town_id" => $this->getTownId($extractedFields), "to_town_type" => $this->getLocationType($extractedFields)];
 
         if (!isset($requiredFields['to_town_id']) || ($requiredFields['to_town_id'] == '')) {
             return $packages;
@@ -176,7 +176,7 @@ class ShippingPackageData
             }
         }
 
-        return array("to_town_id" => $to_town_id, "to_town_type" => $to_town_type);
+        return ["to_town_id" => $to_town_id, "to_town_type" => $to_town_type];
         //return (object) compact('to_town_id', 'to_town_type');
     }
 

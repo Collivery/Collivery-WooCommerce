@@ -148,7 +148,7 @@ function mds_confirmed_order()
         $shipping_total *= 1.15;
     }
 
-    $quoted_data = array("Shipping_Total" => $shipping_total, "Total_Weight" => $total_weight);
+    $quoted_data = ["Shipping_Total" => $shipping_total, "Total_Weight" => $total_weight];
 
     // Do we have images of the parcels
     if ($pod = $collivery->getPod($data->waybill)) {
@@ -383,7 +383,7 @@ function quote_admin_callback()
 
     // Now lets get the price for
     $data = [
-        'services' => array($post['service']),
+        'services' => [$post['service']],
         'parcels' => $post['parcels'],
         'exclude_weekend' => true,
         'risk_cover' => $post['cover'],
