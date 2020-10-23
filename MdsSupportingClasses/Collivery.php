@@ -771,7 +771,6 @@ class Collivery
         if (!$this->hasErrors()) {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/address", $data, 'POST');
-                new CurlConnectionException("Checking New Address Response", "Collivery::addAddress()", [$data, $result]);
                 $this->cache->forget('collivery.addresses.'.$this->client_id);
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);

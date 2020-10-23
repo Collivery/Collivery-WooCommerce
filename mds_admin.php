@@ -320,7 +320,7 @@ function suburbs_admin_callback()
         $fields = $collivery->getSuburbs($_POST['town']);
         if (!empty($fields)) {
             wp_die(View::make('_options', [
-                'fields' => $collivery->make_key_value_array($fields, 'id', 'name'),//make_key_value_array($fields, 'id', 'name'),
+                'fields' => $collivery->make_key_value_array($fields, 'id', 'name'),
                 'placeholder' => 'Select suburb',
             ]));
         } else {

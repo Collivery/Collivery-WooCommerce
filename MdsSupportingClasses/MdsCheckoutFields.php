@@ -28,7 +28,7 @@ class MdsCheckoutFields
      * 
      * @return Array $key_value_array - {key:value, key:value} - Used for setting up dropdown lists.
      */
-    function make_key_value_array($data, $key, $value) {
+    private function make_key_value_array($data, $key, $value) {
         $key_value_array = [];
 
         foreach ($data as $item) {
@@ -62,7 +62,7 @@ class MdsCheckoutFields
                 $prefix = $prefix.'_';
             }
 
-            $towns = $this->make_key_value_array($resources['towns'], 'name', 'name');
+            $towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
             $location_types = $this->make_key_value_array($resources['location_types'], 'id', 'name');
 
             $towns = ['' => 'Select Town'] + $towns;

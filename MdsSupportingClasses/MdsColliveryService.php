@@ -588,7 +588,7 @@ class MdsColliveryService
 
         if (!isset($overrides['which_collection_address']) && !isset($overrides['collivery_from'])) {
             $collivery_from = $defaults['default_address_id'];
-            $contact_from = $defaults['contacts']['id'];
+            $contact_from = $defaults['contacts'][0]['id'];
         } elseif (isset($overrides['which_collection_address']) && $overrides['which_collection_address'] === 'saved') {
             $collivery_from = $overrides['collivery_from'];
             $contact_from   = $overrides['contact_from'];
@@ -721,6 +721,12 @@ class MdsColliveryService
 
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
             $colliveryOptions['collection_time'] = $overrides['collection_time'];
+        } else {
+            $collection_time = date("Y-m-d H:i:s", strtotime(date("Y-m-d").' + 1 days + 12 hours'));
+            while(date('N', strtotime($collection_time)) >= 6) {
+                $collection_time = date("Y-m-d H:i:s", strtotime($collection_time.' + 1 days'));
+            }
+            $colliveryOptions['collection_time'] = $collection_time;
         }
 
         $collivery     = $this->addCollivery($colliveryOptions);
@@ -1177,12 +1183,7 @@ class MdsColliveryService
         }
 
         $suburbs = $collivery->make_key_value_array($collivery->getSuburbs($town), 'id', 'name');
-        $suburb  = array_filter($suburbs, function ($name) use ($suburbName) {
-          return trim(strtolower($name)) === trim(strtolower($suburbName));
-        });
 
-        $suburb_id = array_keys($suburb);
-
-        return reset($suburb_id);
+        return (int)array_search($suburbName, $suburbs);
     }
 }

@@ -14,7 +14,7 @@ if (!empty($fields)) {
             $value = $text['contact_id'];
             $text = $text['nice_contact'];
         }
-        if ($placeholder == 'Select contact') {
+        if ($placeholder == 'Select contact' || $placeholder == 'Select suburb') {
             if ((isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
                 echo '<option value="'.$value.'" selected="selected">'.$text.'</option>';
             } else {
@@ -27,6 +27,5 @@ if (!empty($fields)) {
                 echo '<option value="'.$text.'">'.$text.'</option>';
             }
         }   
-        
     }
 }
