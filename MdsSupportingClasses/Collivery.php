@@ -244,41 +244,17 @@ class Collivery
     }
 
     /**
-     * Returns a list of provinces and their codes for creating new addresses.
-     *
-     * @return array List of provinces and their codes
-     */
-    public function getProvinces()
-    {
-        return [
-            'CAP' => 'Western Cape',
-            'EC' => 'Eastern Cape',
-            'GAU' => 'Gauteng',
-            'KZN' => 'Kwa-Zulu Natal',
-            'MP' => 'Mpumalanga',
-            'NC' => 'Northern Cape',
-            'NP' => 'Limpopo',
-            'NW' => 'North-West',
-            'OFS' => 'Free State',
-        ];
-    }
-
-    /**
      * Returns a list of towns and their ID's for creating new addresses.
-     * Town can be filtered by country of province (ZAF Only).
      *
      * @param string $country  Filter towns by Country
-     * @param string $province Filter towns by South African Provinces
      *
      * @return array List of towns and their ID's
      * @throws Exception
      */
-    public function getTowns($country = 'ZAF', $province = null)
+    public function getTowns($country = 'ZAF')
     {
-        if (($this->check_cache) && is_null($province) && $this->cache->has('collivery.towns.'.$country)) {
+        if (($this->check_cache) && $this->cache->has('collivery.towns.'.$country)) {
             return $this->cache->get('collivery.towns.'.$country);
-        } elseif (($this->check_cache) && !is_null($province) && $this->cache->has('collivery.towns.'.$country.'.'.$province)) {
-            return $this->cache->get('collivery.towns.'.$country.'.'.$province);
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", ["country" => $country, "per_page" => "0"], 'GET');
@@ -289,14 +265,8 @@ class Collivery
             }
 
             if (isset($result['data'])) {
-                if (is_null($province)) {
-                    if ($this->check_cache) {
-                        $this->cache->put('collivery.towns.'.$country, $result['data'], 60 * 24);
-                    }
-                } else {
-                    if ($this->check_cache) {
-                        $this->cache->put('collivery.towns.'.$country.'.'.$province, $result['data'], 60 * 24);
-                    }
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.towns.'.$country, $result['data'], 60 * 24);
                 }
 
                 return $result['data'];
@@ -1168,6 +1138,10 @@ class Collivery
      */
     public function make_key_value_array($data, $key, $value, $isContact = false) {
         $key_value_array = [];
+
+        if (!is_array($data)) {
+            return [];
+        }
 
         if ($isContact) {
             foreach ($data as $item) {

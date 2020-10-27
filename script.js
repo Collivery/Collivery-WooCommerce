@@ -12,7 +12,8 @@ jQuery(document).ready(function () {
         var el = jQuery('#billing_' + field + ', #shipping_' + field);
         try {
             el.select2({
-                placeholder: placeholder
+                placeholder: placeholder,
+                width: '100%'
             });
         } catch(err) {
             console.log(err)
@@ -20,9 +21,9 @@ jQuery(document).ready(function () {
     });
 
     var ajaxUpdates = [
-        {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
+        //{fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
         {fromField: 'billing_city', field: 'billing_suburb', prefix: 'suburbs', db_prefix: 'billing'},
-        {fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
+        //{fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
         {fromField: 'shipping_city', field: 'shipping_suburb', prefix: 'suburbs', db_prefix: 'shipping'}
     ];
 

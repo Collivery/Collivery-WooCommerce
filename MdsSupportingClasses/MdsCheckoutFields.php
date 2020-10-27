@@ -31,6 +31,10 @@ class MdsCheckoutFields
     private function make_key_value_array($data, $key, $value) {
         $key_value_array = [];
 
+        if (!is_array($data)) {
+            return [];
+        }
+
         foreach ($data as $item) {
             $key_value_array[$item[$key]] = $item[$value];
         }
@@ -62,7 +66,7 @@ class MdsCheckoutFields
                 $prefix = $prefix.'_';
             }
 
-            $towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
+            $towns = $this->make_key_value_array($resources['towns'], 'name', 'name');
             $location_types = $this->make_key_value_array($resources['location_types'], 'id', 'name');
 
             $towns = ['' => 'Select Town'] + $towns;

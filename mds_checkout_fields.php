@@ -75,21 +75,10 @@ if ($mds->isEnabled()) {
 				$selectedTown = $mds->extractUserProfileField( get_current_user_id(), $_POST['db_prefix'] . 'city' );
 			}
 
-			if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
+			//if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
 				$collivery   = $mds->returnColliveryClass();
-				$provinceMap = [
-					'EC'  => 'EC',
-					'FS'  => 'OFS',
-					'GP'  => 'GAU',
-					'KZN' => 'KZN',
-					'LP'  => 'NP',
-					'MP'  => 'MP',
-					'NC'  => 'NC',
-					'NW'  => 'NW',
-					'WC'  => 'CAP',
-				];
-				$province    = 'unknown';//isset( $provinceMap[ $_POST['parentValue'] ] ) ? $provinceMap[ $_POST['parentValue'] ] : 'unknown';
-                $towns      = $collivery->getTowns('ZAF', $province);
+				
+                $towns      = $collivery->getTowns('ZAF');
 
 				$key_value_array = [];
 				foreach ($towns as $item) {
@@ -101,11 +90,11 @@ if ($mds->isEnabled()) {
 					'placeholder'   => 'Select town/city',
 					'selectedValue' => $selectedTown,
 				] ) );
-			} else {
-				wp_send_json( View::make( '_options', [
-					'placeholder' => 'First select province',
-				] ) );
-			}
+			// } else {
+			// 	wp_send_json( View::make( '_options', [
+			// 		'placeholder' => 'First select province',
+			// 	] ) );
+			// }
 		}
 
 		add_action( 'wp_ajax_mds_collivery_generate_towns', 'generate_towns' );
