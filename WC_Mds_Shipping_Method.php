@@ -297,7 +297,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
         $this->display_errors();
 
-        $result = $newAuthentication && parent::process_admin_options();
+        $result = $authentication && parent::process_admin_options();
         if ($result && !$error) {
             $this->collivery_service = $this->collivery_service->newInstance($this->settings);
 

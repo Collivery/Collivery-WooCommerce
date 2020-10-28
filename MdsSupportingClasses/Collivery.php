@@ -136,19 +136,6 @@ class Collivery
 
             curl_close($client);
 
-            // This will return all of the information, instead of just the first 300
-            // Only when the "per_page" value is set to 0.
-            if (isset($data["per_page"]) && $data["per_page"] == "0") {
-                $result = json_decode($result, true);
-                if (isset($result['meta'])) {
-                    $data["per_page"] = $result['meta']['total'];
-                    if ($data["per_page"] == "0") {
-                        return $result;
-                    }
-                    return $this->consumeAPI($url, $data, 'GET');
-                }
-            }
-
             // If $result is already an array.
             if (is_array($result)) {
                 return $result;
@@ -169,7 +156,7 @@ class Collivery
      *
      * @return array
      */
-    private function makeAuthenticationRequest($settings = null)
+    public function makeAuthenticationRequest($settings = null)
     {
         if ($settings) {
             $user_email = $settings['email'];
