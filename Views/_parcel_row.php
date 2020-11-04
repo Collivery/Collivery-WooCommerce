@@ -15,7 +15,7 @@
         <input type="number" name="<?php echo isset($count) ? "parcels[$count][weight]" : ''; ?>" value="<?php echo isset($parcel['weight']) ? $parcel['weight'] : '' ?>" placeholder="kg" class="form-control" rel="weight" min="0" style="width: 60px;">
     </td>
     <td>
-        <input type="number" name="<?php echo isset($count) ? "parcels[$count][quantity]" : ''; ?>" value="<?php echo isset($parcel['quantity']) ? $parcel['quantity'] : isset($parcel['quantity']) ? $parcel['quantity'] : 1 ?>" placeholder="pcs" class="<?php echo isset($count) ? ' parcel_qty' : ''; ?>" rel="qty" min="1" style="width: 53px;">
+        <input type="number" name="<?php echo isset($count) ? "parcels[$count][quantity]" : ''; ?>" value="<?php echo isset($parcel['quantity']) ? $parcel['quantity'] : (isset($parcel['quantity']) ? $parcel['quantity'] : 1) ?>" placeholder="pcs" class="<?php echo isset($count) ? ' parcel_qty' : ''; ?>" rel="qty" min="1" style="width: 53px;">
     </td>
     <?php if (isset($include_product_titles) && $include_product_titles):?>
         <td>

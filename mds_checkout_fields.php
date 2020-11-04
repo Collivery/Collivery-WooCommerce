@@ -75,32 +75,26 @@ if ($mds->isEnabled()) {
 				$selectedTown = $mds->extractUserProfileField( get_current_user_id(), $_POST['db_prefix'] . 'city' );
 			}
 
-			if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
+			//if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
 				$collivery   = $mds->returnColliveryClass();
-				$provinceMap = [
-					'EC'  => 'EC',
-					'FS'  => 'OFS',
-					'GP'  => 'GAU',
-					'KZN' => 'KZN',
-					'LP'  => 'NP',
-					'MP'  => 'MP',
-					'NC'  => 'NC',
-					'NW'  => 'NW',
-					'WC'  => 'CAP',
-				];
-				$province    = isset( $provinceMap[ $_POST['parentValue'] ] ) ? $provinceMap[ $_POST['parentValue'] ] : 'unknown';
-                $towns      = $collivery->getTowns('ZAF', $province);
-                $towns       = array_combine($towns, $towns);
+				
+                $towns      = $collivery->getTowns('ZAF');
+
+				$key_value_array = [];
+				foreach ($towns as $item) {
+					$key_value_array[$item['id']] = $item['name'];
+				}
+
                 wp_send_json( View::make( '_options', [
-					'fields'        => $towns,
+					'fields'        => $key_value_array,
 					'placeholder'   => 'Select town/city',
 					'selectedValue' => $selectedTown,
 				] ) );
-			} else {
-				wp_send_json( View::make( '_options', [
-					'placeholder' => 'First select province',
-				] ) );
-			}
+			// } else {
+			// 	wp_send_json( View::make( '_options', [
+			// 		'placeholder' => 'First select province',
+			// 	] ) );
+			// }
 		}
 
 		add_action( 'wp_ajax_mds_collivery_generate_towns', 'generate_towns' );
@@ -123,14 +117,32 @@ if ($mds->isEnabled()) {
 
 			if ( ( isset( $_POST['parentValue'] ) ) && ( $_POST['parentValue'] != '' ) ) {
 				$collivery = $mds->returnColliveryClass();
+
+				$towns = $collivery->getTowns();
+
+				$key_value_array = [];
+
+				foreach ($towns as $item) {
+					$key_value_array[$item['id']] = $item['name'];
+				}
+				
+
 				$town_id   = is_numeric($_POST['parentValue']) ?
                     $_POST['parentValue'] :
-                    array_search( $_POST['parentValue'], $collivery->getTowns() );
-				$fields    = $collivery->getSuburbs( $town_id );
+					array_search( $_POST['parentValue'], $key_value_array );
+					
+
+				$fields   = $collivery->getSuburbs( $town_id );
 
 				if ( ! empty( $fields ) ) {
+
+					$key_value_array = [];
+					foreach ($fields as $item) {
+						$key_value_array[$item['id']] = $item['name'];
+					}
+
 					wp_send_json( View::make( '_options', [
-						'fields'        => $fields,
+						'fields'        => $key_value_array,
 						'placeholder'   => 'Select suburb',
 						'selectedValue' => $selectedSuburb,
 					] ) );
@@ -149,4 +161,5 @@ if ($mds->isEnabled()) {
 		add_action( 'wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs' );
 		add_action( 'wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs' );
 	}
+	
 }

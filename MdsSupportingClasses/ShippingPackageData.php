@@ -38,10 +38,10 @@ class ShippingPackageData
      * @param $input
      *
      * @return mixed
-     * @throws \MdsExceptions\SoapConnectionException
+     * @throws \MdsExceptions\CurlConnectionException
      */
     public function build($packages, $input)
-    {
+    {   
         if ($this->settings->getValue('enabled') == 'no' || !$defaults = $this->service->returnDefaultAddress()) {
             return $packages;
         }
@@ -53,18 +53,31 @@ class ShippingPackageData
             return $packages;
         }
 
-        $extractedFields = $this->extractRequiredFields($input, $packages);
-        $requiredFields = (object) [
-            'to_town_id' => $this->getTownId($extractedFields),
-            'to_town_type' => $this->getLocationType($extractedFields)
-        ];
 
-        if (!isset($requiredFields->to_town_id) || ($requiredFields->to_town_id == '')) {
+        $extractedFields = $this->extractRequiredFields($input, $packages);
+        $requiredFields = ["to_town_id" => $this->getTownId($extractedFields), "to_town_type" => $this->getLocationType($extractedFields)];
+
+        if (!isset($requiredFields['to_town_id']) || ($requiredFields['to_town_id'] == '')) {
             return $packages;
         }
 
-        $towns = $this->collivery->getTowns();
+        
+
+        if (!is_integer($requiredFields['to_town_id'])) {
+            // Assume it's the town name.
+            $towns = $this->collivery->getTowns();
+            foreach ($towns as $item) {
+                if ($requiredFields['to_town_id'] == $item['name']) {
+                    $requiredFields['to_town_id'] = $item['id'];
+                    break;
+                }
+            }
+        }
+
+        
         $location_types = $this->collivery->getLocationTypes();
+        $suburb = $this->collivery->getSuburbs($requiredFields['to_town_id']);
+
 
         $package['cart'] = $cart;
         $package['method_free'] = $this->settings->getValue('method_free');
@@ -75,12 +88,13 @@ class ShippingPackageData
         $package['destination'] = [
             'from_town_id' => (int) $defaults['address']['town_id'],
             'from_location_type' => (int) $defaults['address']['location_type'],
-            'city' => $requiredFields->to_town_id,
-            'to_town_id' => (int) array_search($requiredFields->to_town_id, $towns),
-            'to_location_type' => (int) array_search($requiredFields->to_town_type, $location_types),
+            'city' => $suburb[0]['town']['name'],
+            'to_town_id' => (int) $requiredFields['to_town_id'],
+            'to_location_type' => (int) $requiredFields['to_town_type'],
             'country' => 'ZA',
         ];
 
+        
         $customer = WC ()->customer;
         if ( !isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != true) {
             $package['destination']['state'] = $customer->get_billing_state();
@@ -162,18 +176,19 @@ class ShippingPackageData
             }
         }
 
-        return (object) compact('to_town_id', 'to_town_type');
+        return ["to_town_id" => $to_town_id, "to_town_type" => $to_town_type];
+        //return (object) compact('to_town_id', 'to_town_type');
     }
 
     /**
-     * @param stdClass $fields
+     * @param array $fields
      * @return int|null|string
      */
-    private function getTownId(stdClass $fields)
+    private function getTownId($fields)
     {
-        $to_town_id = $fields->to_town_id;
+        $to_town_id = $fields['to_town_id'];
 
-        if (empty($fields->to_town_id) && get_current_user_id() > 0) {
+        if (empty($fields['to_town_id']) && get_current_user_id() > 0) {
             $to_town_id = $this->service->extractUserProfileField(get_current_user_id(), 'billing_city');
         }
 
@@ -181,17 +196,17 @@ class ShippingPackageData
     }
 
     /**
-     * @param stdClass $fields
-     * @return int|null|string
+     * @param array $fields
+     * @return int|null
      */
-    private function getLocationType(stdClass $fields)
+    private function getLocationType($fields)
     {
-        $to_town_type = property_exists($fields, 'to_town_type')? $fields->to_town_type : 1;
+        $to_town_type = empty($fields['to_town_type']) == 0 ? $fields['to_town_type'] : 15;
 
-        if (empty($fields->to_town_type) && get_current_user_id() > 0) {
+        if (empty($to_town_type) && get_current_user_id() > 0) {
             $to_town_type = $this->service->extractUserProfileField(get_current_user_id(), 'billing_location_type');
             if (empty($to_town_type)) {
-                $to_town_type = 'Private House';
+                $to_town_type = 15;
             }
         }
 

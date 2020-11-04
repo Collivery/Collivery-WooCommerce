@@ -10,15 +10,22 @@ if (!empty($placeholder)) {
 
 if (!empty($fields)) {
     foreach ($fields as $value => $text) {
-        if (is_array($text) && isset($text['nice_contact'])) {
+        if (is_array($text) && isset($text['nice_contact']) ) {
             $value = $text['contact_id'];
             $text = $text['nice_contact'];
         }
-
-        if ((isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
-            echo '<option value="'.$value.'" selected="selected">'.$text.'</option>';
+        if ($placeholder == 'Select contact' || $placeholder == 'Select suburb') {
+            if ((isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
+                echo '<option value="'.$value.'" selected="selected">'.$text.'</option>';
+            } else {
+                echo '<option value="'.$value.'">'.$text.'</option>';
+            }
         } else {
-            echo '<option value="'.$value.'">'.$text.'</option>';
-        }
+            if ((isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
+                echo '<option value="'.$text.'" selected="selected">'.$text.'</option>';
+            } else {
+                echo '<option value="'.$text.'">'.$text.'</option>';
+            }
+        }   
     }
 }

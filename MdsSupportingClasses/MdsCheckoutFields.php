@@ -22,6 +22,27 @@ class MdsCheckoutFields
     }
 
     /**
+     * @param Array $data - Contains the array you want to modify
+     * @param string $key - This is the name of the Id field
+     * @param string $value - This is the name of the Value field
+     * 
+     * @return Array $key_value_array - {key:value, key:value} - Used for setting up dropdown lists.
+     */
+    private function make_key_value_array($data, $key, $value) {
+        $key_value_array = [];
+
+        if (!is_array($data)) {
+            return [];
+        }
+
+        foreach ($data as $item) {
+            $key_value_array[$item[$key]] = $item[$value];
+        }
+
+        return $key_value_array;
+    }
+
+    /**
      * @param string|null $prefix
      *
      * @return array
@@ -44,8 +65,12 @@ class MdsCheckoutFields
             if ($prefix) {
                 $prefix = $prefix.'_';
             }
-            $towns = ['' => 'Select Town'] + array_combine($resources['towns'], $resources['towns']);
-            $location_types = ['' => 'Select Premises Type'] + array_combine($resources['location_types'], $resources['location_types']);
+
+            $towns = $this->make_key_value_array($resources['towns'], 'name', 'name');
+            $location_types = $this->make_key_value_array($resources['location_types'], 'id', 'name');
+
+            $towns = ['' => 'Select Town'] + $towns;
+            $location_types = ['' => 'Select Premises Type'] + $location_types;
 	        $customer = WC()->customer;
 	        $cityPrefix = $prefix ? $prefix : 'billing_';
             
@@ -58,9 +83,12 @@ class MdsCheckoutFields
 	        $suburbs = ['' => 'First select town/city'];
 
 	        if ($townName) {
-		        $townId = array_search($townName, $resources['towns']);
-		        $suburbs = $suburbs + $service->returnColliveryClass()->getSuburbs($townId);
-	        }
+                $array_search_towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
+		        $townId = array_search($townName, $array_search_towns);
+                $suburbs = $service->returnColliveryClass()->getSuburbs($townId);
+                $suburbs = $this->make_key_value_array($suburbs, 'id', 'name');
+                $suburbs = ['' => 'First select town/city'] + $suburbs;
+            }
 
             return [
                 $prefix.'country' => [

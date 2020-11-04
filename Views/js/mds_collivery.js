@@ -121,7 +121,7 @@ jQuery(document).ready(function () {
                         }, 5000);
                     }
                 },
-                error: function() {
+                error: function(e) {
                     jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">There was an error with the ajax request, please refresh the page and try again and if the problem is not rectified please report the problem to integration@collivery.co.za</div>');
                 },
                 beforeSend: function () {

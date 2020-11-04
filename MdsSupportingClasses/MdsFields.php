@@ -3,7 +3,7 @@
 namespace MdsSupportingClasses;
 
 use MdsExceptions\InvalidResourceDataException;
-use MdsExceptions\SoapConnectionException;
+use MdsExceptions\CurlConnectionException;
 
 class MdsFields
 {
@@ -191,14 +191,14 @@ class MdsFields
 
         try {
             $resources = self::getResources($service);
-            foreach ($resources['services'] as $id => $title) {
-                $fields['method_'.$id] = [
-                    'title' => __($title),
+            foreach ($resources['services'] as $item) {
+                $fields['method_'.$item['id']] = [
+                    'title' => __($item['text']),
                     'type' => 'checkbox',
                     'default' => 'yes',
                 ];
-                $fields['fixed_price_'.$id] = [
-                    'title' => __($title.' Fixed Price Amount'),
+                $fields['fixed_price_'.$item['id']] = [
+                    'title' => __($item['text'].' Fixed Price Amount'),
                     'type' => 'number',
                     'description' => 'Amount greater than 0 enables it, markup is then ignored. This will override any free or discounted shipping',
                     'default' => '0',
@@ -207,8 +207,8 @@ class MdsFields
                         'min' => '0',
                     ],
                 ];
-                $fields['markup_'.$id] = [
-                    'title' => __($title.' Markup'),
+                $fields['markup_'.$item['id']] = [
+                    'title' => __($item['text'].' Markup'),
                     'type' => 'number',
                     'default' => '10',
                     'description' => 'Percentage markup you would like to apply to MDS\'s Price',
@@ -217,19 +217,25 @@ class MdsFields
                         'min' => '0',
                     ],
                 ];
-                $fields['wording_'.$id] = [
-                    'title' => __($title.' Wording'),
+                $fields['wording_'.$item['id']] = [
+                    'title' => __($item['text'].' Wording'),
                     'type' => 'text',
-                    'default' => $title,
+                    'default' => $item['text'],
                     'description' => 'The wording you would like on the checkout page for this service',
                     'class' => 'sectionEnd',
                 ];
             }
 
+            $ddl_services = [];
+    
+            foreach($resources['services'] as $arr) {
+                $ddl_services[$arr['id']] = $arr['text'];
+            }
+
             $fields['free_default_service'] = [
                 'title' => __('Free Delivery Default Service'),
                 'type' => 'select',
-                'options' => $resources['services'],
+                'options' => $ddl_services,
                 'default' => 5,
                 'description' => __('When free delivery is enabled, which default service do we use.'),
                 'custom_attributes' => [
@@ -239,7 +245,7 @@ class MdsFields
             $fields['free_local_default_service'] = [
                 'title' => __('Free Delivery Local Only Default Service'),
                 'type' => 'select',
-                'options' => $resources['services'],
+                'options' => $ddl_services,
                 'default' => 2,
                 'description' => __('When free local only delivery is enabled, which default service do we use.'),
                 'custom_attributes' => [
@@ -271,21 +277,20 @@ class MdsFields
         try {
             $resources = [];
             foreach (['towns', 'location_types', 'services'] as $resource) {
-                $result = $collivery->{'get' . str_replace('_', '', ucwords($resource))}();
+                $result = $collivery->{'get'.str_replace('_', '', ucwords($resource))}();
                 if (!is_array($result)) {
                     throw new InvalidResourceDataException(
                         'Unable to retrieve fields from the API',
                         $service->loggerSettingsArray()
                     );
                 }
-
                 $resources[$resource] = $result;
             }
 
             $cache->put('resources', $resources);
 
             return $resources;
-        } catch (SoapConnectionException $e) {
+        } catch (CurlConnectionException $e) {
             throw new InvalidResourceDataException($e->getMessage(), $service->loggerSettingsArray());
         }
     }
