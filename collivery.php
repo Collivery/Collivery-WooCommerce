@@ -15,7 +15,7 @@ require_once ABSPATH.'wp-includes/functions.php';
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  * WC requires at least: 3.5
- * WC tested up to: 4.5.4
+ * WC tested up to: 4.5.2
  */
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     register_activation_hook(__FILE__, 'activate_mds');
