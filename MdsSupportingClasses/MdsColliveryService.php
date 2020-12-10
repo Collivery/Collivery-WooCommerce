@@ -297,7 +297,7 @@ class MdsColliveryService
             foreach ($cart as $item) {
                 $product = $item['data'];
 
-                $package['contents'][$item['product_id']] = [
+                $package['contents'][$product->get_id()] = [
                     'data' => $item['data'],
                     'quantity' => $item['quantity'],
                     'price' => $product->get_price(),
