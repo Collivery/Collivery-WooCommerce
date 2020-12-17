@@ -42,6 +42,8 @@ class ShippingPackageData
      */
     public function build($packages, $input)
     {   
+        $this->collivery->logError("Printing Values", "build()", [$packages, $input]);
+
         if ($this->settings->getValue('enabled') == 'no' || !$defaults = $this->service->returnDefaultAddress()) {
             return $packages;
         }
@@ -96,16 +98,18 @@ class ShippingPackageData
 
         
         $customer = WC ()->customer;
-        if ( !isset($_POST['ship_to_different_address']) || $_POST['ship_to_different_address'] != true) {
+        if ( !isset($input['ship_to_different_address']) || $input['ship_to_different_address'] != true) {
             $package['destination']['state'] = $customer->get_billing_state();
             $package['destination']['postcode'] = $customer->get_billing_postcode();
             $package['destination']['address'] = $customer->get_billing_address_1();
             $package['destination']['address_2'] = $customer->get_billing_address_2();
+            $package['destination']['country'] = $customer->get_billing_country();
         } else {
             $package['destination']['state'] = $customer->get_shipping_state();
             $package['destination']['postcode'] = $customer->get_shipping_postcode();
             $package['destination']['address'] = $customer->get_shipping_address_1();
             $package['destination']['address_2'] = $customer->get_shipping_address_2();
+            $package['destination']['country'] = $customer->get_shipping_country();
         }
 
         if (!$this->service->validPackage($package)) {

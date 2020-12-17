@@ -107,6 +107,9 @@ class Collivery
             $client = curl_init($url.'?'.$query);
         }
 
+        // For Testing
+        curl_setopt($client, CURLOPT_SSL_VERIFYPEER, false);
+
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
 
         $headerArray = [
@@ -1143,6 +1146,10 @@ class Collivery
         
 
         return $key_value_array;
+    }
+
+    public function logError($message, $method, $array) {
+        new CurlConnectionException($message, $method, $array);
     }
 
 

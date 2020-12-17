@@ -21,9 +21,9 @@ jQuery(document).ready(function () {
     });
 
     var ajaxUpdates = [
-        //{fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
+        {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
         {fromField: 'billing_city', field: 'billing_suburb', prefix: 'suburbs', db_prefix: 'billing'},
-        //{fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
+        {fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
         {fromField: 'shipping_city', field: 'shipping_suburb', prefix: 'suburbs', db_prefix: 'shipping'}
     ];
 
@@ -42,6 +42,75 @@ jQuery(document).ready(function () {
 
         cacheValue(row.fromField, parentEl.val());
     });
+
+    var internationalUpdates = [{type: "billing"}, {type: "shipping"}];
+
+    var styling = document.createElement('style');
+    styling.innerHTML = '.active { display: block !important; } .inactive { display: none !important; }';
+    document.body.appendChild(styling);
+
+
+    jQuery.each(internationalUpdates, function (index, row) {
+
+        var countryEl = jQuery('#' + row.type + "_country");
+        countryEl.on('keydown', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode !== 9) {
+                updateInternational(row.type);
+            }
+        });
+
+        countryEl.on('change', function () {
+            updateInternational(row.type);
+        });
+    });
+
+    function updateInternational(type) {
+        var fromEl = jQuery('#' + type + "_country");
+        var fromSelect2 = fromEl.data('select2');
+
+        var isChange = fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[type + "_country"];
+
+        if (isChange) {
+            cacheValue(type + "_country", fromEl.val());
+
+            if (fromSelect2)
+                fromSelect2.close();
+
+            removeInlineStyling();
+            
+
+            if (fromEl.val() == "ZA") {
+                // Enable MDS Settings
+                jQuery('#' + type + '_city_field')[0].classList.remove('inactive');
+                jQuery('#' + type + '_city_field')[0].classList.add('active');
+                jQuery('#' + type + '_suburb_field')[0].classList.remove('inactive');
+                jQuery('#' + type + '_suburb_field')[0].classList.add('active');
+
+                jQuery('#' + type + '_city_int_field')[0].classList.remove('active');
+                jQuery('#' + type + '_city_int_field')[0].classList.add('inactive');  
+            } else {
+                // Disable MDS Settings
+                jQuery('#' + type + '_city_field')[0].classList.remove('active');
+                jQuery('#' + type + '_city_field')[0].classList.add('inactive');
+                jQuery('#' + type + '_suburb_field')[0].classList.remove('active');
+                jQuery('#' + type + '_suburb_field')[0].classList.add('inactive');
+                
+                jQuery('#' + type + '_city_int_field')[0].classList.remove('inactive');
+                jQuery('#' + type + '_city_int_field')[0].classList.add('active'); 
+            }
+        }
+    }
+
+    function removeInlineStyling() {
+        jQuery('#billing_city_field')[0].style.display = "";
+        jQuery('#billing_suburb_field')[0].style.display = "";
+        jQuery('#billing_city_int_field')[0].style.display = "";
+    }
+
+    function updateFields() {
+        
+    }
 
     function updateSelect(fromField, field, prefix, db_prefix) {
         var fromEl = jQuery('#' + fromField),
@@ -71,6 +140,10 @@ jQuery(document).ready(function () {
         // Check that the value is not empty and has changed from the previous value
         // Only if that is true is there any point in querying for new results
         if (isChange) {
+            if (prefix == "suburbs") {
+                // Update INT City for the sake of Requirement.
+                
+            }
             cacheValue(fromField, fromEl.val());
             return ajax = jQuery.ajax({
                 type: 'POST',

@@ -418,6 +418,9 @@ class MdsColliveryService
      */
     public function getPrice(array $array, $adjustedTotal, $markup, $fixedPrice)
     {
+        if ($fixedPrice) {
+            return $fixedPrice;
+        }
         if (!$result = $this->collivery->getPrice($array)) {
             if ($result == null) {
                 $this->initMdsCollivery();
