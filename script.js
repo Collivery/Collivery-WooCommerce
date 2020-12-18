@@ -1,5 +1,6 @@
 var colliveryFieldsValues = {};
 var overrideChange = false;
+var inZA = true;
 
 jQuery(document).ready(function () {
     var select2fields = {
@@ -63,6 +64,18 @@ jQuery(document).ready(function () {
         countryEl.on('change', function () {
             updateInternational(row.type);
         });
+
+        var cityEl = jQuery('#' + row.type + "_city_int");
+        cityEl.on('keydown', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode !== 9) {
+                updateFields(row.type);
+            }
+        });
+
+        cityEl.on('change', function () {
+            updateFields(row.type);
+        });
     });
 
     function updateInternational(type) {
@@ -82,6 +95,8 @@ jQuery(document).ready(function () {
 
             if (fromEl.val() == "ZA") {
                 // Enable MDS Settings
+                inZA = true;
+
                 jQuery('#' + type + '_city_field')[0].classList.remove('inactive');
                 jQuery('#' + type + '_city_field')[0].classList.add('active');
                 jQuery('#' + type + '_suburb_field')[0].classList.remove('inactive');
@@ -91,6 +106,8 @@ jQuery(document).ready(function () {
                 jQuery('#' + type + '_city_int_field')[0].classList.add('inactive');  
             } else {
                 // Disable MDS Settings
+                inZA = false;
+
                 jQuery('#' + type + '_city_field')[0].classList.remove('active');
                 jQuery('#' + type + '_city_field')[0].classList.add('inactive');
                 jQuery('#' + type + '_suburb_field')[0].classList.remove('active');
@@ -108,8 +125,15 @@ jQuery(document).ready(function () {
         jQuery('#billing_city_int_field')[0].style.display = "";
     }
 
-    function updateFields() {
-        
+    function updateFields(db_prefix) {
+        if (inZA) {
+            // If TRUE, then Not International
+            jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
+        } else {
+            // If False, Is International
+            jQuery('#' + db_prefix + '_city')[0].value = jQuery('#' + db_prefix + "_city_int").val();
+            jQuery('#' + db_prefix + '_suburb')[0].value = "N/A";
+        }
     }
 
     function updateSelect(fromField, field, prefix, db_prefix) {
@@ -142,7 +166,7 @@ jQuery(document).ready(function () {
         if (isChange) {
             if (prefix == "suburbs") {
                 // Update INT City for the sake of Requirement.
-                
+                updateFields(db_prefix);
             }
             cacheValue(fromField, fromEl.val());
             return ajax = jQuery.ajax({

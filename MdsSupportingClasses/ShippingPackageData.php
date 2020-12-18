@@ -42,7 +42,6 @@ class ShippingPackageData
      */
     public function build($packages, $input)
     {   
-        $this->collivery->logError("Printing Values", "build()", [$packages, $input]);
 
         if ($this->settings->getValue('enabled') == 'no' || !$defaults = $this->service->returnDefaultAddress()) {
             return $packages;
