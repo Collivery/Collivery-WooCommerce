@@ -7,6 +7,12 @@ use MdsLogger;
 
 class Collivery
 {
+    const SDX = 1;
+    const ONX = 2;
+    const FRT = 3;
+    const ECO = 5;
+    const ONX_10 = 6;
+
     protected $token;
     protected $client;
     protected $config;
@@ -376,7 +382,7 @@ class Collivery
     public function getServices()
     {
         if (($this->check_cache) && $this->cache->has('collivery.services')) {
-            return $this->cache->get('collivery.services');
+            $baseServices = $this->cache->get('collivery.services');
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/service_types", ["api_token" => ""], 'GET');
@@ -391,11 +397,13 @@ class Collivery
                     $this->cache->put('collivery.services', $result['data'], 60 * 24 * 7);
                 }
 
-                return $result['data'];
+                $baseServices = $result['data'];
             } else {
                 return $this->checkError($result);
             }
         }
+
+        return $this->filterServices($baseServices);
     }
 
     /**
@@ -1153,5 +1161,29 @@ class Collivery
      */
     public function getColliveryUserId() {
         return $this->authenticate()['id'];
+    }
+
+    public function filterServices(array $services)
+    {
+        // Remove SDX
+        $services = array_filter($services, function ($service) {
+            return ((array) $service)['id'] !== self::SDX;
+        });
+
+        // Each $service could be an array or object.
+        // Cast it coming in and going out
+        $type = gettype(current($services));
+
+        $before10 = [
+            'id' => self::ONX_10,
+            'code' => 'ONX_10',
+            'text' => 'Next Day Before 10:00',
+            'description' => 'Will be delivered next day before 10:00',
+            'delivery_days' => 1,
+        ];
+        // Cast it back
+        settype($before10, $type);
+
+        return array_merge([$before10], $services);
     }
 }

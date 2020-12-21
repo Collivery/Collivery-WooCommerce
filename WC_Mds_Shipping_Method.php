@@ -215,12 +215,19 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     'exclude_weekend' => true,
                                     'services' => [$service['id']],
                                 ];
-                                
+
+                                // Add the requested time to ONX before 10
+                                if ($service['id'] === Collivery::ONX_10) {
+                                    $data['delivery_time'] = '10:00 next monday';
+                                    $data['services'] = [Collivery::ONX];
+                                }
+
+
                                 // Looks like it's being executed here;
                                 $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $service['id']), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $service['id']));
-                                
-                                if ($this->mdsSettings->getInstanceValue("wording_".$service['id'], $service['text']) == $service['text'] && ($service['id'] == 1 || $service['id'] == 2)) {
-                                    $service['text'] = $service['text'].', additional 24 hours on outlying areas';
+
+                                if (in_array($service['id'], [Collivery::ONX, Collivery::ONX_10])) {
+                                  $service['text'] .= ', additional 24 hours on outlying areas';
                                 } else {
                                     $service['text'] = $this->mdsSettings->getInstanceValue("wording_".$service['id']);
                                 }

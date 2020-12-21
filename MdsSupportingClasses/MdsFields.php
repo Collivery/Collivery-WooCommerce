@@ -269,7 +269,10 @@ class MdsFields
     {
         $cache = $service->returnCacheClass();
         if ($cache->has('resources')) {
-            return $cache->get('resources');
+            $resources = $cache->get('resources');
+            $resources['services'] = $service->returnColliveryClass()->filterServices($resources['services']);
+
+            return $resources;
         }
 
         $collivery = $service->returnColliveryClass();

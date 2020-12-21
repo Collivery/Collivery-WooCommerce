@@ -722,11 +722,20 @@ class MdsColliveryService
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
             $colliveryOptions['collection_time'] = $overrides['collection_time'];
         } else {
-            $collection_time = date("Y-m-d H:i:s", strtotime(date("Y-m-d").' + 1 days + 12 hours'));
-            while(date('N', strtotime($collection_time)) >= 6) {
-                $collection_time = date("Y-m-d H:i:s", strtotime($collection_time.' + 1 days'));
+            $collectionTime = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' + 1 days + 12 hours'));
+            // Ensure it's a week day
+            while(date('N', strtotime($collectionTime)) >= 6) {
+                $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 1 days'));
             }
-            $colliveryOptions['collection_time'] = $collection_time;
+            $colliveryOptions['collection_time'] = $collectionTime;
+        }
+
+        if ($serviceId == Collivery::ONX_10) {
+            $deliveryTime =  date('Y-m-d H:i:s', strtotime(date('Y-m-d', strtotime($colliveryOptions['collection_time'])).' 10:00:00 + 2 days'));
+            // Ensure it's a week day
+            while(date('N', strtotime($deliveryTime)) >= 6) {
+                $deliveryTime = date('Y-m-d H:i:s', strtotime($deliveryTime.' + 1 days'));
+            }
         }
 
         $collivery     = $this->addCollivery($colliveryOptions);
