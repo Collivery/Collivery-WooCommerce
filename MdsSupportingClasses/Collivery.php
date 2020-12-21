@@ -85,13 +85,14 @@ class Collivery
 
     /**
      * Consumes API
-     * 
-     * @param string $url The URL you're accessing
-     * @param array $data The params or query the URL requires.
-     * @param string $type ~ Defines how the data is sent (POST / GET)
-     * @param bool $isAuthenticating Whether the API requires the api_token
-     * 
+     *
+     * @param  string  $url               The URL you're accessing
+     * @param  array   $data              The params or query the URL requires.
+     * @param  string  $type              ~ Defines how the data is sent (POST / GET)
+     * @param  bool    $isAuthenticating  Whether the API requires the api_token
+     *
      * @return array $result
+     * @throws CurlConnectionException
      */
     private function consumeAPI($url, $data, $type, $isAuthenticating = false) {
         if (!$isAuthenticating) {
@@ -120,7 +121,8 @@ class Collivery
             'X-App-Version:'.$this->config->app_version,
             'X-App-Host:'.$this->config->app_host,
             'X-App-Lang:'.'PHP '.phpversion(),
-            'Content-Type: application/json'];
+            'Content-Type: application/json'
+        ];
 
         curl_setopt($client, CURLOPT_HTTPHEADER, $headerArray);
 
@@ -149,19 +151,14 @@ class Collivery
             ]);
         }
 
-            curl_close($client);
+        curl_close($client);
 
-            // If $result is already an array.
-            if (is_array($result)) {
-                return $result;
-            }
-
-            return json_decode($result, true);
-        } catch (CurlConnectionException $e) {
-            $this->catchException($e);
+        // If $result is already an array.
+        if (is_array($result)) {
+            return $result;
         }
 
-        return [];
+        return json_decode($result, true);
     }
 
     /**
@@ -670,7 +667,7 @@ class Collivery
     public function getStatus($collivery_id)
     {
         try {
-            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, ["api_token" => ""], 'GET');
+            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, [], 'GET');
         } catch (CurlConnectionException $e) {
             $this->catchException($e);
 
@@ -898,9 +895,6 @@ class Collivery
         }
 
         if (!$this->hasErrors()) {
-
-            $newObject = [];
-
             $newObject = [
                 "service" => $data["service"],
                 "parcels" => $data["parcels"],

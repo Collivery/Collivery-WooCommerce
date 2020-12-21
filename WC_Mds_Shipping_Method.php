@@ -4,11 +4,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use MdsExceptions\CurlConnectionException;
 use MdsExceptions\InvalidColliveryDataException;
 use MdsExceptions\InvalidResourceDataException;
-use MdsExceptions\CurlConnectionException;
+use MdsSupportingClasses\Collivery;
 use MdsSupportingClasses\MdsColliveryService;
 use MdsSupportingClasses\MdsFields;
+use MdsSupportingClasses\MdsLogger;
 use MdsSupportingClasses\MdsSettings;
 
 /**
@@ -183,11 +185,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_default_service');
                 }
 
-	            $this->id = $id;
+                $this->id = $id;
                 $this->add_rate([
-                    'id' => $id,
+                    'id'    => $id,
                     'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),
-                    'cost' => 0.0,
+                    'cost'  => 0.0,
                 ]);
             } elseif (!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
                 try {
@@ -195,7 +197,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     if (is_array($services)) {
                         // Get pricing for each service
                         foreach ($services as $service) {
-                            if ($this->mdsSettings->getInstanceValue("method_".$service['id']) == 'yes') {
+                            if ($this->mdsSettings->getInstanceValue('method_'.$service['id']) === 'yes') {
                                 // Now lets get the price for
                                 $riskCover = false;
                                 $adjustedTotal = $package['shipping_cart_total'];
@@ -229,7 +231,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                 if (in_array($service['id'], [Collivery::ONX, Collivery::ONX_10])) {
                                   $service['text'] .= ', additional 24 hours on outlying areas';
                                 } else {
-                                    $service['text'] = $this->mdsSettings->getInstanceValue("wording_".$service['id']);
+                                    $service['text'] = $this->mdsSettings->getInstanceValue('wording_'.$service['id']);
                                 }
 
                                 $label = $service['text'];
