@@ -248,7 +248,9 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                         }
                     }
                 } catch (CurlConnectionException $e) {
+                    (new MdsLogger())->error('WC_Mds_Shipping_Method::calculate_shipping()', $e->getMessage(), $this->collivery_service->loggerSettingsArray(), $package);
                 } catch (InvalidColliveryDataException $e) {
+                  (new MdsLogger())->error('WC_Mds_Shipping_Method::calculate_shipping()', $e->getMessage(), $this->collivery_service->loggerSettingsArray(), $package);
                 }
             }
         }

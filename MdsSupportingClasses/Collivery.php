@@ -123,22 +123,31 @@ class Collivery
             'Content-Type: application/json'];
 
         curl_setopt($client, CURLOPT_HTTPHEADER, $headerArray);
-        
-        try {
-            $result = curl_exec($client);
-            
-            if (curl_errno($client)) {
-                $errno = curl_errno($client);
-                $errmsg = curl_error($client);
-                curl_close($client);
 
-                throw new CurlConnectionException("Error executing request", "ConsumeAPI()", [
-                    "Code" => $errno,
-                    "Message" => $errmsg,
-                    "URL" => $url,
-                    "Result" => $result
-                ]);
-            }
+        $result = curl_exec($client);
+
+        if (curl_errno($client)) {
+            $errno = curl_errno($client);
+            $errmsg = curl_error($client);
+            curl_close($client);
+
+            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
+                'Code'    => $errno,
+                'Message' => $errmsg,
+                'URL'     => $url,
+                'Result' => $result
+            ]);
+        }
+
+        if (isset($result['error'])) {
+            $error = $result['error'];
+            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
+                'Code'    => $error['http_code'],
+                'Message' => $error['message'],
+                'URL'     => $url,
+                'Result' => $result
+            ]);
+        }
 
             curl_close($client);
 
@@ -598,11 +607,9 @@ class Collivery
                 return false;
             }
 
-            if (isset($result['images'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache) {
-                    $this->cache->put('collivery.parcel_image_list.'.$this->client_id.'.'.$collivery_id, $result['images'], 60 * 12);
+            if (isset($result['data'])) {
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.parcel_image_list.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
                 }
 
                 return $result['data'];
@@ -671,9 +678,7 @@ class Collivery
         }
 
         if (isset($result['data'])) {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            } elseif ($this->check_cache) {
+            if ($this->check_cache) {
                 $this->cache->put('collivery.status.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
             }
 
@@ -919,10 +924,6 @@ class Collivery
             }
 
             if (isset($result['data']['id'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                }
-
                 return $result;
             } else {
                 return $this->checkError($result);
@@ -950,10 +951,6 @@ class Collivery
         }
 
         if (isset($result['data'])) {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            }
-
             if (strpos($result['data']['message'], 'accepted')) {
                 return true;
             } else {
@@ -986,9 +983,7 @@ class Collivery
             }
 
             if (isset($result['data'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache) {
+                if ($this->check_cache) {
                     $this->cache->put('collivery.waybill.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
                 }
 
