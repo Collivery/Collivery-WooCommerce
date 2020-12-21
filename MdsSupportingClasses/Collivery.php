@@ -295,7 +295,7 @@ class Collivery
                 return [];
             }
 
-            if (isset($result)) {
+            if (isset($result['data'])) {
                 if ($this->check_cache) {
                     $this->cache->put('collivery.search_towns.'.$name, $result['data'], 60 * 24);
                 }
@@ -605,7 +605,7 @@ class Collivery
                     $this->cache->put('collivery.parcel_image_list.'.$this->client_id.'.'.$collivery_id, $result['images'], 60 * 12);
                 }
 
-                return $result['images'];
+                return $result['data'];
             } else {
                 return $this->checkError($result);
             }
@@ -637,14 +637,12 @@ class Collivery
                 return false;
             }
 
-            if (isset($result['image'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache) {
-                    $this->cache->put('collivery.parcel_image.'.$this->client_id.'.'.$parcel_id, $result['image'], 60 * 24);
+            if (isset($result['data'])) {
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.parcel_image.'.$this->client_id.'.'.$parcel_id, $result['data'], 60 * 24);
                 }
 
-                return $result['image'];
+                return $result['data'];
             } else {
                 return $this->checkError($result);
             }
@@ -789,7 +787,7 @@ class Collivery
                 return false;
             }
 
-            if (isset($result['contact_id'])) {
+            if (isset($result['data'])) {
                 return $result;
             } else {
                 return $this->checkError($result);
@@ -841,10 +839,7 @@ class Collivery
             return false;
         }
 
-        if (is_array($result)) {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            }
+        if (isset($result['data'])) {
             return $result;
         } else {
             return $this->checkError($result);
