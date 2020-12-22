@@ -90,7 +90,7 @@ jQuery(document).ready(function () {
             if (fromSelect2)
                 fromSelect2.close();
 
-            removeInlineStyling();
+            removeInlineStyling(type);
             
 
             if (fromEl.val() == "ZA") {
@@ -118,11 +118,11 @@ jQuery(document).ready(function () {
             }
         }
     }
-
-    function removeInlineStyling() {
-        jQuery('#billing_city_field')[0].style.display = "";
-        jQuery('#billing_suburb_field')[0].style.display = "";
-        jQuery('#billing_city_int_field')[0].style.display = "";
+    
+    function removeInlineStyling(type) {
+        jQuery('#'+type+'_city_field')[0].style.display = "";
+        jQuery('#'+type+'_suburb_field')[0].style.display = "";
+        jQuery('#'+type+'_city_int_field')[0].style.display = "";
     }
 
     function updateFields(db_prefix) {
@@ -221,4 +221,21 @@ jQuery(document).ready(function () {
   function cacheValue (key, val) {
     colliveryFieldsValues[key] = val;
   }
+
+  //Function to append values for international shipments BEFORE submit
+  jQuery('form[name="checkout"').submit(function(event) {
+    if(jQuery('#billing_country').val() != 'ZA' || jQuery('#shipping_country').val() != 'ZA'){
+        event.preventDefault();
+        var enteredCityBilling = jQuery('#billing_city_int').val();
+        var enteredCityShipping = jQuery('#shipping_city_int').val();
+
+        jQuery('#billing_city').append('<option selected >' + enteredCityBilling + '</option>');
+        jQuery('#billing_suburb').append('<option selected >' + enteredCityBilling + '</option>');
+
+        if(enteredCityBilling !== enteredCityShipping){
+            jQuery('#shipping_city').append('<option selected >' + enteredCityShipping + '</option>');
+            jQuery('#shipping_suburb').append('<option selected >' + enteredCityShipping + '</option>');
+        }
+    }
+   })
 });
