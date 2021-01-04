@@ -103,6 +103,39 @@ jQuery(document).ready(function () {
         }
     });
 
+    //Used to update order with an International Waybill
+    jQuery('#update_order').click(function(event){
+        if(jQuery('#waybill_number').val().trim().length > 0){
+            event.preventDefault();
+            var datastring = jQuery("#waybill_number").serialize();
+            jQuery.ajax({
+                type: "POST",
+                url: ajaxurl,
+                data: 'action=update_international_order_admin&' + datastring,
+                success: function (data) {
+                    //jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">' + data.message + '</div>');
+                    console.log('Success -- returning data');
+                    console.dir(data);
+                    if (data.redirect == 1) {
+                        setTimeout(function () {
+                            window.location.href = jQuery("#api_quote").attr('action');
+                        }, 5000);
+                    }
+                },
+                error: function(e) {
+                    console.log('Error -- returning error');
+                    console.dir(e);
+                },
+                beforeSend: function () {
+                    console.log('before send');
+                    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
+                }
+            });
+            console.log('Entered Value Is ' + jQuery('#waybill_number').val());
+        }
+    });
+
+
     // Used to process the delivery and then change order status
     jQuery('#accept_quote').click(function (event) {
         event.preventDefault();

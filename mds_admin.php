@@ -286,9 +286,27 @@ add_action('woocommerce_order_actions', 'mds_order_actions');
 function mds_order_actions($actions)
 {
     $actions['confirm_shipping'] = 'Confirm MDS Shipping';
+    $actions['confirm_shipping_international'] = 'Confirm MDS International Shipping';
 
     return $actions;
 }
+
+
+/*
+ * Redirect Admin to plugin page to register the Collivery
+ */
+add_action('woocommerce_order_actionconfirm_shipping_international', 'mds_process_intl_order_meta', 20, 2);
+
+/**
+ * @param $order
+ */
+function mds_process_intl_order_meta($order)
+{
+    wp_redirect(admin_url().'edit.php?page=mds_register&post_id='.$order->get_id().'&is_intl=true');
+    die();
+}
+
+
 
 /*
  * Redirect Admin to plugin page to register the Collivery
@@ -417,6 +435,20 @@ function quote_admin_callback()
         wp_die('<p class="mds_response"><b>Error: </b>'.$e->getMessage().'</p>');
     }
 }
+/*
+ * Ajax update order
+ */
+add_action('wp_ajax_update_international_order_admin', 'update_order_international_order_admin_callback');
+
+
+/**
+ * Ajax update waybill number for international orders.
+ */
+function update_order_international_order_admin_callback()
+{
+   
+}
+
 
 /*
  * Ajax accept quote

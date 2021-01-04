@@ -1,6 +1,38 @@
 <?php
 use MdsSupportingClasses\View;
+if ($_GET['is_intl'] && $_GET['is_intl'] == true) {
+?>
 
+        <div>
+            <b>Please enter the WayBill that you generated on the Collivery System</b>
+        </div>
+        <form accept-charset="UTF-8" action="<?php echo admin_url('post.php?post=' . $order->get_id() . '&action=edit'); ?>" method="post" id="intl_api_quote">
+        <input type="hidden" name="order_id" value="<?php echo $order->get_id(); ?>">
+    <div class="parallel">
+        <table width="100%">
+            <tr>
+                <td>
+                <label for='waybill_number'>Waybill Number</label>
+                <input type='text' id='waybill_number' required/>    
+            </td>
+            </tr>
+        </table>
+    </div>
+
+    <ul id="top_menu">
+        <li>
+            <button type="button" id="update_order">Update Order</button>
+        </li>
+
+    </ul>
+
+        </form>
+
+        <div id="api_results"></div>
+
+<?php
+}
+else {
 ?>
 
 <div>
@@ -84,5 +116,6 @@ use MdsSupportingClasses\View;
 <div id="api_results"></div>
 
 <?php
+}
     echo View::make('_parcel_template', ['include_product_titles' => '$include_product_titles']);
 ?>
