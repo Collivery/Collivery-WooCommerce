@@ -539,14 +539,35 @@ class MdsColliveryService
         return $array;
     }
 
+    public function linkWaybillNumber(WC_Order $order, int $waybill_number) {
+        if ($this->hasOrderBeenProcessed($order->get_id())) {
+            throw new OrderAlreadyProcessedException('Could not link MDS Collivery waybill number, order has already been linked.', $this->loggerSettingsArray(), [
+                'order_id' => $order->get_id(),
+                'data' => $overrides,
+            ]);
+        }
+
+        // In order to keep it in the format as it's saved in the local table.
+        $collivery['data'] = $this->collivery->getCollivery($waybill_number);
+
+        $collectionTime = (isset($collivery['data']['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $collivery['data']['collection_time']) : '';
+        if ($collivery['data']['id']) {
+            // Save the results from validation into our table
+            $this->addColliveryToProcessedTable($collivery, $order->get_id());
+            $this->updateStatusOrAddNote($order, 'Order has been linked to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection' . $collectionTime . '.', false, 'completed');
+
+            return $collivery;
+        } else {
+            $errors = $this->collivery->getErrors();
+            throw new InvalidColliveryDataException('Error linking to Collivery: ' . implode(', ', $errors), 'automatedOrderToCollivery', $this->loggerSettingsArray(), ['order' => $order, 'errors' => $errors, 'result' => $collivery]);
+        }
+    }
+
     /**
      * @param WC_Order $order
-     * @param array    $overrides
+     * @param int    $overrides
      *
      * @return int
-     * @throws InvalidAddressDataException
-     * @throws InvalidColliveryDataException
-     * @throws InvalidServiceException
      * @throws OrderAlreadyProcessedException
      * @throws ProductOutOfException
      * @throws CurlConnectionException

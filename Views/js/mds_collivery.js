@@ -107,18 +107,18 @@ jQuery(document).ready(function () {
     jQuery('#update_order').click(function(event){
         if(jQuery('#waybill_number').val().trim().length > 0){
             event.preventDefault();
-            var datastring = jQuery("#waybill_number").serialize();
+            var datastring = jQuery("#intl_waybill_link").serialize();
             jQuery.ajax({
                 type: "POST",
                 url: ajaxurl,
                 data: 'action=update_international_order_admin&' + datastring,
                 success: function (data) {
-                    //jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">' + data.message + '</div>');
+                    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">' + data.message + '</div>');
                     console.log('Success -- returning data');
                     console.dir(data);
                     if (data.redirect == 1) {
                         setTimeout(function () {
-                            window.location.href = jQuery("#api_quote").attr('action');
+                            window.location.href = jQuery("#intl_waybill_link").attr('action');
                         }, 5000);
                     }
                 },
