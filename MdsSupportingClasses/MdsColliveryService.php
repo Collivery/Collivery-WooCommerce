@@ -794,7 +794,7 @@ class MdsColliveryService
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
         } catch (InvalidServiceException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
-        } catch (InternationalAutomatedlException $e) {
+        } catch (InternationalAutomatedException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
         } catch (ProductOutOfException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');

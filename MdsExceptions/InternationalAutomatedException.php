@@ -3,12 +3,12 @@
 namespace MdsExceptions;
 
 /**
- * Class InvalidResourceDataException.
+ * Class InternationalAutomatedException.
  */
-class InternationalAutomatedlException extends ExceptionMiddleware
+class InternationalAutomatedException extends ExceptionMiddleware
 {
     /**
-     * InternationalAutomatedlException constructor.
+     * InternationalAutomatedException constructor.
      *
      * @param string $message
      * @param array  $settings
