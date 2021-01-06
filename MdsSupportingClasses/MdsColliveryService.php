@@ -7,6 +7,7 @@ use WC_Product;
 use WC_Product_Variation;
 use WC_Order_Item_Product;
 use MdsExceptions\ProductOutOfException;
+use MdsExceptions\InternationalAutomatedException;
 use MdsExceptions\InvalidServiceException;
 use MdsExceptions\CurlConnectionException;
 use MdsExceptions\InvalidCartPackageException;
@@ -571,10 +572,16 @@ class MdsColliveryService
      * @throws OrderAlreadyProcessedException
      * @throws ProductOutOfException
      * @throws CurlConnectionException
+     * @throws InternationalAutomatedException
      */
     public function orderToCollivery(WC_Order $order, array $overrides) {
 
-        
+        if ($order->get_shipping_country() != "ZA" && $order->get_shipping_country() != "South Africa") {
+            throw new InternationalAutomatedException('International shipping request detected! Please manually link the waybill using the "Link International MDS Waybill" found on the Order.', $this->loggerSettingsArray(), [
+                'order_id' => $order->get_id(),
+                'data' => $overrides,
+            ]);
+        }
 
         if ($this->hasOrderBeenProcessed($order->get_id())) {
             throw new OrderAlreadyProcessedException('Could not add MDS Collivery waybill, order already sent to MDS.', $this->loggerSettingsArray(), [
@@ -786,6 +793,8 @@ class MdsColliveryService
         } catch (OrderAlreadyProcessedException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
         } catch (InvalidServiceException $e) {
+            $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
+        } catch (InternationalAutomatedlException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
         } catch (ProductOutOfException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');

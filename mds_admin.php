@@ -286,7 +286,7 @@ add_action('woocommerce_order_actions', 'mds_order_actions');
 function mds_order_actions($actions)
 {
     $actions['confirm_shipping'] = 'Confirm MDS Shipping';
-    $actions['confirm_shipping_international'] = 'Confirm MDS International Shipping';
+    $actions['confirm_shipping_international'] = 'Link International MDS Waybill';
 
     return $actions;
 }

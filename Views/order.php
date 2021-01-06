@@ -4,7 +4,7 @@ if ($_GET['is_intl'] && $_GET['is_intl'] == true) {
 ?>
 
         <div>
-            <b>Please enter the WayBill that you generated on the Collivery System</b>
+            <b>Please enter the Waybill that you generated on the Collivery System</b>
         </div>
         <form accept-charset="UTF-8" action="<?php echo admin_url('post.php?post='.$order->get_id().'&action=edit'); ?>" method="post" id="intl_waybill_link">
         <input type="hidden" name="order_id" value="<?php echo $order->get_id(); ?>">
