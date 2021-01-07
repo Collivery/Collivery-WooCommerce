@@ -224,7 +224,7 @@ jQuery(document).ready(function () {
 
   //Function to append values for international shipments BEFORE submit
   jQuery('form[name="checkout"').submit(function(event) {
-    if(jQuery('#billing_country').val() != 'ZA' || jQuery('#shipping_country').val() != 'ZA'){
+    if(jQuery('#billing_country').val() != 'ZA' || (jQuery('#shipping_country').val() != 'ZA' &&  jQuery('#ship-to-different-address input:checked').length > 0)) {
         event.preventDefault();
         var enteredCityBilling = jQuery('#billing_city_int').val();
         var enteredCityShipping = jQuery('#shipping_city_int').val();
