@@ -1148,11 +1148,6 @@ class Collivery
         return $key_value_array;
     }
 
-    public function logError($message, $method, $array) {
-        new CurlConnectionException($message, $method, $array);
-    }
-
-
     /**
      * Returns the Collivery User Id for the credentials used by the store owner.
      * 

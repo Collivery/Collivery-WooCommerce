@@ -38,11 +38,9 @@ class ShippingPackageData
      * @param $input
      *
      * @return mixed
-     * @throws \MdsExceptions\CurlConnectionException
      */
     public function build($packages, $input)
     {   
-
         if ($this->settings->getValue('enabled') == 'no' || !$defaults = $this->service->returnDefaultAddress()) {
             return $packages;
         }
@@ -53,7 +51,6 @@ class ShippingPackageData
         if (!is_array($cart) || !isset($cart['total'])) {
             return $packages;
         }
-
 
         $extractedFields = $this->extractRequiredFields($input, $packages);
         $requiredFields = ["to_town_id" => $this->getTownId($extractedFields), "to_town_type" => $this->getLocationType($extractedFields)];
@@ -77,9 +74,15 @@ class ShippingPackageData
 
         
         $location_types = $this->collivery->getLocationTypes();
-        $suburb = $this->collivery->getSuburbs($requiredFields['to_town_id']);
-
-
+        if (is_integer($requiredFields['to_town_id'])) {
+            $suburb = $this->collivery->getSuburbs($requiredFields['to_town_id']);
+            $city = $suburb[0]['town']['name'];
+            $country = "ZA";
+        } else {
+            $city = $requiredFields['to_town_id'];
+            $country = $packages[0]['destination']['country'];
+        }
+        
         $package['cart'] = $cart;
         $package['method_free'] = $this->settings->getValue('method_free');
         $package['free_min_total'] = $this->settings->getValue('free_min_total');
@@ -89,27 +92,11 @@ class ShippingPackageData
         $package['destination'] = [
             'from_town_id' => (int) $defaults['address']['town_id'],
             'from_location_type' => (int) $defaults['address']['location_type'],
-            'city' => $suburb[0]['town']['name'],
+            'city' => $city,
             'to_town_id' => (int) $requiredFields['to_town_id'],
             'to_location_type' => (int) $requiredFields['to_town_type'],
-            'country' => 'ZA',
+            'country' => $country,
         ];
-
-        
-        $customer = WC ()->customer;
-        if ( !isset($input['ship_to_different_address']) || $input['ship_to_different_address'] != true) {
-            $package['destination']['state'] = $customer->get_billing_state();
-            $package['destination']['postcode'] = $customer->get_billing_postcode();
-            $package['destination']['address'] = $customer->get_billing_address_1();
-            $package['destination']['address_2'] = $customer->get_billing_address_2();
-            $package['destination']['country'] = $customer->get_billing_country();
-        } else {
-            $package['destination']['state'] = $customer->get_shipping_state();
-            $package['destination']['postcode'] = $customer->get_shipping_postcode();
-            $package['destination']['address'] = $customer->get_shipping_address_1();
-            $package['destination']['address_2'] = $customer->get_shipping_address_2();
-            $package['destination']['country'] = $customer->get_shipping_country();
-        }
 
         if (!$this->service->validPackage($package)) {
             return $packages;
@@ -136,7 +123,7 @@ class ShippingPackageData
         }
 
         $packages[0] = $package;
-
+        
         return $packages;
     }
 
@@ -152,18 +139,18 @@ class ShippingPackageData
         if (isset($array['post_data'])) {
             parse_str($array['post_data'], $postData);
             if (!isset($postData['ship_to_different_address']) || $postData['ship_to_different_address'] != true) {
-                $to_town_id = $postData['billing_city'];
+                $to_town_id = isset($postData['billing_city']) ? $postData['billing_city'] : $postData['billing_city_int'];
                 $to_town_type = $postData['billing_location_type'];
             } else {
-                $to_town_id = $postData['shipping_city'];
+                $to_town_id = isset($postData['shipping_city']) ? $postData['shipping_city'] : $postData['shipping_city_int'];
                 $to_town_type = $postData['shipping_location_type'];
             }
         } elseif (isset($array['ship_to_different_address'])) {
             if (!isset($array['ship_to_different_address']) || $array['ship_to_different_address'] != true) {
-                $to_town_id = $array['billing_city'];
+                $to_town_id = isset($array['billing_city']) ? $array['billing_city'] : $array['billing_city_int'];
                 $to_town_type = $array['billing_location_type'];
             } else {
-                $to_town_id = $array['shipping_city'];
+                $to_town_id = isset($array['shipping_city']) ? $array['shipping_city'] : $array['shipping_city_int'];
                 $to_town_type = $array['shipping_location_type'];
             }
         } elseif (isset($packages[0]['destination'])) {
