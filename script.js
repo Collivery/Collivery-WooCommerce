@@ -97,6 +97,9 @@ jQuery(document).ready(function () {
                 // Enable MDS Settings
                 inZA = true;
 
+                jQuery('#' + type + '_city .removal').remove();
+                jQuery('#' + type + '_suburb .removal').remove();
+
                 jQuery('#' + type + '_city_field')[0].classList.remove('inactive');
                 jQuery('#' + type + '_city_field')[0].classList.add('active');
                 jQuery('#' + type + '_suburb_field')[0].classList.remove('inactive');
@@ -131,8 +134,8 @@ jQuery(document).ready(function () {
             jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
         } else {
             // If False, Is International
-            jQuery('#' + db_prefix + '_city')[0].value = jQuery('#' + db_prefix + "_city_int").val();
-            jQuery('#' + db_prefix + '_suburb')[0].value = "N/A";
+            jQuery('#' + db_prefix + '_city').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+            jQuery('#' + db_prefix + '_suburb').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
         }
     }
 

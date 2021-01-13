@@ -98,6 +98,28 @@ class ShippingPackageData
             'country' => $country,
         ];
 
+        $customer = WC ()->customer;
+        $ship_to_different_address = false;
+
+        if (isset($input['post_data'])) {
+            parse_str($input['post_data'], $postData);
+            $ship_to_different_address = isset($postData['ship_to_different_address']) ? $postData['ship_to_different_address'] : $ship_to_different_address;
+        } else {
+            $ship_to_different_address = isset($input['ship_to_different_address']) ? $input['ship_to_different_address'] : $ship_to_different_address;
+        }
+
+		if ($ship_to_different_address) {
+            $package['destination']['state'] = $customer->get_billing_state();
+            $package['destination']['postcode'] = $customer->get_billing_postcode();
+            $package['destination']['address'] = $customer->get_billing_address_1();
+            $package['destination']['address_2'] = $customer->get_billing_address_2();
+        } else {
+            $package['destination']['state'] = $customer->get_shipping_state();
+            $package['destination']['postcode'] = $customer->get_shipping_postcode();
+            $package['destination']['address'] = $customer->get_shipping_address_1();
+            $package['destination']['address_2'] = $customer->get_shipping_address_2();
+        }
+
         if (!$this->service->validPackage($package)) {
             return $packages;
         }

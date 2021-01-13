@@ -1211,6 +1211,9 @@ class MdsColliveryService
 
         if(!is_numeric($town)) {
             $towns     = $collivery->searchTowns($town);
+            if (!isset($towns['towns']) || $towns['towns'] == null) {
+                return $suburbName;
+            }
             $towns     = array_keys($towns['towns']);
             $town      = reset($towns);
         }
