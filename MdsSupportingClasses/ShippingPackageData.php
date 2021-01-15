@@ -144,6 +144,8 @@ class ShippingPackageData
             }
         }
 
+        $package['contents_cost'] = isset($package['contents_cost']) ? $package['contents_cost'] : $package['shipping_cart_total'];
+
         $packages[0] = $package;
         
         return $packages;
