@@ -459,7 +459,7 @@ class MdsColliveryService
     {
         $this->validated_data = $validatedData = $this->validateCollivery($array);
 
-	    if (empty($validatedData)) {
+	    if (empty($validatedData) || is_bool($validatedData)) {
 		    return false;
 	    }
 
@@ -548,10 +548,8 @@ class MdsColliveryService
      * @throws ProductOutOfException
      * @throws CurlConnectionException
      */
-    public function orderToCollivery(WC_Order $order, array $overrides) {
-
-        
-
+    public function orderToCollivery(WC_Order $order, array $overrides)
+    {
         if ($this->hasOrderBeenProcessed($order->get_id())) {
             throw new OrderAlreadyProcessedException('Could not add MDS Collivery waybill, order already sent to MDS.', $this->loggerSettingsArray(), [
                 'order_id' => $order->get_id(),
@@ -573,17 +571,9 @@ class MdsColliveryService
             throw new InvalidServiceException('No MDS shipping method used', 'automatedOrderToCollivery', $this->loggerSettingsArray(), $order->get_shipping_methods());
         }
 
-        $processing = isset($overrides['processing']) ?
-            $overrides['processing'] :
-            false;
+        $processing = $overrides['processing'] ?? false;
         $this->isOrderInStock($order->get_items());
-
-        if (isset($overrides['parcels'])) {
-            $parcels = $overrides['parcels'];
-        } else {
-            $parcels = $this->getOrderContent($order->get_items());
-        }
-
+        $parcels = $overrides['parcels'] ?? $this->getOrderContent($order->get_items());
         $defaults = $this->returnDefaultAddress();
 
         if (!isset($overrides['which_collection_address']) && !isset($overrides['collivery_from'])) {
@@ -668,7 +658,7 @@ class MdsColliveryService
         }
 
 
-        $instructions = isset($overrides['instructions']) ? $overrides['instructions'] : '';
+        $instructions = $overrides['instructions'] ?? '';
         $customReference  = '';
         $orderNumberPrefix = $this->settings->getValue('order_number_prefix');
         if ($this->settings->getValue('include_order_number') == 'yes') {
@@ -722,20 +712,28 @@ class MdsColliveryService
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
             $colliveryOptions['collection_time'] = $overrides['collection_time'];
         } else {
-            $collection_time = date("Y-m-d H:i:s", strtotime(date("Y-m-d").' + 1 days + 12 hours'));
-            while(date('N', strtotime($collection_time)) >= 6) {
-                $collection_time = date("Y-m-d H:i:s", strtotime($collection_time.' + 1 days'));
+            $collectionTime = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' + 1 days + 12 hours'));
+            // Ensure it's a week day
+            while(date('N', strtotime($collectionTime)) >= 6) {
+                $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 1 days'));
             }
-            $colliveryOptions['collection_time'] = $collection_time;
+            $colliveryOptions['collection_time'] = $collectionTime;
         }
 
-        $collivery     = $this->addCollivery($colliveryOptions);
+        if ($serviceId == Collivery::ONX_10) {
+            $deliveryTime =  date('Y-m-d H:i:s', strtotime(date('Y-m-d', strtotime($colliveryOptions['collection_time'])).' 10:00:00 + 2 days'));
+            // Ensure it's a week day
+            while(date('N', strtotime($deliveryTime)) >= 6) {
+                $deliveryTime = date('Y-m-d H:i:s', strtotime($deliveryTime.' + 1 days'));
+            }
+        }
 
-        $collectionTime = (isset($collivery['data']['collection_time'])) ? ' anytime from: ' . date('Y-m-d H:i', $collivery['data']['collection_time']) : '';
+        $collivery = $this->addCollivery($colliveryOptions);
+
         if ($collivery['data']['id']) {
             // Save the results from validation into our table
             $this->addColliveryToProcessedTable($collivery, $order->get_id());
-            $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection' . $collectionTime . '.', $processing, 'completed');
+            $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection any time from ' . date('Y-m-d H:i', $collivery['data']['collection_time']) . '.', $processing, 'completed');
 
             return $collivery;
         } else {
