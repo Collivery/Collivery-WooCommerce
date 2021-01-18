@@ -27,7 +27,6 @@ jQuery(document).ready(function () {
     });
 
     jQuery('#delivery_town').change(function () {
-        console.log('fetching suburbs');
         var data = {
             action: 'suburbs_admin',
             town: jQuery("#delivery_town option:selected").val()
@@ -114,8 +113,6 @@ jQuery(document).ready(function () {
                 data: 'action=update_international_order_admin&' + datastring,
                 success: function (data) {
                     jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">' + data.message + '</div>');
-                    console.log('Success -- returning data');
-                    console.dir(data);
                     if (data.redirect == 1) {
                         setTimeout(function () {
                             window.location.href = jQuery("#intl_waybill_link").attr('action');
@@ -123,15 +120,12 @@ jQuery(document).ready(function () {
                     }
                 },
                 error: function(e) {
-                    console.log('Error -- returning error');
-                    console.dir(e);
+                    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">There was an error with the ajax request, please refresh the page and try again and if the problem is not rectified please report the problem to integration@collivery.co.za</div>');
                 },
                 beforeSend: function () {
-                    console.log('before send');
                     jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
                 }
             });
-            console.log('Entered Value Is ' + jQuery('#waybill_number').val());
         }
     });
 
