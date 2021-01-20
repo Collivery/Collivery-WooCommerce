@@ -7,6 +7,12 @@ use MdsLogger;
 
 class Collivery
 {
+    const SDX = 1;
+    const ONX = 2;
+    const FRT = 3;
+    const ECO = 5;
+    const ONX_10 = 6;
+
     protected $token;
     protected $client;
     protected $config;
@@ -79,13 +85,14 @@ class Collivery
 
     /**
      * Consumes API
-     * 
-     * @param string $url The URL you're accessing
-     * @param array $data The params or query the URL requires.
-     * @param string $type ~ Defines how the data is sent (POST / GET)
-     * @param bool $isAuthenticating Whether the API requires the api_token
-     * 
+     *
+     * @param  string  $url               The URL you're accessing
+     * @param  array   $data              The params or query the URL requires.
+     * @param  string  $type              ~ Defines how the data is sent (POST / GET)
+     * @param  bool    $isAuthenticating  Whether the API requires the api_token
+     *
      * @return array $result
+     * @throws CurlConnectionException
      */
     private function consumeAPI($url, $data, $type, $isAuthenticating = false) {
         if (!$isAuthenticating) {
@@ -114,39 +121,44 @@ class Collivery
             'X-App-Version:'.$this->config->app_version,
             'X-App-Host:'.$this->config->app_host,
             'X-App-Lang:'.'PHP '.phpversion(),
-            'Content-Type: application/json'];
+            'Content-Type: application/json'
+        ];
 
         curl_setopt($client, CURLOPT_HTTPHEADER, $headerArray);
-        
-        try {
-            $result = curl_exec($client);
-            
-            if (curl_errno($client)) {
-                $errno = curl_errno($client);
-                $errmsg = curl_error($client);
-                curl_close($client);
 
-                throw new CurlConnectionException("Error executing request", "ConsumeAPI()", [
-                    "Code" => $errno,
-                    "Message" => $errmsg,
-                    "URL" => $url,
-                    "Result" => $result
-                ]);
-            }
+        $result = curl_exec($client);
 
+        if (curl_errno($client)) {
+            $errno = curl_errno($client);
+            $errmsg = curl_error($client);
             curl_close($client);
 
-            // If $result is already an array.
-            if (is_array($result)) {
-                return $result;
-            }
-
-            return json_decode($result, true);
-        } catch (CurlConnectionException $e) {
-            $this->catchException($e);
+            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
+                'Code'    => $errno,
+                'Message' => $errmsg,
+                'URL'     => $url,
+                'Result' => $result
+            ]);
         }
 
-        return [];
+        if (isset($result['error'])) {
+            $error = $result['error'];
+            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
+                'Code'    => $error['http_code'],
+                'Message' => $error['message'],
+                'URL'     => $url,
+                'Result' => $result
+            ]);
+        }
+
+        curl_close($client);
+
+        // If $result is already an array.
+        if (is_array($result)) {
+            return $result;
+        }
+
+        return json_decode($result, true);
     }
 
     /**
@@ -289,7 +301,7 @@ class Collivery
                 return [];
             }
 
-            if (isset($result)) {
+            if (isset($result['data'])) {
                 if ($this->check_cache) {
                     $this->cache->put('collivery.search_towns.'.$name, $result['data'], 60 * 24);
                 }
@@ -376,7 +388,7 @@ class Collivery
     public function getServices()
     {
         if (($this->check_cache) && $this->cache->has('collivery.services')) {
-            return $this->cache->get('collivery.services');
+            $baseServices = $this->cache->get('collivery.services');
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/service_types", ["api_token" => ""], 'GET');
@@ -391,11 +403,13 @@ class Collivery
                     $this->cache->put('collivery.services', $result['data'], 60 * 24 * 7);
                 }
 
-                return $result['data'];
+                $baseServices = $result['data'];
             } else {
                 return $this->checkError($result);
             }
         }
+
+        return $this->filterServices($baseServices);
     }
 
     /**
@@ -590,14 +604,12 @@ class Collivery
                 return false;
             }
 
-            if (isset($result['images'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache) {
-                    $this->cache->put('collivery.parcel_image_list.'.$this->client_id.'.'.$collivery_id, $result['images'], 60 * 12);
+            if (isset($result['data'])) {
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.parcel_image_list.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
                 }
 
-                return $result['images'];
+                return $result['data'];
             } else {
                 return $this->checkError($result);
             }
@@ -629,14 +641,12 @@ class Collivery
                 return false;
             }
 
-            if (isset($result['image'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache) {
-                    $this->cache->put('collivery.parcel_image.'.$this->client_id.'.'.$parcel_id, $result['image'], 60 * 24);
+            if (isset($result['data'])) {
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.parcel_image.'.$this->client_id.'.'.$parcel_id, $result['data'], 60 * 24);
                 }
 
-                return $result['image'];
+                return $result['data'];
             } else {
                 return $this->checkError($result);
             }
@@ -657,7 +667,7 @@ class Collivery
     public function getStatus($collivery_id)
     {
         try {
-            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, ["api_token" => ""], 'GET');
+            $result = $this->consumeAPI("https://api.collivery.co.za/v3/status_tracking/".$collivery_id, [], 'GET');
         } catch (CurlConnectionException $e) {
             $this->catchException($e);
 
@@ -665,9 +675,7 @@ class Collivery
         }
 
         if (isset($result['data'])) {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            } elseif ($this->check_cache) {
+            if ($this->check_cache) {
                 $this->cache->put('collivery.status.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
             }
 
@@ -781,7 +789,7 @@ class Collivery
                 return false;
             }
 
-            if (isset($result['contact_id'])) {
+            if (isset($result['data'])) {
                 return $result;
             } else {
                 return $this->checkError($result);
@@ -833,10 +841,7 @@ class Collivery
             return false;
         }
 
-        if (is_array($result)) {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            }
+        if (isset($result['data'])) {
             return $result;
         } else {
             return $this->checkError($result);
@@ -890,9 +895,6 @@ class Collivery
         }
 
         if (!$this->hasErrors()) {
-
-            $newObject = [];
-
             $newObject = [
                 "service" => $data["service"],
                 "parcels" => $data["parcels"],
@@ -916,10 +918,6 @@ class Collivery
             }
 
             if (isset($result['data']['id'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                }
-
                 return $result;
             } else {
                 return $this->checkError($result);
@@ -947,10 +945,6 @@ class Collivery
         }
 
         if (isset($result['data'])) {
-            if (isset($result['error'])) {
-                $this->setError($result['error']['http_code'], $result['error']['message']);
-            }
-
             if (strpos($result['data']['message'], 'accepted')) {
                 return true;
             } else {
@@ -983,9 +977,7 @@ class Collivery
             }
 
             if (isset($result['data'])) {
-                if (isset($result['error'])) {
-                    $this->setError($result['error']['http_code'], $result['error']['message']);
-                } elseif ($this->check_cache) {
+                if ($this->check_cache) {
                     $this->cache->put('collivery.waybill.'.$this->client_id.'.'.$collivery_id, $result['data'], 60 * 12);
                 }
 
@@ -1152,5 +1144,29 @@ class Collivery
      */
     public function getColliveryUserId() {
         return $this->authenticate()['id'];
+    }
+
+    public function filterServices(array $services)
+    {
+        // Remove SDX
+        $services = array_filter($services, function ($service) {
+            return ((array) $service)['id'] !== self::SDX;
+        });
+
+        // Each $service could be an array or object.
+        // Cast it coming in and going out
+        $type = gettype(current($services));
+
+        $before10 = [
+            'id' => self::ONX_10,
+            'code' => 'ONX_10',
+            'text' => 'Next Day Before 10:00',
+            'description' => 'Will be delivered next day before 10:00',
+            'delivery_days' => 1,
+        ];
+        // Cast it back
+        settype($before10, $type);
+
+        return array_merge([$before10], $services);
     }
 }

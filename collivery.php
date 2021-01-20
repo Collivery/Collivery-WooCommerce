@@ -14,8 +14,8 @@ require_once ABSPATH.'wp-includes/functions.php';
  * Version: 4.1.0
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
- * WC requires at least: 3.5
- * WC tested up to: 4.8.0
+ * WC requires at least: 4.0
+ * WC tested up to: 4.8
  */
 if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
     register_activation_hook(__FILE__, 'activate_mds');
@@ -34,7 +34,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 wp_die('Sorry, but you cannot run this plugin, it requires the <a href="http://php.net/manual/en/class.soapclient.php">SOAP</a> support on your server/hosting to function.');
             }
 
-            if (!version_compare(phpversion(), '5.4.0', '>=')) {
+            if (!version_compare(phpversion(), '7.0.0', '>=')) {
                 deactivate_plugins(basename(__FILE__));
                 wp_die('Sorry, but you cannot run this plugin, it requires PHP version 5.4 or higher');
             }
