@@ -78,7 +78,7 @@ if ($mds->isEnabled()) {
 			//if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
 				$collivery   = $mds->returnColliveryClass();
 				
-                $towns      = $collivery->getTowns('ZAF');
+                $towns      = $collivery->getTowns();
 
 				$key_value_array = [];
 				foreach ($towns as $item) {

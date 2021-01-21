@@ -286,9 +286,27 @@ add_action('woocommerce_order_actions', 'mds_order_actions');
 function mds_order_actions($actions)
 {
     $actions['confirm_shipping'] = 'Confirm MDS Shipping';
+    $actions['confirm_shipping_international'] = 'Link International MDS Waybill';
 
     return $actions;
 }
+
+
+/*
+ * Redirect Admin to plugin page to register the Collivery
+ */
+add_action('woocommerce_order_action_confirm_shipping_international', 'mds_process_intl_order_meta', 20, 2);
+
+/**
+ * @param $order
+ */
+function mds_process_intl_order_meta($order)
+{
+    wp_redirect(admin_url().'edit.php?page=mds_register&post_id='.$order->get_id().'&is_intl=true');
+    die();
+}
+
+
 
 /*
  * Redirect Admin to plugin page to register the Collivery
@@ -417,6 +435,49 @@ function quote_admin_callback()
         wp_die('<p class="mds_response"><b>Error: </b>'.$e->getMessage().'</p>');
     }
 }
+/*
+ * Ajax update order
+ */
+add_action('wp_ajax_update_international_order_admin', 'update_order_international_order_admin_callback');
+
+
+/**
+ * Ajax update waybill number for international orders.
+ */
+function update_order_international_order_admin_callback()
+{
+    /** @var MdsColliveryService $mds */
+    $mds = MdsColliveryService::getInstance();
+    $overrides = $_POST;
+    $order = new WC_Order($overrides['order_id']);
+
+    try {
+        if (!isset($overrides['waybill_number'])) {
+            wp_send_json([
+                'redirect' => false, 
+                'message' => '<p class="mds_response">' . 'Waybill Number not set.' . '</p>'
+            ]);
+        }
+
+        $mds->linkWaybillNumber($order, $overrides['waybill_number']);
+
+        $message = "Order: " . $overrides['order_id'] . " has been linked with Waybill Number: " . $overrides['waybill_number'] . ". You will be redirected to your order in 5 seconds";
+
+        wp_send_json([
+            'redirect' => true, 
+            'message' => '<p class="mds_response">' . $message . '</p>'
+        ]);
+    } catch (Exception $e) {
+        $mds->updateStatusOrAddNote($order, $e->getMessage(), true, 'processing');
+        wp_send_json([
+            'redirect' => false,
+            'message'  => '<p class="mds_response">' . $e->getMessage() . '</p>',
+        ]);
+    }
+
+    
+}
+
 
 /*
  * Ajax accept quote

@@ -1,5 +1,6 @@
 var colliveryFieldsValues = {};
 var overrideChange = false;
+var inZA = true;
 
 jQuery(document).ready(function () {
     var select2fields = {
@@ -21,9 +22,9 @@ jQuery(document).ready(function () {
     });
 
     var ajaxUpdates = [
-        //{fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
+        {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
         {fromField: 'billing_city', field: 'billing_suburb', prefix: 'suburbs', db_prefix: 'billing'},
-        //{fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
+        {fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
         {fromField: 'shipping_city', field: 'shipping_suburb', prefix: 'suburbs', db_prefix: 'shipping'}
     ];
 
@@ -42,6 +43,101 @@ jQuery(document).ready(function () {
 
         cacheValue(row.fromField, parentEl.val());
     });
+
+    var internationalUpdates = [{type: "billing"}, {type: "shipping"}];
+
+    var styling = document.createElement('style');
+    styling.innerHTML = '.active { display: block !important; } .inactive { display: none !important; }';
+    document.body.appendChild(styling);
+
+
+    jQuery.each(internationalUpdates, function (index, row) {
+
+        var countryEl = jQuery('#' + row.type + "_country");
+        countryEl.on('keydown', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode !== 9) {
+                updateInternational(row.type);
+            }
+        });
+
+        countryEl.on('change', function () {
+            updateInternational(row.type);
+        });
+
+        var cityEl = jQuery('#' + row.type + "_city_int");
+        cityEl.on('keydown', function (e) {
+            var keyCode = e.keyCode || e.which;
+            if (keyCode !== 9) {
+                updateFields(row.type);
+            }
+        });
+
+        cityEl.on('change', function () {
+            updateFields(row.type);
+        });
+    });
+
+    function updateInternational(type) {
+        var fromEl = jQuery('#' + type + "_country");
+        var fromSelect2 = fromEl.data('select2');
+
+        var isChange = fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[type + "_country"];
+
+        if (isChange) {
+            cacheValue(type + "_country", fromEl.val());
+
+            if (fromSelect2)
+                fromSelect2.close();
+
+            removeInlineStyling(type);
+            
+
+            if (fromEl.val() == "ZA") {
+                // Enable MDS Settings
+                inZA = true;
+
+                jQuery('#' + type + '_city .removal').remove();
+                jQuery('#' + type + '_suburb .removal').remove();
+
+                jQuery('#' + type + '_city_field')[0].classList.remove('inactive');
+                jQuery('#' + type + '_city_field')[0].classList.add('active');
+                jQuery('#' + type + '_suburb_field')[0].classList.remove('inactive');
+                jQuery('#' + type + '_suburb_field')[0].classList.add('active');
+
+                jQuery('#' + type + '_city_int_field')[0].classList.remove('active');
+                jQuery('#' + type + '_city_int_field')[0].classList.add('inactive');  
+            } else {
+                // Disable MDS Settings
+                inZA = false;
+
+                jQuery('#' + type + '_city_field')[0].classList.remove('active');
+                jQuery('#' + type + '_city_field')[0].classList.add('inactive');
+                jQuery('#' + type + '_suburb_field')[0].classList.remove('active');
+                jQuery('#' + type + '_suburb_field')[0].classList.add('inactive');
+                
+                jQuery('#' + type + '_city_int_field')[0].classList.remove('inactive');
+                jQuery('#' + type + '_city_int_field')[0].classList.add('active'); 
+            }
+        }
+    }
+    
+    function removeInlineStyling(type) {
+        jQuery('#'+type+'_city_field')[0].style.display = "";
+        jQuery('#'+type+'_suburb_field')[0].style.display = "";
+        jQuery('#'+type+'_city_int_field')[0].style.display = "";
+    }
+
+    function updateFields(db_prefix) {
+        if (inZA) {
+            // If TRUE, then Not International
+            jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
+        } else {
+            // If False, Is International
+            jQuery('#' + db_prefix + '_city').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+            jQuery('#' + db_prefix + '_suburb').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+        }
+    }
 
     function updateSelect(fromField, field, prefix, db_prefix) {
         var fromEl = jQuery('#' + fromField),
@@ -71,6 +167,10 @@ jQuery(document).ready(function () {
         // Check that the value is not empty and has changed from the previous value
         // Only if that is true is there any point in querying for new results
         if (isChange) {
+            if (prefix == "suburbs") {
+                // Update INT City for the sake of Requirement.
+                updateFields(db_prefix);
+            }
             cacheValue(fromField, fromEl.val());
             return ajax = jQuery.ajax({
                 type: 'POST',
@@ -124,4 +224,21 @@ jQuery(document).ready(function () {
   function cacheValue (key, val) {
     colliveryFieldsValues[key] = val;
   }
+
+  //Function to append values for international shipments BEFORE submit
+  jQuery('form[name="checkout"').submit(function(event) {
+    if(jQuery('#billing_country').val() != 'ZA' || (jQuery('#shipping_country').val() != 'ZA' &&  jQuery('#ship-to-different-address input:checked').length > 0)) {
+        event.preventDefault();
+        var enteredCityBilling = jQuery('#billing_city_int').val();
+        var enteredCityShipping = jQuery('#shipping_city_int').val();
+
+        jQuery('#billing_city').append('<option selected >' + enteredCityBilling + '</option>');
+        jQuery('#billing_suburb').append('<option selected >' + enteredCityBilling + '</option>');
+
+        if(enteredCityBilling !== enteredCityShipping){
+            jQuery('#shipping_city').append('<option selected >' + enteredCityShipping + '</option>');
+            jQuery('#shipping_suburb').append('<option selected >' + enteredCityShipping + '</option>');
+        }
+    }
+   })
 });

@@ -1137,7 +1137,6 @@ class Collivery
         return $key_value_array;
     }
 
-
     /**
      * Returns the Collivery User Id for the credentials used by the store owner.
      * 

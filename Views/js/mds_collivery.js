@@ -27,7 +27,6 @@ jQuery(document).ready(function () {
     });
 
     jQuery('#delivery_town').change(function () {
-        console.log('fetching suburbs');
         var data = {
             action: 'suburbs_admin',
             town: jQuery("#delivery_town option:selected").val()
@@ -102,6 +101,34 @@ jQuery(document).ready(function () {
             });
         }
     });
+
+    //Used to update order with an International Waybill
+    jQuery('#update_order').click(function(event){
+        if(jQuery('#waybill_number').val().trim().length > 0){
+            event.preventDefault();
+            var datastring = jQuery("#intl_waybill_link").serialize();
+            jQuery.ajax({
+                type: "POST",
+                url: ajaxurl,
+                data: 'action=update_international_order_admin&' + datastring,
+                success: function (data) {
+                    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">' + data.message + '</div>');
+                    if (data.redirect == 1) {
+                        setTimeout(function () {
+                            window.location.href = jQuery("#intl_waybill_link").attr('action');
+                        }, 5000);
+                    }
+                },
+                error: function(e) {
+                    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">There was an error with the ajax request, please refresh the page and try again and if the problem is not rectified please report the problem to integration@collivery.co.za</div>');
+                },
+                beforeSend: function () {
+                    jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
+                }
+            });
+        }
+    });
+
 
     // Used to process the delivery and then change order status
     jQuery('#accept_quote').click(function (event) {
