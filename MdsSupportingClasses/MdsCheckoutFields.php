@@ -150,6 +150,7 @@ class MdsCheckoutFields
                     'label' => 'Company Name',
                     'placeholder' => 'Company (optional)',
                     'autocomplete' => 'organization',
+                    'maxlength' => 50,
                     'class' => ['form-row-wide'],
                 ],
                 $prefix.'address_1' => [
@@ -157,6 +158,7 @@ class MdsCheckoutFields
                     'label' => 'Street',
                     'placeholder' => 'Street number and name.',
                     'autocomplete' => 'address-line1',
+                    'maxlength' => 50,
                     'required' => true,
                     'class' => ['form-row-wide'],
                 ],
@@ -166,6 +168,7 @@ class MdsCheckoutFields
                     'placeholder' => 'Apartment, suite, unit etc. (optional)',
                     'class' => ['form-row-wide'],
                     'autocomplete' => 'address-line2',
+                    'maxlength' => 50,
                     'required' => false,
                 ],
                 $prefix.'first_name' => [
