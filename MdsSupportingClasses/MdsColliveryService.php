@@ -629,6 +629,7 @@ class MdsColliveryService
                 'phone'         => preg_replace('/[^0-9]/', '', $overrides['collection_phone']),
                 'cellphone'     => preg_replace('/[^0-9]/', '', $overrides['collection_cellphone']),
                 'email'         => $overrides['collection_email'],
+                'custom_id' => ("wp_".$this->collivery->getColliveryUserId().hash("adler32", str_replace(' ', '', $overrides['collection_email'])))
             ]);
 
             if (!is_array($collectionAddress)) {
