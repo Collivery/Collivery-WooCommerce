@@ -138,12 +138,12 @@ class MdsColliveryService
     public function initMdsCollivery()
     {
         $colliveryInitData = [
-	        'app_name' => $this->environment->appName,
-	        'app_version' => $this->environment->appVersion,
-	        'app_host' => $this->environment->appHost,
-	        'app_url' => $this->environment->appUrl,
-	        'user_email' => $this->settings->getValue('mds_user'),
-	        'user_password' => $this->settings->getValue('mds_pass'),
+            'app_name' => $this->environment->appName,
+            'app_version' => $this->environment->appVersion,
+            'app_host' => $this->environment->appHost,
+            'app_url' => $this->environment->appUrl,
+            'user_email' => wp_specialchars_decode($this->settings->getValue('mds_user')),
+            'user_password' => wp_specialchars_decode($this->settings->getValue('mds_pass')),
         ];
 
         $this->collivery = new Collivery($colliveryInitData, $this->cache);
