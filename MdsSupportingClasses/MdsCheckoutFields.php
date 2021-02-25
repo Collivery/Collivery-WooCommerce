@@ -204,11 +204,13 @@ class MdsCheckoutFields
                     'class' => ['form-row-wide'],
                 ],
                 $prefix.'postcode' => [
-                    'priority' => 15,
-                    'label' => 'Postal Code',
-                    'placeholder' => 'Postal Code',
-                    'required' => false,
-                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change'],
+                    'priority'     => 15,
+                    'label'        => 'Postal Code',
+                    'placeholder'  => 'Postal Code',
+                    'required'     => true,
+                    'class'        => ['form-row-wide', 'address-field', 'update_totals_on_change'],
+                    'validate'     => ['postcode'],
+                    'autocomplete' => 'postal-code',
                 ],
             ];
         } catch (InvalidResourceDataException $e) {
