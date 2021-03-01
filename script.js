@@ -1,9 +1,14 @@
 var colliveryFieldsValues = {};
 var overrideChange = false;
 var inZA = true;
+var colliveryClass = 'colliveryfied';
 
 jQuery(document)
 .ready(function () {
+  // Allow for some narrowing of scope in our css
+  $('.woocommerce-checkout').addClass(colliveryClass)
+
+
   var select2fields = {
     city: 'Select your city/town',
     suburb: 'Select your city/town',
@@ -48,7 +53,8 @@ jQuery(document)
   var internationalUpdates = [{type: "billing"}, {type: "shipping"}];
 
   var styling = document.createElement('style');
-  styling.innerHTML = '.active { display: block !important; } .inactive { display: none !important; }';
+  styling.innerHTML = '.'+colliveryClass+' .active { display: block !important; }'+
+    '.'+colliveryClass+' .inactive { display: none !important; }';
   document.body.appendChild(styling);
 
 
@@ -227,7 +233,7 @@ jQuery(document)
   }
 
   //Function to append values for international shipments BEFORE submit
-  jQuery('form[name="checkout"').submit(function (event) {
+  jQuery('form[name="checkout"]').submit(function (event) {
     if (jQuery('#billing_country').val() != 'ZA' || (jQuery('#shipping_country').val() != 'ZA' && jQuery('#ship-to-different-address input:checked').length > 0)) {
       event.preventDefault();
       var enteredCityBilling = jQuery('#billing_city_int').val();
