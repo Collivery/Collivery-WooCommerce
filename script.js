@@ -6,7 +6,7 @@ var colliveryClass = 'colliveryfied';
 jQuery(document)
 .ready(function () {
   // Allow for some narrowing of scope in our css
-  $('.woocommerce-checkout').addClass(colliveryClass)
+  jQuery('.woocommerce-checkout').addClass(colliveryClass)
 
 
   var select2fields = {
