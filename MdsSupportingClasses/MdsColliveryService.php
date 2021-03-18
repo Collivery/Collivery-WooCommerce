@@ -538,10 +538,12 @@ class MdsColliveryService
         }
 
         if ($array['service'] == Collivery::ONX_10) {
-            $collectionTime = array_key_exists($array, 'collection_time') ?
+            $collectionTime = array_key_exists('collection_time', $array) ?
                 new \DateTime($array['collection_time']) :
                 new \DateTime();
-            $deliveryTime = $collectionTime->modify('+1 day')->setTime(10, 0);
+            $deliveryTime = clone $collectionTime;
+            $deliveryTime->modify('+1 day');
+            $deliveryTime->setTime(10, 0);
 
             while (in_array($deliveryTime->format('D'), ['Sat', 'Sun'])) {
                 $deliveryTime->modify('+1 day');
