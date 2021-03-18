@@ -966,7 +966,7 @@ class MdsColliveryService
 
             foreach ($searchAddresses as $address) {
                 foreach ($matchAddressFields as $mdsField => $newField) {
-                    if ($address[$mdsField] != $newAddress[$newField]) {
+                    if (!array_key_exists($mdsField, $address) || $address[$mdsField] != $newAddress[$newField]) {
                         $match = false;
                     }
                 }
