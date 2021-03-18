@@ -547,8 +547,8 @@ class MdsColliveryService
                 $deliveryTime->modify('+1 day');
             }
 
-            $data['delivery_time'] = $deliveryTime->format('Y-m-d H:i:s');
-            $data['service'] = Collivery::ONX;
+            $array['delivery_time'] = $deliveryTime->format('Y-m-d H:i:s');
+            $array['service'] = Collivery::ONX;
         }
 
         return $array;
