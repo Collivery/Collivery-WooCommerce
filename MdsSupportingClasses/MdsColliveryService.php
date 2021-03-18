@@ -537,6 +537,20 @@ class MdsColliveryService
             throw new InvalidColliveryDataException('Invalid parcels', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
         }
 
+        if ($array['service'] == Collivery::ONX_10) {
+            $collectionTime = array_key_exists($array, 'collection_time') ?
+                new \DateTime($array['collection_time']) :
+                new \DateTime();
+            $deliveryTime = $collectionTime->modify('+1 day')->setTime('10');
+
+            while (in_array($deliveryTime->format('D'), ['Sat', 'Sun'])) {
+                $deliveryTime->modify('+1 day');
+            }
+
+            $data['delivery_time'] = $deliveryTime->format('Y-m-d H:i:s');
+            $data['service'] = Collivery::ONX;
+        }
+
         return $array;
     }
 
