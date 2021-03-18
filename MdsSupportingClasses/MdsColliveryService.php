@@ -541,7 +541,7 @@ class MdsColliveryService
             $collectionTime = array_key_exists($array, 'collection_time') ?
                 new \DateTime($array['collection_time']) :
                 new \DateTime();
-            $deliveryTime = $collectionTime->modify('+1 day')->setTime('10');
+            $deliveryTime = $collectionTime->modify('+1 day')->setTime(10, 0);
 
             while (in_array($deliveryTime->format('D'), ['Sat', 'Sun'])) {
                 $deliveryTime->modify('+1 day');
