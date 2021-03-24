@@ -537,6 +537,22 @@ class MdsColliveryService
             throw new InvalidColliveryDataException('Invalid parcels', 'MdsColliveryService::validateCollivery()', $this->loggerSettingsArray(), $array);
         }
 
+        if ($array['service'] == Collivery::ONX_10) {
+            $collectionTime = array_key_exists('collection_time', $array) ?
+                new \DateTime($array['collection_time']) :
+                new \DateTime();
+            $deliveryTime = clone $collectionTime;
+            $deliveryTime->modify('+1 day');
+            $deliveryTime->setTime(10, 0);
+
+            while (in_array($deliveryTime->format('D'), ['Sat', 'Sun'])) {
+                $deliveryTime->modify('+1 day');
+            }
+
+            $array['delivery_time'] = $deliveryTime->format('Y-m-d H:i:s');
+            $array['service'] = Collivery::ONX;
+        }
+
         return $array;
     }
 
@@ -950,7 +966,7 @@ class MdsColliveryService
 
             foreach ($searchAddresses as $address) {
                 foreach ($matchAddressFields as $mdsField => $newField) {
-                    if ($address[$mdsField] != $newAddress[$newField]) {
+                    if (!array_key_exists($mdsField, $address) || $address[$mdsField] != $newAddress[$newField]) {
                         $match = false;
                     }
                 }
