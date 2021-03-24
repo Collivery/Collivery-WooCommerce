@@ -121,6 +121,7 @@ class Collivery
             'X-App-Version:'.$this->config->app_version,
             'X-App-Host:'.$this->config->app_host,
             'X-App-Lang:'.'PHP '.phpversion(),
+            'X-App-Url:'.$this->config->app_url,
             'Content-Type: application/json'
         ];
 
