@@ -42,7 +42,30 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
 
             global $wpdb;
 
-            // Creates our table to store our accepted deliveries
+            if(is_multisite()) {
+
+                $blogs = get_sites();
+
+                foreach ($blogs as $blog) {
+
+                    switch_to_blog($blog->blog_id);
+                    // Creates our table to store our accepted deliveries
+                        $table_name = $wpdb->prefix.'mds_collivery_processed';
+                        $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
+                            `id` int(11) NOT NULL AUTO_INCREMENT,
+                            `waybill` int(11) NOT NULL,
+                            `order_id` int(11) NOT NULL,
+                            `validation_results` TEXT NOT NULL,
+                            `status` int(1) NOT NULL DEFAULT 1,
+                            PRIMARY KEY (`id`)
+                        );";
+                        $wpdb->query($sql);
+
+                    restore_current_blog();
+                }
+
+            } else {
+                 // Creates our table to store our accepted deliveries
             $table_name = $wpdb->prefix.'mds_collivery_processed';
             $sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -54,6 +77,9 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
             );";
 
             $wpdb->query($sql);
+            }
+
+           
 
             add_option('mds_db_version', MDS_VERSION);
         }
