@@ -6,6 +6,7 @@ define('_MDS_DIR_', __DIR__);
 define('MDS_VERSION', '4.1.7');
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
+include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
 /*
  * Plugin Name: MDS Collivery
@@ -17,7 +18,7 @@ require_once ABSPATH.'wp-includes/functions.php';
  * WC requires at least: 4.0
  * WC tested up to: 5.1.0
  */
-if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+if( is_plugin_active('woocommerce/woocommerce.php')) {
     register_activation_hook(__FILE__, 'activate_mds');
 	$mds = MdsColliveryService::getInstance();
 	$settings = $mds->returnPluginSettings();
@@ -251,4 +252,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 	    add_filter('woocommerce_my_account_my_address_formatted_address', 'mds_show_my_account_address_suburb', 10, 3);
     }
+} else {
+    add_action( 'admin_notices', 'need_woocommerce' );
+}
+
+function need_woocommerce() {
+    $error = sprintf( __( 'The plugin requires WooCommerce. Please install and activate the  %sWooCommerce%s plugin. ' , 'foo' ), '<a href="http://wordpress.org/extend/plugins/woocommerce/">', '</a>' );
+  $message = '<div class="error"><p>' . $error . '</p></div>';
+  echo $message;
 }
