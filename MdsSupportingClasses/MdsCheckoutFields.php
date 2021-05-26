@@ -90,7 +90,7 @@ class MdsCheckoutFields
                 $suburbs = ['' => 'First select town/city'] + $suburbs;
             }
 
-            return [
+            $fields = [
                 $prefix.'country' => [
                     'priority' => 1,
                     'type' => 'country',
@@ -213,6 +213,11 @@ class MdsCheckoutFields
                     'autocomplete' => 'postal-code',
                 ],
             ];
+
+	        // Ensure we don't steamroll fields added by other plugins
+            $customFields = array_diff_key($defaultFields, $fields);
+
+            return array_merge($customFields, $fields);
         } catch (InvalidResourceDataException $e) {
             return $prefix ? $this->defaultFields[$prefix] : $this->defaultFields;
         }
