@@ -50,20 +50,17 @@ class MdsCheckoutFields
     public function getCheckoutFields($prefix = null)
     {
         $service = MdsColliveryService::getInstance();
+        $defaultFields = $this->defaultFields[$prefix] ?? $this->defaultFields;
 
         if (!$service->isEnabled()) {
-            if (isset($this->defaultFields[$prefix])) {
-                return $this->defaultFields[$prefix];
-            } else {
-                return $this->defaultFields;
-            }
+            return $defaultFields;
         }
 
         try {
             $resources = MdsFields::getResources($service);
 
             if ($prefix) {
-                $prefix = $prefix.'_';
+                $prefix .= '_';
             }
 
             $towns = $this->make_key_value_array($resources['towns'], 'name', 'name');
@@ -72,7 +69,7 @@ class MdsCheckoutFields
             $towns = ['' => 'Select Town'] + $towns;
             $location_types = ['' => 'Select Premises Type'] + $location_types;
 	        $customer = WC()->customer;
-	        $cityPrefix = $prefix ? $prefix : 'billing_';
+	        $cityPrefix = $prefix ?: 'billing_';
             
             $townName = '';
 
