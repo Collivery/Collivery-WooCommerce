@@ -50,20 +50,17 @@ class MdsCheckoutFields
     public function getCheckoutFields($prefix = null)
     {
         $service = MdsColliveryService::getInstance();
+        $defaultFields = $this->defaultFields[$prefix] ?? $this->defaultFields;
 
         if (!$service->isEnabled()) {
-            if (isset($this->defaultFields[$prefix])) {
-                return $this->defaultFields[$prefix];
-            } else {
-                return $this->defaultFields;
-            }
+            return $defaultFields;
         }
 
         try {
             $resources = MdsFields::getResources($service);
 
             if ($prefix) {
-                $prefix = $prefix.'_';
+                $prefix .= '_';
             }
 
             $towns = $this->make_key_value_array($resources['towns'], 'name', 'name');
@@ -72,7 +69,7 @@ class MdsCheckoutFields
             $towns = ['' => 'Select Town'] + $towns;
             $location_types = ['' => 'Select Premises Type'] + $location_types;
 	        $customer = WC()->customer;
-	        $cityPrefix = $prefix ? $prefix : 'billing_';
+	        $cityPrefix = $prefix ?: 'billing_';
             
             $townName = '';
 
@@ -90,7 +87,7 @@ class MdsCheckoutFields
                 $suburbs = ['' => 'First select town/city'] + $suburbs;
             }
 
-            return [
+            $fields = [
                 $prefix.'country' => [
                     'priority' => 1,
                     'type' => 'country',
@@ -213,6 +210,11 @@ class MdsCheckoutFields
                     'autocomplete' => 'postal-code',
                 ],
             ];
+
+	        // Ensure we don't steamroll fields added by other plugins
+            $customFields = array_diff_key($defaultFields, $fields);
+
+            return array_merge($customFields, $fields);
         } catch (InvalidResourceDataException $e) {
             return $prefix ? $this->defaultFields[$prefix] : $this->defaultFields;
         }
