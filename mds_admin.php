@@ -318,7 +318,7 @@ add_action('woocommerce_order_action_confirm_shipping', 'mds_process_order_meta'
  */
 function mds_process_order_meta($order)
 {
-    wp_redirect(admin_url().'edit.php?page=mds_register&post_id='.$order->get_id());
+    wp_redirect(admin_url().'edit.php?page=mds_register&post_id='.$order->get_id().'&is_intl=false');
     die();
 }
 
