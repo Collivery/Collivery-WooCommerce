@@ -1,6 +1,6 @@
 <?php
 use MdsSupportingClasses\View;
-if ($_GET['is_intl'] && $_GET['is_intl'] == true) {
+if ($_GET['is_intl'] && $_GET['is_intl'] === 'true') {
 ?>
 
         <div>
