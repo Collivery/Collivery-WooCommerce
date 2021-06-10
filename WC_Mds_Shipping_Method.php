@@ -228,10 +228,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                 // Looks like it's being executed here;
                                 $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $service['id']), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $service['id']));
 
+                                if($this->mdsSettings->getInstanceValue('wording_'.$service['id']) !== ""){
+                                  $service['text'] = $this->mdsSettings->getInstanceValue('wording_'.$service['id']);
+                                }
                                 if (in_array($service['id'], [Collivery::ONX, Collivery::ONX_10])) {
                                   $service['text'] .= ', additional 24 hours on outlying areas';
-                                } else {
-                                    $service['text'] = $this->mdsSettings->getInstanceValue('wording_'.$service['id']);
                                 }
 
                                 $label = $service['text'];
