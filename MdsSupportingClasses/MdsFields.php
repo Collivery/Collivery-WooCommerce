@@ -177,6 +177,14 @@ class MdsFields
                 ),
                 'default' => 'yes',
             ],
+            'lead_time' => [
+                'title' => __('Lead Time'),
+                'type' => 'number',
+                'description' => __(
+                    'The time in hours you would like to delay the collection of waybills generated from the Auto Processing'
+                ),
+                'default' => 24,
+            ],
         ];
     }
 
@@ -222,12 +230,6 @@ class MdsFields
                     'type' => 'text',
                     'default' => $item['text'],
                     'description' => 'The wording you would like on the checkout page for this service',
-                ];
-                $fields['lead_time_'.$item['id']] = [
-                    'title' => __($item['text'].' Lead time'),
-                    'type' => 'number',
-                    'default' => '24',
-                    'description' => 'The lead time in hours you need to collection time to be when waybill is auto generated',
                     'class' => 'sectionEnd',
                 ];
             }
