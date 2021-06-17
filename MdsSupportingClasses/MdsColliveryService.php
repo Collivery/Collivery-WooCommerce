@@ -17,6 +17,7 @@ use MdsExceptions\OrderAlreadyProcessedException;
 
 class MdsColliveryService
 {
+    const TWENTY_FOUR_HOURS = 24;
     /**
      * self.
      */
@@ -762,7 +763,8 @@ class MdsColliveryService
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
             $colliveryOptions['collection_time'] = $overrides['collection_time'];
         } else {
-            $collectionTime = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' + 1 days + 12 hours'));
+            $leadTime = $this->settings->getValue('lead_time') ?? self::TWENTY_FOUR_HOURS;
+            $collectionTime = date('Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s')." + {$leadTime} hours + 5 minutes"));
             // Ensure it's a week day
             while(date('N', strtotime($collectionTime)) >= 6) {
                 $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 1 days'));
@@ -974,7 +976,7 @@ class MdsColliveryService
                 if ($match) {
                     if (!isset($address['contact_id'])) {
                         $contacts = $this->collivery->getContacts($address['address_id']);
-                        list($contact_id) = array_keys($contacts);
+                        [$contact_id] = array_keys($contacts);
                         $address['contact_id'] = $contact_id;
                     }
 
