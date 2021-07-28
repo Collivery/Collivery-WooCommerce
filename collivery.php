@@ -1,6 +1,7 @@
 <?php
 
 use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
 define('MDS_VERSION', '4.1.15');
@@ -142,13 +143,11 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
          *
          * @param $packages
          *
-         * @return mixed
+         * @return array
          */
         function mds_collivery_cart_shipping_packages($packages)
         {
-            $shippingPackage = new \MdsSupportingClasses\ShippingPackageData();
-
-            return $shippingPackage->build($packages, $_POST);
+            return (new ShippingPackageData())->build($packages, $_POST);
         }
 
         add_filter('woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages');
