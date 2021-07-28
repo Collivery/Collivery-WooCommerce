@@ -32,7 +32,7 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
         {
             if (!version_compare(phpversion(), '7.0.0', '>=')) {
                 deactivate_plugins(basename(__FILE__));
-                wp_die('Sorry, but you cannot run this plugin, it requires PHP version 5.4 or higher');
+                wp_die('Sorry, but you cannot run this plugin, it requires PHP version 7.0.0 or higher');
             }
 
             global $wpdb;
