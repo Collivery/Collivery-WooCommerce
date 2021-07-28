@@ -16,6 +16,9 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
  * Version: 4.2.0
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
+ * Requires PHP: 7.0.0
+ * Requires at least: 5.0
+ * Tested up to: 5.8
  * WC requires at least: 4.0
  * WC tested up to: 5.5.2
  */
