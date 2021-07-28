@@ -1027,31 +1027,24 @@ class MdsColliveryService
     /**
      * Gets default address of the MDS Account.
      *
-     * @return array|bool
+     * @return array
      */
     public function returnDefaultAddress()
     {
-        try {
-            $default_address_id = $this->collivery->getDefaultAddressId();
-            if (!$default_address = $this->collivery->getAddress($default_address_id)) {
-                return false;
-            }
-
-            $data = [
-                'address' => $default_address,
-                'default_address_id' => $default_address_id,
-            ];
-
-            if (!isset($default_address['contacts'])) {
-                $data['contacts'] = $this->collivery->getContacts($default_address_id);
-            } else {
-                $data['contacts'] = $default_address['contacts'];
-            }
-
-            return $data;
-        } catch (CurlConnectionException $e) {
+        $default_address_id = $this->collivery->getDefaultAddressId();
+        /** @var array $default_address */
+        $default_address = $this->collivery->getAddress($default_address_id);
+        if (! $default_address ) {
             return [];
         }
+
+	    $contacts  = $default_address['contacts'] ?? $this->collivery->getContacts( $default_address_id );
+
+	    return [
+            'address' => $default_address,
+            'default_address_id' => $default_address_id,
+            'contacts' => $contacts,
+        ];
     }
 
     /**
