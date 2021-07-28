@@ -172,40 +172,47 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      * Function used by Woocommerce to fetch shipping price.
      *
      * @param array $package
-     *
-     * @throws InvalidResourceDataException
      */
-    public function calculate_shipping($package = [])
-    {
-        if (isset($package['destination']['from_town_id']) && $this->collivery_service->validPackage($package)) {
-            if (isset($package['service']) && $package['service'] == 'free') {
-                if (isset($package['local']) && $package['local'] == 'yes') {
-                    $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_local_default_service');
-                } else {
-                    $id = 'mds_'.$this->mdsSettings->getInstanceValue('free_default_service');
-                }
+    public function calculate_shipping($package = []) {
+        if ( ! isset( $package['destination']['from_town_id'] ) || !$this->collivery_service->validPackage( $package ) ) {
+            return;
+        }
+        if ( ( $package['service'] ?? false ) == 'free' ) {
+            if ( isset( $package['local'] ) && $package['local'] == 'yes' ) {
+                $id = 'mds_' . $this->mdsSettings->getInstanceValue( 'free_local_default_service' );
+            } else {
+                $id = 'mds_' . $this->mdsSettings->getInstanceValue( 'free_default_service' );
+            }
 
-                $this->id = $id;
-                $this->add_rate([
-                    'id'    => $id,
-                    'label' => $this->mdsSettings->getInstanceValue('wording_free', 'Free Delivery'),
-                    'cost'  => 0.0,
-                ]);
-            } elseif (!isset($package['service']) || (isset($package['service']) && $package['service'] != 'free')) {
-                try {
-                    $services = $this->collivery->getServices();
-                    if (is_array($services)) {
-                        // Get pricing for each service
-                        foreach ($services as $service) {
-                            if ($this->mdsSettings->getInstanceValue('method_'.$service['id']) === 'yes') {
-                                // Now lets get the price for
-                                $riskCover = false;
-                                $adjustedTotal = $package['shipping_cart_total'];
-                                $riskCoverEnabled = $this->mdsSettings->getValue( 'risk_cover' ) == 'yes';
-                                $overThreshold = $adjustedTotal >= $this->mdsSettings->getValue( 'risk_cover_threshold', 1000 );
-                                if ( $riskCoverEnabled && $overThreshold ) {
-                                    $riskCover = true;
-                                }
+            $this->id = $id;
+            $this->add_rate( [
+                'id'    => $id,
+                'label' => $this->mdsSettings->getInstanceValue( 'wording_free', 'Free Delivery' ),
+                'cost'  => 0.0,
+            ] );
+
+            return;
+        }
+        try {
+            $services = array_filter(
+                $this->collivery->getServices(),
+                function (array $service) {
+                    return $this->mdsSettings->getInstanceValue( 'method_' . $service['id'] ) === 'yes';
+                }
+            );
+            if ( ! is_array( $services ) ) {
+                return;
+            }
+            // Get pricing for each service
+            foreach ( $services as $service ) {
+                // Now lets get the price for
+                $adjustedTotal    = $package['shipping_cart_total'];
+                $riskCoverEnabled = $this->mdsSettings->getValue( 'risk_cover' ) == 'yes';
+                $overThreshold    = $adjustedTotal >= $this->mdsSettings->getValue(
+                        'risk_cover_threshold',
+                        1000
+                    );
+                $riskCover        = $riskCoverEnabled && $overThreshold;
 
                 $data = [
                     'delivery_town'            => $package['destination']['to_town_id'],
@@ -218,44 +225,49 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     'services'                 => [ $service['id'] ],
                 ];
 
-                                // Add the requested time to ONX before 10
-                                if ($service['id'] === Collivery::ONX_10) {
-                                    $data['delivery_time'] = '10:00 next monday';
-                                    $data['services'] = [Collivery::ONX];
-                                }
-
-
-                                // Looks like it's being executed here;
-                                $price = $this->collivery_service->getPrice($data, $adjustedTotal, $this->mdsSettings->getInstanceValue( 'markup_' . $service['id']), $this->mdsSettings->getInstanceValue( 'fixed_price_' . $service['id']));
-
-                                if($this->mdsSettings->getInstanceValue('wording_'.$service['id']) !== ""){
-                                  $service['text'] = $this->mdsSettings->getInstanceValue('wording_'.$service['id']);
-                                }
-                                if (in_array($service['id'], [Collivery::ONX, Collivery::ONX_10])) {
-                                  $service['text'] .= ', additional 24 hours on outlying areas';
-                                }
-
-                                $label = $service['text'];
-                                if ($price <= 0) {
-                                    $price = 0.00;
-                                    $label .= ' - FREE!';
-                                }
-                                $this->id = 'mds_'.$service['id'];
-                                $this->add_rate([
-                                    'id' => 'mds_'.$service['id'],
-                                    'value' => $service['id'],
-                                    'label' => $label,
-                                    'cost' => $price,
-                                ]);
-                            }
-                        }
-                    }
-                } catch (CurlConnectionException $e) {
-                    (new MdsLogger())->error('WC_Mds_Shipping_Method::calculate_shipping()', $e->getMessage(), $this->collivery_service->loggerSettingsArray(), $package);
-                } catch (InvalidColliveryDataException $e) {
-                  (new MdsLogger())->error('WC_Mds_Shipping_Method::calculate_shipping()', $e->getMessage(), $this->collivery_service->loggerSettingsArray(), $package);
+                // Add the requested time to ONX before 10
+                if ( $service['id'] === Collivery::ONX_10 ) {
+                    $data['delivery_time'] = 'next weekday 10 am';
+                    $data['services']      = [ Collivery::ONX ];
                 }
+
+                // Looks like it's being executed here;
+                $price = $this->collivery_service->getPrice(
+                    $data,
+                    $adjustedTotal,
+                    $this->mdsSettings->getInstanceValue( 'markup_' . $service['id'] ),
+                    $this->mdsSettings->getInstanceValue( 'fixed_price_' . $service['id'] ) );
+
+                if ( $this->mdsSettings->getInstanceValue( 'wording_' . $service['id'] ) !== '' ) {
+                    $service['text'] = $this->mdsSettings->getInstanceValue( 'wording_' . $service['id'] );
+                }
+                if ( in_array( $service['id'], [ Collivery::ONX, Collivery::ONX_10 ] ) ) {
+                    $service['text'] .= ', additional 24 hours on outlying areas';
+                }
+
+                $label = $service['text'];
+                if ( $price <= 0 ) {
+                    $price = 0.00;
+                    $label .= ' - FREE!';
+                }
+                $this->id = 'mds_' . $service['id'];
+                $this->add_rate( [
+                    'id'    => 'mds_' . $service['id'],
+                    'value' => $service['id'],
+                    'label' => $label,
+                    'cost'  => $price,
+                ] );
             }
+        } catch ( CurlConnectionException $e ) {
+            ( new MdsLogger() )->error( 'WC_Mds_Shipping_Method::calculate_shipping()',
+                $e->getMessage(),
+                $this->collivery_service->loggerSettingsArray(),
+                $package );
+        } catch ( InvalidColliveryDataException $e ) {
+            ( new MdsLogger() )->error( 'WC_Mds_Shipping_Method::calculate_shipping()',
+                $e->getMessage(),
+                $this->collivery_service->loggerSettingsArray(),
+                $package );
         }
     }
 
