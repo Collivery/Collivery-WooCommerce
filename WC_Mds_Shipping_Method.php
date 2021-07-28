@@ -207,16 +207,16 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                                     $riskCover = true;
                                 }
 
-                                $data = [
-                                    'delivery_town' => $package['destination']['to_town_id'],
-                                    'collection_town' => $package['destination']['from_town_id'],
-                                    'delivery_location_type' => $package['destination']['to_location_type'],
-                                    'collection_location_type' => $package['destination']['from_location_type'],
-                                    'risk_cover' => $riskCover,
-                                    'parcels' => $package['cart']['products'],
-                                    'exclude_weekend' => true,
-                                    'services' => [$service['id']],
-                                ];
+                $data = [
+                    'delivery_town'            => $package['destination']['to_town_id'],
+                    'collection_town'          => $package['destination']['from_town_id'],
+                    'delivery_location_type'   => $package['destination']['to_location_type'],
+                    'collection_location_type' => $package['destination']['from_location_type'],
+                    'risk_cover'               => $riskCover,
+                    'parcels'                  => $package['contents'],
+                    'exclude_weekend'          => true,
+                    'services'                 => [ $service['id'] ],
+                ];
 
                                 // Add the requested time to ONX before 10
                                 if ($service['id'] === Collivery::ONX_10) {

@@ -151,72 +151,6 @@ class MdsColliveryService
     }
 
     /**
-     * Work through our shopping cart
-     * Convert lengths and weights to desired unit.
-     *
-     * @param $package
-     *
-     * @return null|array
-     */
-    public function getCartContent($package)
-    {
-        if (isset($package['contents']) && sizeof($package['contents']) > 0) {
-            $cart = [
-                'count' => 0,
-                'total' => 0,
-                'weight' => 0,
-                'max_weight' => 0,
-                'products' => [],
-            ];
-
-            foreach ($package['contents'] as $item_id => $values) {
-                $_product = $values['data']; // = WC_Product class
-                $qty = $values['quantity'];
-                $parcel['quantity'] = $qty;
-
-                $cart['count'] += $qty;
-                $cart['total'] += $values['line_subtotal'];
-                $cart['weight'] += (float)$_product->get_weight() * $qty;
-
-                // Work out Volumetric Weight based on MDS calculations
-                $vol_weight =  (((int)($_product->get_length()) * ((int)$_product->get_width()) * ((int)$_product->get_height())) / 4000);
-
-                if ($vol_weight > (float)$_product->get_weight()) {
-                    $cart['max_weight'] += $vol_weight * $qty;
-                } else {
-                    $cart['max_weight'] += (float)$_product->get_weight() * $qty;
-                }
-
-                // Length conversion, mds collivery only accepts cm
-                if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
-                    $parcel['length'] = $this->converter->convert((int)$_product->get_length(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-                    $parcel['width'] = $this->converter->convert((int)$_product->get_width(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-                    $parcel['height'] = $this->converter->convert((int)$_product->get_height(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-                } else {
-                    $parcel['length'] = (int)$_product->get_length();
-                    $parcel['width'] = (int)$_product->get_width();
-                    $parcel['height'] = (int)$_product->get_height();
-                }
-
-                // Weight conversion, mds collivery only accepts kg
-                if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
-                    $parcel['weight'] = $this->converter->convert((float)$_product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
-                } else {
-                    $parcel['weight'] = (float)$_product->get_weight();
-                }
-
-                $parcel['description'] = $_product->get_title();
-
-                $cart['products'][] = $parcel;
-            }
-
-            return $cart;
-        }
-
-        return null;
-    }
-
-    /**
      * Validate the package before using the package to get prices.
      *
      * @param $package
@@ -237,10 +171,16 @@ class MdsColliveryService
             $this->validatePackageField($package['destination'], 'to_location_type');
             $this->validatePackageField($package['destination'], 'from_location_type');
 
-            $this->validatePackageField($package, 'cart', 'array');
-            $this->validatePackageField($package['cart'], 'max_weight', 'numeric');
-            $this->validatePackageField($package['cart'], 'count', 'numeric');
-            $this->validatePackageField($package['cart'], 'products', 'array');
+            $this->validatePackageField($package, 'max_weight', 'numeric');
+            $this->validatePackageField($package, 'count', 'numeric');
+            $this->validatePackageField($package, 'contents', 'array');
+
+	        foreach ( $package['contents'] as $cartItem ) {
+	            $this->validatePackageField($cartItem, 'length', 'numeric');
+	            $this->validatePackageField($cartItem, 'width', 'numeric');
+	            $this->validatePackageField($cartItem, 'height', 'numeric');
+	            $this->validatePackageField($cartItem, 'weight', 'numeric');
+	        }
 
             return true;
         } catch (InvalidCartPackageException $e) {
@@ -284,33 +224,6 @@ class MdsColliveryService
         }
     }
 
-    /**
-     * Used to build the package for use out of the shipping class.
-     *
-     * @param $cart
-     *
-     * @return array
-     */
-    public function buildPackageFromCart($cart)
-    {
-        $package = [];
-
-        if (!empty($cart)) {
-            foreach ($cart as $item) {
-                $product = $item['data'];
-
-                $package['contents'][$product->get_id()] = [
-                    'data' => $item['data'],
-                    'quantity' => $item['quantity'],
-                    'price' => $product->get_price(),
-                    'line_subtotal' => $product->get_price() * $item['quantity'],
-                    'weight' => (float)$product->get_weight() * $item['quantity'],
-                ];
-            }
-        }
-
-        return $package;
-    }
 
     /**
      * Work through our order items and return an array of parcels.
