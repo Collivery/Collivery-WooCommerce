@@ -40,11 +40,6 @@ class EnvironmentInformationBag
     public $phpVersion;
 
     /**
-     * @var string
-     */
-    public $soapInstalled;
-
-    /**
      * @var array
      */
     protected $settings = [];
@@ -69,7 +64,6 @@ class EnvironmentInformationBag
         $this->appName = 'WooCommerce Plugin - '.preg_replace('/^(http|https):\/\//i', '', $this->appUrl);
         $this->phpVersion = phpversion();
         $this->appVersion = MDS_VERSION;
-        $this->soapInstalled = (extension_loaded('soap')) ? 'yes' : 'no';
     }
 
     /**
@@ -97,7 +91,6 @@ class EnvironmentInformationBag
             'phpVersion' => $this->phpVersion,
             'appVersion' => $this->appVersion,
             'appUrl' => $this->appUrl,
-            'soapInstalled' => $this->soapInstalled,
             'settings' => $this->settings,
         ];
     }
