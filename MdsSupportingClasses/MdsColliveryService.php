@@ -370,7 +370,7 @@ class MdsColliveryService
 	 *
 	 * @param array $array
 	 *
-	 * @return bool
+	 * @return bool|array
 	 * @throws InvalidColliveryDataException
 	 */
     public function addCollivery(array $array)
@@ -496,13 +496,16 @@ class MdsColliveryService
 
     /**
      * @param WC_Order $order
-     * @param int    $overrides
+     * @param array $overrides
      *
      * @return int
-     * @throws OrderAlreadyProcessedException
-     * @throws ProductOutOfException
      * @throws CurlConnectionException
      * @throws InternationalAutomatedException
+     * @throws InvalidAddressDataException
+     * @throws InvalidColliveryDataException
+     * @throws InvalidServiceException
+     * @throws OrderAlreadyProcessedException
+     * @throws ProductOutOfException
      */
     public function orderToCollivery(WC_Order $order, array $overrides) {
 
@@ -696,10 +699,30 @@ class MdsColliveryService
 
         $collivery = $this->addCollivery($colliveryOptions);
 
-        if ($collivery['data']['id']) {
+        if (is_array($collivery) && $collivery['data']['id'] ?? false) {
             // Save the results from validation into our table
             $this->addColliveryToProcessedTable($collivery, $order->get_id());
-            $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection any time from ' . date('Y-m-d H:i', $collivery['data']['collection_time']) . '.', $processing, 'completed');
+
+            // Is prepaid
+            if( isset($collivery['meta']['payment_needed']) ) {
+                $url = $collivery['meta']['payment_needed'];
+                unset( $collivery['meta']['payment_needed'], $collivery['meta']['payment_reference'] );
+                $order->add_order_note( "Payment required for waybill. Please go to $url" );
+            }
+            // The rest are timing related messages.
+            if ( isset($collivery['meta'] ) ) {
+                $order->add_order_note(implode('<br>', $collivery['meta'] ) );
+            }
+
+            $this->updateStatusOrAddNote(
+                $order,
+                sprintf( 'Order has been sent to MDS Collivery, Waybill Number: %s, please have order ready for collection any time from %s.',
+                    $collivery['data']['id'],
+                    date( 'Y-m-d H:i', $collivery['data']['collection_time'] )
+                ),
+                $processing,
+                'completed'
+            );
 
             return $collivery;
         } else {
