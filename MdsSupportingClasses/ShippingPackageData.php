@@ -37,31 +37,28 @@ class ShippingPackageData
      * @param $packages
      * @param $input
      *
-     * @return mixed
+     * @return array
      */
     public function build($packages, $input)
-    {   
-        if ($this->settings->getValue('enabled') == 'no' || !$defaults = $this->service->returnDefaultAddress()) {
+    {
+	    $defaults = $this->service->returnDefaultAddress();
+	    if ( $this->settings->getValue('enabled') == 'no' || ! $defaults ) {
             return $packages;
         }
 
-        $package = $this->service->buildPackageFromCart(WC()->cart->get_cart());
-        $cart = $this->service->getCartContent($package);
-
-        if (!is_array($cart) || !isset($cart['total'])) {
-            return $packages;
-        }
+	    $packageKey = array_keys($packages)[0];
+        $package = $this->appendPackageData($packages[$packageKey]);
 
         $extractedFields = $this->extractRequiredFields($input, $packages);
-        $requiredFields = ["to_town_id" => $this->getTownId($extractedFields), "to_town_type" => $this->getLocationType($extractedFields)];
+        $requiredFields = [
+	        'to_town_id'   => $this->getTownId($extractedFields),
+	        'to_town_type' => $this->getLocationType($extractedFields)];
 
         if (!isset($requiredFields['to_town_id']) || ($requiredFields['to_town_id'] == '')) {
             return $packages;
         }
 
-        
-
-        if (!is_integer($requiredFields['to_town_id'])) {
+        if (!is_int($requiredFields['to_town_id'])) {
             // Assume it's the town name.
             $towns = $this->collivery->getTowns();
             foreach ($towns as $item) {
@@ -71,67 +68,62 @@ class ShippingPackageData
                 }
             }
         }
-
         
-        $location_types = $this->collivery->getLocationTypes();
-        if (is_integer($requiredFields['to_town_id'])) {
+        if (is_int($requiredFields['to_town_id'])) {
             $suburb = $this->collivery->getSuburbs($requiredFields['to_town_id']);
             $city = $suburb[0]['town']['name'];
-            $country = "ZA";
+            $country = 'ZA';
         } else {
             $city = $requiredFields['to_town_id'];
             $country = $packages[0]['destination']['country'];
         }
-        
-        $package['cart'] = $cart;
-        $package['method_free'] = $this->settings->getValue('method_free');
-        $package['free_min_total'] = $this->settings->getValue('free_min_total');
-        $package['free_local_only'] = $this->settings->getValue('free_local_only');
-        $package['shipping_cart_total'] = $this->getShippingCartTotal();
 
-        $package['destination'] = [
-            'from_town_id' => (int) $defaults['address']['town_id'],
-            'from_location_type' => (int) $defaults['address']['location_type'],
-            'city' => $city,
-            'to_town_id' => (int) $requiredFields['to_town_id'],
-            'to_location_type' => (int) $requiredFields['to_town_type'],
-            'country' => $country,
-        ];
+	    $destination = [
+		    'from_town_id' => (int) $defaults['address']['town_id'],
+		    'from_location_type' => (int) $defaults['address']['location_type'],
+		    'city' => $city,
+		    'to_town_id' => (int) $requiredFields['to_town_id'],
+		    'to_location_type' => (int) $requiredFields['to_town_type'],
+		    'country' => $country,
+	    ];
 
-        $customer = WC ()->customer;
+        $customer = WC()->customer;
         $ship_to_different_address = false;
 
         if (isset($input['post_data'])) {
             parse_str($input['post_data'], $postData);
-            $ship_to_different_address = isset($postData['ship_to_different_address']) ? $postData['ship_to_different_address'] : $ship_to_different_address;
+            $ship_to_different_address = $postData['ship_to_different_address'] ?? $ship_to_different_address;
         } else {
-            $ship_to_different_address = isset($input['ship_to_different_address']) ? $input['ship_to_different_address'] : $ship_to_different_address;
+            $ship_to_different_address = $input['ship_to_different_address'] ?? $ship_to_different_address;
         }
 
 		if ($ship_to_different_address) {
-            $package['destination']['state'] = $customer->get_billing_state();
-            $package['destination']['postcode'] = $customer->get_billing_postcode();
-            $package['destination']['address'] = $customer->get_billing_address_1();
-            $package['destination']['address_2'] = $customer->get_billing_address_2();
+            $destination['state'] = $customer->get_billing_state();
+            $destination['postcode'] = $customer->get_billing_postcode();
+            $destination['address'] = $customer->get_billing_address_1();
+            $destination['address_2'] = $customer->get_billing_address_2();
         } else {
-            $package['destination']['state'] = $customer->get_shipping_state();
-            $package['destination']['postcode'] = $customer->get_shipping_postcode();
-            $package['destination']['address'] = $customer->get_shipping_address_1();
-            $package['destination']['address_2'] = $customer->get_shipping_address_2();
+            $destination['state'] = $customer->get_shipping_state();
+            $destination['postcode'] = $customer->get_shipping_postcode();
+            $destination['address'] = $customer->get_shipping_address_1();
+            $destination['address_2'] = $customer->get_shipping_address_2();
         }
 
-        if (!$this->service->validPackage($package)) {
+	    $package['destination'] = array_merge($package['destination'], $destination);
+
+	    if (!$this->service->validPackage($package)) {
             return $packages;
         }
 
         if ($this->shouldBeFree() && !$this->applyFreeDeliveryBlacklist()) {
             $package['service'] = 'free';
             if ($this->settings->getValue('free_local_only') == 'yes') {
-                $data = [
-                        'num_package' => 1,
-                        'service' => 2,
-                        'exclude_weekend' => 1,
-                    ] + $package['destination'];
+	            $defaults  = [
+		            'num_package'     => 1,
+		            'service'         => 2,
+		            'exclude_weekend' => 1,
+	            ];
+	            $data = array_merge($defaults, $package['destination']);
 
                 // Query the API to test if this is a local delivery
                 $response = $this->collivery->getPrice($data);
@@ -144,11 +136,10 @@ class ShippingPackageData
             }
         }
 
-        $package['contents_cost'] = isset($package['contents_cost']) ? $package['contents_cost'] : $package['shipping_cart_total'];
+        $package['contents_cost'] = $package['contents_cost'] ?? $package['shipping_cart_total'];
 
-        $packages[0] = $package;
-        
-        return $packages;
+	    // The return data should be the entire `$packages` array
+	    return [$packageKey => $package];
     }
 
     /**
@@ -284,4 +275,77 @@ class ShippingPackageData
 
         return $cartTotal;
     }
+
+    /**
+     * Merge in the package data without overwriting all of the $package data
+     * Overwriting will have bad side-effects on any other plugins that deal with shipping
+     *
+     * @param array $package The data received from WC woocommerce_cart_shipping_packages hook
+     * @return array
+     */
+	public function appendPackageData(array $package) {
+		$converter = $this->service->returnConverterClass();
+		$package['method_free'] = $this->settings->getValue( 'method_free' );
+		$package['free_min_total'] = $this->settings->getValue( 'free_min_total' );
+		$package['free_local_only'] = $this->settings->getValue( 'free_local_only' );
+		$package['shipping_cart_total'] = $this->getShippingCartTotal();
+		$package['count'] = 0;
+		$package['total'] = 0;
+		$package['weight'] = 0;
+		$package['max_weight'] = 0;
+
+		if ( ! isset( $package['contents'] ) || ! count( $package['contents'] ) ) {
+			return $package;
+		}
+
+		foreach ( $package['contents'] as $hash => $item ) {
+			/** @var WC_Product $product */
+			$product = $item['data'];
+			$quantity = $item['quantity'];
+
+			$dimensionUnit = strtolower(get_option('woocommerce_dimension_unit'));
+			$weightUnit = strtolower(get_option('woocommerce_weight_unit'));
+
+			$length = (int) $product->get_length();
+			$width  = (int) $product->get_width();
+			$height = (int) $product->get_height();
+			$weight = (float) $product->get_weight();
+
+			// Length conversion, mds collivery only accepts cm
+			if ($dimensionUnit !== 'cm') {
+				$length = $converter->convert($length, $dimensionUnit, 'cm', 2);
+				$width  = $converter->convert($width, $dimensionUnit, 'cm', 2);
+				$height = $converter->convert($height, $dimensionUnit, 'cm', 2);
+			}
+
+			// Weight conversion, mds collivery only accepts kg
+			if ($weightUnit !== 'kg') {
+				$weight = $converter->convert($weight, $weightUnit, 'kg', 2);
+			}
+
+			$item['length'] = $length;
+			$item['width'] = $width;
+			$item['height'] = $height;
+			$item['weight'] = $weight;
+			$item['line_subtotal'] = $product->get_price() * $quantity;
+			$item['description'] = $product->get_title();
+
+			// Update our cart item
+			$package['contents'][$hash] = $item;
+
+			// Work out Volumetric Weight based on MDS calculations
+			$volWeight = ($length * $width * $height) / 4000;
+
+			$package['max_weight'] += $volWeight > $weight ?
+				$volWeight * $quantity :
+				$weight * $quantity;
+
+			$package['count']  += $quantity;
+			$package['total']  += $item['line_subtotal'];
+			$package['weight'] += $weight * $quantity;
+		}
+
+		return $package;
+	}
+
 }

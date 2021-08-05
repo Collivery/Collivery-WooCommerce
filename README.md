@@ -8,7 +8,7 @@ Documentation
 
 Please refer to our documentation at https://collivery.net/integration/woocommerce
 
-This plugin makes use of our [Collivery-Client](https://github.com/Collivery/Collivery-Client) which in turn makes use of our [Webservice](https://collivery.net/integration/api/soap).
+This plugin makes use of our [REST API](https://collivery.net/integration/api/v3/).
 
 If you wish to submit any changes, simply fork this repository and submit a pull request.
 

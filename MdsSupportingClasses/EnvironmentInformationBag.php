@@ -40,11 +40,6 @@ class EnvironmentInformationBag
     public $phpVersion;
 
     /**
-     * @var string
-     */
-    public $soapInstalled;
-
-    /**
      * @var array
      */
     protected $settings = [];
@@ -64,12 +59,11 @@ class EnvironmentInformationBag
 
         $this->wordpressVersion = $wp_version;
         $this->woocommerceVersion = $this->getWoocommerceVersionNumber();
-        $this->appHost = 'Wordpress: '.$wp_version.' - WooCommerce: '.$this->woocommerceVersion;
+        $this->appHost = 'WP: '.$wp_version.' - WC: '.$this->woocommerceVersion;
         $this->appUrl = get_site_url();
-        $this->appName = 'WooCommerce Plugin - '.preg_replace('/^(http|https):\/\//i', '', $this->appUrl);
+        $this->appName = 'WC Plugin - '.preg_replace('/^(http|https):\/\//i', '', $this->appUrl);
         $this->phpVersion = phpversion();
         $this->appVersion = MDS_VERSION;
-        $this->soapInstalled = (extension_loaded('soap')) ? 'yes' : 'no';
     }
 
     /**
@@ -97,7 +91,6 @@ class EnvironmentInformationBag
             'phpVersion' => $this->phpVersion,
             'appVersion' => $this->appVersion,
             'appUrl' => $this->appUrl,
-            'soapInstalled' => $this->soapInstalled,
             'settings' => $this->settings,
         ];
     }

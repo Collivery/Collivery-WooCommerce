@@ -1,9 +1,10 @@
 <?php
 
 use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', '4.1.13');
+define('MDS_VERSION', '4.2.1');
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
@@ -12,11 +13,14 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
  * Plugin Name: MDS Collivery
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
- * Version: 4.1.13
+ * Version: 4.2.1
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
+ * Requires PHP: 7.0.0
+ * Requires at least: 5.0
+ * Tested up to: 5.8
  * WC requires at least: 4.0
- * WC tested up to: 5.4.0
+ * WC tested up to: 5.5.2
  */
 if( is_plugin_active('woocommerce/woocommerce.php')) {
     register_activation_hook(__FILE__, 'activate_mds');
@@ -30,14 +34,9 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
          */
         function activate_mds()
         {
-            if (!class_exists('SoapClient')) {
-                deactivate_plugins(basename(__FILE__));
-                wp_die('Sorry, but you cannot run this plugin, it requires the <a href="http://php.net/manual/en/class.soapclient.php">SOAP</a> support on your server/hosting to function.');
-            }
-
             if (!version_compare(phpversion(), '7.0.0', '>=')) {
                 deactivate_plugins(basename(__FILE__));
-                wp_die('Sorry, but you cannot run this plugin, it requires PHP version 5.4 or higher');
+                wp_die('Sorry, but you cannot run this plugin, it requires PHP version 7.0.0 or higher');
             }
 
             global $wpdb;
@@ -147,13 +146,11 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
          *
          * @param $packages
          *
-         * @return mixed
+         * @return array
          */
         function mds_collivery_cart_shipping_packages($packages)
         {
-            $shippingPackage = new \MdsSupportingClasses\ShippingPackageData();
-
-            return $shippingPackage->build($packages, $_POST);
+            return (new ShippingPackageData())->build($packages, $_POST);
         }
 
         add_filter('woocommerce_cart_shipping_packages', 'mds_collivery_cart_shipping_packages');

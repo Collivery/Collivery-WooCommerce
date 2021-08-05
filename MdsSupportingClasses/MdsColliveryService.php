@@ -17,6 +17,7 @@ use MdsExceptions\OrderAlreadyProcessedException;
 
 class MdsColliveryService
 {
+    const TWENTY_FOUR_HOURS = 24;
     /**
      * self.
      */
@@ -150,72 +151,6 @@ class MdsColliveryService
     }
 
     /**
-     * Work through our shopping cart
-     * Convert lengths and weights to desired unit.
-     *
-     * @param $package
-     *
-     * @return null|array
-     */
-    public function getCartContent($package)
-    {
-        if (isset($package['contents']) && sizeof($package['contents']) > 0) {
-            $cart = [
-                'count' => 0,
-                'total' => 0,
-                'weight' => 0,
-                'max_weight' => 0,
-                'products' => [],
-            ];
-
-            foreach ($package['contents'] as $item_id => $values) {
-                $_product = $values['data']; // = WC_Product class
-                $qty = $values['quantity'];
-                $parcel['quantity'] = $qty;
-
-                $cart['count'] += $qty;
-                $cart['total'] += $values['line_subtotal'];
-                $cart['weight'] += (float)$_product->get_weight() * $qty;
-
-                // Work out Volumetric Weight based on MDS calculations
-                $vol_weight =  (((int)($_product->get_length()) * ((int)$_product->get_width()) * ((int)$_product->get_height())) / 4000);
-
-                if ($vol_weight > (float)$_product->get_weight()) {
-                    $cart['max_weight'] += $vol_weight * $qty;
-                } else {
-                    $cart['max_weight'] += (float)$_product->get_weight() * $qty;
-                }
-
-                // Length conversion, mds collivery only accepts cm
-                if (strtolower(get_option('woocommerce_dimension_unit')) != 'cm') {
-                    $parcel['length'] = $this->converter->convert((int)$_product->get_length(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-                    $parcel['width'] = $this->converter->convert((int)$_product->get_width(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-                    $parcel['height'] = $this->converter->convert((int)$_product->get_height(), strtolower(get_option('woocommerce_dimension_unit')), 'cm', 6);
-                } else {
-                    $parcel['length'] = (int)$_product->get_length();
-                    $parcel['width'] = (int)$_product->get_width();
-                    $parcel['height'] = (int)$_product->get_height();
-                }
-
-                // Weight conversion, mds collivery only accepts kg
-                if (strtolower(get_option('woocommerce_weight_unit')) != 'kg') {
-                    $parcel['weight'] = $this->converter->convert((float)$_product->get_weight(), strtolower(get_option('woocommerce_weight_unit')), 'kg', 6);
-                } else {
-                    $parcel['weight'] = (float)$_product->get_weight();
-                }
-
-                $parcel['description'] = $_product->get_title();
-
-                $cart['products'][] = $parcel;
-            }
-
-            return $cart;
-        }
-
-        return null;
-    }
-
-    /**
      * Validate the package before using the package to get prices.
      *
      * @param $package
@@ -236,10 +171,16 @@ class MdsColliveryService
             $this->validatePackageField($package['destination'], 'to_location_type');
             $this->validatePackageField($package['destination'], 'from_location_type');
 
-            $this->validatePackageField($package, 'cart', 'array');
-            $this->validatePackageField($package['cart'], 'max_weight', 'numeric');
-            $this->validatePackageField($package['cart'], 'count', 'numeric');
-            $this->validatePackageField($package['cart'], 'products', 'array');
+            $this->validatePackageField($package, 'max_weight', 'numeric');
+            $this->validatePackageField($package, 'count', 'numeric');
+            $this->validatePackageField($package, 'contents', 'array');
+
+	        foreach ( $package['contents'] as $cartItem ) {
+	            $this->validatePackageField($cartItem, 'length', 'numeric');
+	            $this->validatePackageField($cartItem, 'width', 'numeric');
+	            $this->validatePackageField($cartItem, 'height', 'numeric');
+	            $this->validatePackageField($cartItem, 'weight', 'numeric');
+	        }
 
             return true;
         } catch (InvalidCartPackageException $e) {
@@ -283,33 +224,6 @@ class MdsColliveryService
         }
     }
 
-    /**
-     * Used to build the package for use out of the shipping class.
-     *
-     * @param $cart
-     *
-     * @return array
-     */
-    public function buildPackageFromCart($cart)
-    {
-        $package = [];
-
-        if (!empty($cart)) {
-            foreach ($cart as $item) {
-                $product = $item['data'];
-
-                $package['contents'][$product->get_id()] = [
-                    'data' => $item['data'],
-                    'quantity' => $item['quantity'],
-                    'price' => $product->get_price(),
-                    'line_subtotal' => $product->get_price() * $item['quantity'],
-                    'weight' => (float)$product->get_weight() * $item['quantity'],
-                ];
-            }
-        }
-
-        return $package;
-    }
 
     /**
      * Work through our order items and return an array of parcels.
@@ -456,7 +370,7 @@ class MdsColliveryService
 	 *
 	 * @param array $array
 	 *
-	 * @return bool
+	 * @return bool|array
 	 * @throws InvalidColliveryDataException
 	 */
     public function addCollivery(array $array)
@@ -582,13 +496,16 @@ class MdsColliveryService
 
     /**
      * @param WC_Order $order
-     * @param int    $overrides
+     * @param array $overrides
      *
      * @return int
-     * @throws OrderAlreadyProcessedException
-     * @throws ProductOutOfException
      * @throws CurlConnectionException
      * @throws InternationalAutomatedException
+     * @throws InvalidAddressDataException
+     * @throws InvalidColliveryDataException
+     * @throws InvalidServiceException
+     * @throws OrderAlreadyProcessedException
+     * @throws ProductOutOfException
      */
     public function orderToCollivery(WC_Order $order, array $overrides) {
 
@@ -762,11 +679,13 @@ class MdsColliveryService
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
             $colliveryOptions['collection_time'] = $overrides['collection_time'];
         } else {
-            $collectionTime = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' + 1 days + 12 hours'));
+            $leadTime = $this->settings->getValue('lead_time') ?? self::TWENTY_FOUR_HOURS;
+            $collectionTime = date('Y-m-d H:i:s', strtotime(current_time('Y-m-d H:i:s')." + {$leadTime} hours + 5 minutes"));
             // Ensure it's a week day
             while(date('N', strtotime($collectionTime)) >= 6) {
                 $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 1 days'));
             }
+
             $colliveryOptions['collection_time'] = $collectionTime;
         }
 
@@ -780,10 +699,30 @@ class MdsColliveryService
 
         $collivery = $this->addCollivery($colliveryOptions);
 
-        if ($collivery['data']['id']) {
+        if (is_array($collivery) && $collivery['data']['id'] ?? false) {
             // Save the results from validation into our table
             $this->addColliveryToProcessedTable($collivery, $order->get_id());
-            $this->updateStatusOrAddNote($order, 'Order has been sent to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection any time from ' . date('Y-m-d H:i', $collivery['data']['collection_time']) . '.', $processing, 'completed');
+
+            // Is prepaid
+            if( isset($collivery['meta']['payment_needed']) ) {
+                $url = $collivery['meta']['payment_needed'];
+                unset( $collivery['meta']['payment_needed'], $collivery['meta']['payment_reference'] );
+                $order->add_order_note( "Payment required for waybill. Please go to $url" );
+            }
+            // The rest are timing related messages.
+            if ( isset($collivery['meta'] ) ) {
+                $order->add_order_note(implode('<br>', $collivery['meta'] ) );
+            }
+
+            $this->updateStatusOrAddNote(
+                $order,
+                sprintf( 'Order has been sent to MDS Collivery, Waybill Number: %s, please have order ready for collection any time from %s.',
+                    $collivery['data']['id'],
+                    date( 'Y-m-d H:i', $collivery['data']['collection_time'] )
+                ),
+                $processing,
+                'completed'
+            );
 
             return $collivery;
         } else {
@@ -974,7 +913,7 @@ class MdsColliveryService
                 if ($match) {
                     if (!isset($address['contact_id'])) {
                         $contacts = $this->collivery->getContacts($address['address_id']);
-                        list($contact_id) = array_keys($contacts);
+                        [$contact_id] = array_keys($contacts);
                         $address['contact_id'] = $contact_id;
                     }
 
@@ -1111,31 +1050,24 @@ class MdsColliveryService
     /**
      * Gets default address of the MDS Account.
      *
-     * @return array|bool
+     * @return array
      */
     public function returnDefaultAddress()
     {
-        try {
-            $default_address_id = $this->collivery->getDefaultAddressId();
-            if (!$default_address = $this->collivery->getAddress($default_address_id)) {
-                return false;
-            }
-
-            $data = [
-                'address' => $default_address,
-                'default_address_id' => $default_address_id,
-            ];
-
-            if (!isset($default_address['contacts'])) {
-                $data['contacts'] = $this->collivery->getContacts($default_address_id);
-            } else {
-                $data['contacts'] = $default_address['contacts'];
-            }
-
-            return $data;
-        } catch (CurlConnectionException $e) {
+        $default_address_id = $this->collivery->getDefaultAddressId();
+        /** @var array $default_address */
+        $default_address = $this->collivery->getAddress($default_address_id);
+        if (! $default_address ) {
             return [];
         }
+
+	    $contacts  = $default_address['contacts'] ?? $this->collivery->getContacts( $default_address_id );
+
+	    return [
+            'address' => $default_address,
+            'default_address_id' => $default_address_id,
+            'contacts' => $contacts,
+        ];
     }
 
     /**
