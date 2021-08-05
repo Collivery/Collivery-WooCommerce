@@ -114,6 +114,8 @@ class Collivery
             $client = curl_init($url.'?'.$query);
         }
 
+        curl_setopt($client, CURLOPT_SSL_VERIFYPEER, false);
+
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
 
         $headerArray = [
