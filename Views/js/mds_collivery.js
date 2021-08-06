@@ -133,6 +133,7 @@ jQuery(document).ready(function () {
     // Used to process the delivery and then change order status
     jQuery('#accept_quote').click(function (event) {
         event.preventDefault();
+        jQuery("#accept_quote").prop('disabled', true);
         if (form_validate()) {
             var datastring = jQuery("#api_quote").serialize();
             jQuery.ajax({
@@ -147,14 +148,21 @@ jQuery(document).ready(function () {
                             window.location.href = jQuery("#api_quote").attr('action');
                         }, 5000);
                     }
+                    jQuery("#accept_quote").prop('disabled', false);
                 },
                 error: function(e) {
                     jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">There was an error with the ajax request, please refresh the page and try again and if the problem is not rectified please report the problem to integration@collivery.co.za</div>');
+                    jQuery("#accept_quote").prop('disabled', false);
                 },
                 beforeSend: function () {
                     jQuery("#api_results").html('<div style="font-size: 15px;margin:15px 0 0 39px;color:black;">Loading.....</div>');
                 }
             });
+        }
+        else
+        {
+            jQuery("#accept_quote").prop('disabled', false);
+
         }
     });
 
