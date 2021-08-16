@@ -214,6 +214,10 @@ class GitHubPluginUpdater
             activate_plugin($this->slug);
         }
 
+        MdsColliveryService::getInstance()
+                           ->returnCacheClass()
+                           ->delete();
+
         return $result;
     }
 }
