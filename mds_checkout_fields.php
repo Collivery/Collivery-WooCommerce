@@ -61,7 +61,51 @@ if ($mds->isEnabled()) {
 		add_action( 'woocommerce_checkout_update_order_meta', 'mds_custom_checkout_field_update_order_meta' );
 	}
 
-	if ( ! function_exists( 'generate_towns' ) ) {
+    if ( ! function_exists( 'mds_custom_override_checkout_fields' ) ) {
+        /**
+         * Override the Billing and Shipping fields in Checkout.
+         *
+         * @param $address_fields
+         *
+         * @return array
+         */
+        function mds_custom_override_checkout_fields( $address_fields ) {
+            $mdsCheckoutFields = new \MdsSupportingClasses\MdsCheckoutFields( $address_fields );
+
+            $address_fields['billing']  = $mdsCheckoutFields->getCheckoutFields( 'billing' );
+            $address_fields['shipping'] = $mdsCheckoutFields->getCheckoutFields( 'shipping' );
+
+            $only_virtual = true;
+
+            foreach( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+                // Check if there are non-virtual products
+                if ( ! $cart_item['data']->is_virtual() ) $only_virtual = false;
+            }
+
+            if( $only_virtual ) {
+                unset($address_fields['billing']['billing_company']);
+                unset($address_fields['billing']['billing_address_1']);
+                unset($address_fields['billing']['billing_address_2']);
+                unset($address_fields['billing']['billing_city']);
+                unset($address_fields['billing']['billing_postcode']);
+                unset($address_fields['billing']['billing_country']);
+                unset($address_fields['billing']['billing_state']);
+                unset($address_fields['billing']['billing_suburb']);
+                unset($address_fields['billing']['billing_phone']);
+                unset($address_fields['billing']['billing_city_int']);
+                unset($address_fields['billing']['billing_location_type']);
+
+                add_filter( 'woocommerce_enable_order_notes_field', '__return_false' );
+            }
+
+            return $address_fields;
+        }
+
+        add_filter( 'woocommerce_checkout_fields', 'mds_custom_override_checkout_fields' );
+    }
+
+
+    if ( ! function_exists( 'generate_towns' ) ) {
 		/**
 		 * Get the towns on province Change.
 		 *
