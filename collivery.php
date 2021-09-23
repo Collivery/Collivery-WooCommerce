@@ -4,7 +4,7 @@ use MdsSupportingClasses\MdsColliveryService;
 use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
-define('MDS_VERSION', '4.2.3');
+define('MDS_VERSION', '4.2.4');
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
