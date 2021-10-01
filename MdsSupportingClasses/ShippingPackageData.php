@@ -130,7 +130,7 @@ class ShippingPackageData
 	            $data = array_merge($defaults, $package['destination']);
 
                 // Query the API to test if this is a local delivery
-                $response = $this->collivery->getPrice($data);
+                $response = $this->collivery->getPrice($data)['data'][0];
                 if (isset($response['delivery_type']) && $response['delivery_type'] == 'local') {
                     $package['local'] = 'yes';
                 } else {
