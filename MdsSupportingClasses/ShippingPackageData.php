@@ -124,7 +124,7 @@ class ShippingPackageData
                     'delivery_location_type'   => $package['destination']['to_location_type'],
                     'collection_location_type' => $package['destination']['from_location_type'],
 		            'num_package'     => 1,
-		            'service'         => 2,
+		            'services'         => [$this->settings->getInstanceValue('free_default_service', 2)],
 		            'exclude_weekend' => 1,
 	            ];
 	            $data = array_merge($defaults, $package['destination']);
