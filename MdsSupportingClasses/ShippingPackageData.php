@@ -119,6 +119,10 @@ class ShippingPackageData
             $package['service'] = 'free';
             if ($this->settings->getValue('free_local_only') == 'yes') {
 	            $defaults  = [
+                    'delivery_town'            => $package['destination']['to_town_id'],
+                    'collection_town'          => $package['destination']['from_town_id'],
+                    'delivery_location_type'   => $package['destination']['to_location_type'],
+                    'collection_location_type' => $package['destination']['from_location_type'],
 		            'num_package'     => 1,
 		            'service'         => 2,
 		            'exclude_weekend' => 1,
