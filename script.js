@@ -2,7 +2,7 @@ var colliveryFieldsValues = {};
 var overrideChange = false;
 var inZA = true;
 var colliveryClass = 'colliveryfied';
-
+var isProvinceChange = false;
 jQuery(document)
 .ready(function () {
   // Allow for some narrowing of scope in our css
@@ -12,7 +12,8 @@ jQuery(document)
   var select2fields = {
     city: 'Select your city/town',
     suburb: 'Select your city/town',
-    location_type: 'Select your location type'
+    location_type: 'Select your location type',
+    town_city_search: 'Please type in your keyword'
   };
 
   jQuery.each(select2fields, function (field, placeholder) {
@@ -156,6 +157,11 @@ jQuery(document)
       overrideChange = false;
       isChange = true;
     }
+    if(isProvinceChange)
+    {
+      isProvinceChange = false;
+      return;
+    }
     // Ensure we clear the town from cache in case we are changing province
     // Else if we come back to this province and this town - the suburbs won't update
     if (fromField.indexOf('state') != -1 && isChange) {
@@ -213,6 +219,7 @@ jQuery(document)
         }
       }
     }
+
   }
 
   function resetSelect(el, html) {
@@ -223,6 +230,15 @@ jQuery(document)
       el.select2({
         width: '100%',
       });
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  function setSelected(el,val)
+  {
+    try {
+      el.val(val).trigger('change');
     } catch (err) {
       console.log(err)
     }
@@ -248,4 +264,140 @@ jQuery(document)
       }
     }
   })
+
+let citySearchComboBilling = jQuery('#billing_town_city_search');
+let citySearchComboShipping = jQuery('#shipping_town_city_search');
+
+
+  if(citySearchComboBilling.length>0){
+    citySearchComboBilling.change( function (e) {
+      let suburb_id = jQuery(e.target).val();
+      getProvince('billing_state', '_', suburb_id);
+      getTown('billing_city', '_', suburb_id);
+      getSuburb('billing_suburb', '_', suburb_id);
+
+    });
+  }
+  if(citySearchComboShipping.length>0){
+    citySearchComboBilling.change( function (e) {
+      let suburb_id = jQuery(e.target).val();
+      getProvince('shipping_state', '_', suburb_id);
+      getTown('shipping_city', '_', suburb_id);
+      getSuburb('shipping_suburb', '_', suburb_id);
+
+    });
+  }
+  function searchCityOrSuburb(field,name,prefix,search_text)
+  {
+    var el = jQuery('#' + field);
+    return ajax = jQuery.ajax({
+      type: 'POST',
+      url: woocommerce_params.ajax_url,
+      data: {
+        action: 'mds_collivery_generate_' + name,
+        security: woocommerce_params.update_order_review_nonce,
+        search_text: search_text,
+        prefix: prefix,
+      },
+      success: function (response) {
+        resetSelect(el, response);
+      },
+      error: function () {
+        resetSelect(el, '<option selected="selected" value="">Error retrieving data from server. Please refresh the page and try again</option>');
+      },
+      beforeSend: function () {
+        resetSelect(el, '<option selected="selected" value="">Loading...</option>');
+      }
+    });
+  }
+  function getSuburb(field,db_prefix,suburb_id)
+  {
+    var el = jQuery('#' + field);
+    return ajax = jQuery.ajax({
+      type: 'POST',
+      url: woocommerce_params.ajax_url,
+      data: {
+        action: 'mds_collivery_generate_suburb' ,
+        security: woocommerce_params.update_order_review_nonce,
+        suburb_id: suburb_id,
+        db_prefix: db_prefix + '_',
+      },
+      success: function (response) {
+        resetSelect(el, response);
+      },
+      error: function () {
+        resetSelect(el, '<option selected="selected" value="">Error retrieving data from server. Please refresh the page and try again</option>');
+      },
+      beforeSend: function () {
+        resetSelect(el, '<option selected="selected" value="">Loading...</option>');
+      }
+    });
+  }
+  function getTown(field,db_prefix,suburb_id)
+  {
+    var el = jQuery('#' + field);
+    return ajax = jQuery.ajax({
+      type: 'POST',
+      url: woocommerce_params.ajax_url,
+      data: {
+        action: 'mds_collivery_generate_town',
+        security: woocommerce_params.update_order_review_nonce,
+        suburb_id: suburb_id,
+        db_prefix: db_prefix + '_',
+      },
+      success: function (response) {
+        resetSelect(el, response);
+      },
+      error: function () {
+        resetSelect(el, '<option selected="selected" value="">Error retrieving data from server. Please refresh the page and try again</option>');
+      },
+      beforeSend: function () {
+        resetSelect(el, '<option selected="selected" value="">Loading...</option>');
+      }
+    });
+  }
+  function getProvince(field,db_prefix,suburb_id)
+  {
+    var el = jQuery('#' + field);
+    return ajax = jQuery.ajax({
+      type: 'POST',
+      url: woocommerce_params.ajax_url,
+      data: {
+        action: 'mds_collivery_generate_province',
+        security: woocommerce_params.update_order_review_nonce,
+        suburb_id: suburb_id,
+        db_prefix: db_prefix + '_',
+      },
+      success: function (response) {
+        isProvinceChange = true;
+        setSelected(el,response)
+      },
+      error: function () {
+        resetSelect(el, '<option selected="selected" value="">Error retrieving data from server. Please refresh the page and try again</option>');
+      },
+      beforeSend: function () {
+
+      }
+    });
+  }
+  jQuery('body').keyup( '.select2-search__field', function(e) {
+    let selectItem = jQuery('.select2-container--open').prev();
+    let id = selectItem.attr('id');
+    let searchInput = jQuery(e.target).val();
+    if (id === 'billing_town_city_search') {
+      if (searchInput.length > 2) {
+        var keyCode = e.keyCode || e.which;
+        if (keyCode !== 9) {
+          searchCityOrSuburb('billing_town_city_search','town_city_search' ,'_', searchInput);
+        }
+      }
+    }
+    else if(id === 'shipping_town_city_search') {
+      let searchInput = select2.search;
+      var keyCode = e.keyCode || e.which;
+      if (keyCode !== 9) {
+        searchCityOrSuburb('shipping_town_city_search','town_city_search', '_', searchInput);
+      }
+    }
+  });
 });

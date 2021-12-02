@@ -185,6 +185,13 @@ class MdsFields
                 ),
                 'default' => 24,
             ],
+            'enable_town_suburb_search'=> [
+                'title' => __('Enable Town Suburb Search'),
+                'type' => 'checkbox',
+                'default' => 'yes',
+                'description' => __('Allow searching for suburb on checkout.'),
+
+            ]
         ];
     }
 

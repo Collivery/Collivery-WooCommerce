@@ -116,6 +116,8 @@ class Collivery
 
 
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($client, CURLOPT_SSL_VERIFYPEER, false);
+
 
         $headerArray = [
             'X-App-Name:'.$this->config->app_name.' mds/collivery/class',
@@ -315,6 +317,44 @@ class Collivery
         }
     }
 
+
+    /**
+     * Allows you to search for town and suburb names starting with the given string.
+     * The minimum string length to search is three characters.
+     * Returns a list of suburbs and the towns the suburbs belong to with their ID's for creating new addresses.
+     *
+     * @param string $search_text Start of town/suburb name
+     *
+     * @return array List of towns and their suburbs with their ID's
+     * @throws Exception
+     */
+    public function searchTownSuburbs($search_text)
+    {
+        if (strlen($search_text) < 3) {
+            return $this->getSuburbs();
+        } elseif (($this->check_cache) && $this->cache->has('collivery.town_suburb_search.'.$search_text)) {
+            return $this->cache->get('collivery.town_suburb_search.'.$search_text);
+        } else {
+            try {
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/town_suburb_search", ["search_text" => $search_text], 'GET');
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
+
+                return [];
+            }
+
+            if (isset($result['data'])) {
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.`town_suburb_search`.'.$search_text, $result['data'], 60 * 24);
+                }
+
+                return $result['data'];
+            } else {
+                return $this->checkError($result);
+            }
+        }
+    }
+
     /**
      * Returns all the suburbs of a town.
      *
@@ -347,7 +387,38 @@ class Collivery
             }
         }
     }
+    /**
+     * Returns a suburb.
+     *
+     * @param int $town_id ID of the suburbs
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getSuburb($suburb_id)
+    {
+        if (($this->check_cache) && $this->cache->has('collivery.suburb.'.$suburb_id)) {
+            return $this->cache->get('collivery.suburb.'.$suburb_id);
+        } else {
+            try {
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/suburbs/".$suburb_id, [], 'GET');
+            } catch (CurlConnectionException $e) {
+                $this->catchException($e);
 
+                return [];
+            }
+
+            if (isset($result['data'])) {
+                if ($this->check_cache) {
+                    $this->cache->put('collivery.suburb.'.$suburb_id, $result['data'], 60 * 24 * 7);
+                }
+
+                return $result['data'];
+            } else {
+                return $this->checkError($result);
+            }
+        }
+    }
     /**
      * Returns the type of Address Locations.
      * Certain location type incur a surcharge due to time spent during
