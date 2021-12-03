@@ -318,13 +318,13 @@ if ($mds->isEnabled()) {
                     $item = $collivery->getSuburb($_POST['suburb_id']);
                     if ($item != null) {
                         $key_value_array[$item['town']['id']] = $item['town']['name'];
-                        $selectedTown =$item['town']['id'];
+                        $id =$item['town']['id'];
+
                         wp_send_json(View::make('_options', [
                             'fields' => $key_value_array,
-                            'placeholder' => 'Select town',
-                            'selectedValue' => $selectedTown,
-                        ]));
-                    } else {
+                            'placeholder' => 'Select suburb',
+                            'selectedValue' => $id,
+                        ]));                    } else {
                         wp_send_json(View::make('_options', [
                             'placeholder' => 'Error retrieving data from server. Please try again later...',
                         ]));

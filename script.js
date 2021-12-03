@@ -301,6 +301,7 @@ let citySearchComboShipping = jQuery('#shipping_town_city_search');
       },
       success: function (response) {
         resetSelect(el, response);
+        el.select2('open');
       },
       error: function () {
         resetSelect(el, '<option selected="selected" value="">Error retrieving data from server. Please refresh the page and try again</option>');
@@ -387,7 +388,7 @@ let citySearchComboShipping = jQuery('#shipping_town_city_search');
     if (id === 'billing_town_city_search') {
       if (searchInput.length > 2) {
         var keyCode = e.keyCode || e.which;
-        if (keyCode !== 9) {
+        if (keyCode === 13) {
           searchCityOrSuburb('billing_town_city_search','town_city_search' ,'_', searchInput);
         }
       }
@@ -395,7 +396,7 @@ let citySearchComboShipping = jQuery('#shipping_town_city_search');
     else if(id === 'shipping_town_city_search') {
       let searchInput = select2.search;
       var keyCode = e.keyCode || e.which;
-      if (keyCode !== 9) {
+      if (keyCode === 13) {
         searchCityOrSuburb('shipping_town_city_search','town_city_search', '_', searchInput);
       }
     }
