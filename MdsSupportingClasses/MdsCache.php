@@ -154,7 +154,7 @@ class MdsCache
             foreach ($group as $row) {
                 $this->delete_each_file($map, $row);
             }
-        } else {
+        } else if($map){
             $this->delete_each_file($map, $group);
         }
     }
