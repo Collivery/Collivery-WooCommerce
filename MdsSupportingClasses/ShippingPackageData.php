@@ -119,14 +119,18 @@ class ShippingPackageData
             $package['service'] = 'free';
             if ($this->settings->getValue('free_local_only') == 'yes') {
 	            $defaults  = [
+                    'delivery_town'            => $package['destination']['to_town_id'],
+                    'collection_town'          => $package['destination']['from_town_id'],
+                    'delivery_location_type'   => $package['destination']['to_location_type'],
+                    'collection_location_type' => $package['destination']['from_location_type'],
 		            'num_package'     => 1,
-		            'service'         => 2,
+		            'services'         => [$this->settings->getInstanceValue('free_default_service', 2)],
 		            'exclude_weekend' => 1,
 	            ];
 	            $data = array_merge($defaults, $package['destination']);
 
                 // Query the API to test if this is a local delivery
-                $response = $this->collivery->getPrice($data);
+                $response = $this->collivery->getPrice($data)['data'][0];
                 if (isset($response['delivery_type']) && $response['delivery_type'] == 'local') {
                     $package['local'] = 'yes';
                 } else {
