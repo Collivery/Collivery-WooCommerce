@@ -66,7 +66,7 @@ class MdsCheckoutFields
             $towns = [];
             if(!$service->isTownsSuburbsSearchEnabled())
             {
-                $towns = $this->make_key_value_array($resources['towns'], 'name', 'name'   );
+                $towns = $this->make_key_value_array($resources['towns'], 'id', 'name'   );
             }
             $location_types = $this->make_key_value_array($resources['location_types'], 'id', 'name');
 

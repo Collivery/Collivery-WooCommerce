@@ -188,7 +188,7 @@ class MdsFields
             'enable_town_suburb_search'=> [
                 'title' => __('Enable Town Suburb Search'),
                 'type' => 'checkbox',
-                'default' => 'yes',
+                'default' => 'no',
                 'description' => __('Allow searching for suburb on checkout.'),
 
             ]
