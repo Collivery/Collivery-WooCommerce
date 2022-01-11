@@ -39,7 +39,7 @@ if ($mds->isEnabled()) {
             return $address_fields;
         }
 
-        add_filter('woocommerce_checkout_fields', 'mds_custom_override_checkout_fields');
+        add_filter('woocommerce_checkout_fields', 'mds_custom_override_checkout_fields', 10);
     }
 
     if (!function_exists('mds_custom_checkout_field_update_order_meta')) {
