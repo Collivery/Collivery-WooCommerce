@@ -692,8 +692,8 @@ class MdsColliveryService
         if ($serviceId == Collivery::ONX_10) {
             $deliveryTime =  date('Y-m-d H:i:s', strtotime(date('Y-m-d', strtotime($colliveryOptions['collection_time'])).' 10:00:00 + 2 days'));
             // Ensure it's a week day
-            while(date('N', strtotime($deliveryTime)) >= 6) {
-                $deliveryTime = date('Y-m-d H:i:s', strtotime($deliveryTime.' + 1 days'));
+            while(date('H', strtotime($deliveryTime)) >= 10 && date('H', strtotime($collectionTime)) < 16) {
+                $deliveryTime = date('Y-m-d H:i:s', strtotime($deliveryTime.' + 8 hours'));
             }
         }
 
