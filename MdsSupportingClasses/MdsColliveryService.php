@@ -682,8 +682,8 @@ class MdsColliveryService
             $leadTime = $this->settings->getValue('lead_time') ?? self::TWENTY_FOUR_HOURS;
             $collectionTime = date('Y-m-d H:i:s', strtotime(current_time('Y-m-d H:i:s')." + {$leadTime} hours + 5 minutes"));
             // Ensure it's a week day
-            while(date('N', strtotime($collectionTime)) >= 6) {
-                $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 1 days'));
+            while(!(date('H', strtotime($collectionTime)) >= 6 && date('H', strtotime($collectionTime)) < 16)) {
+                $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 8 hours'));
             }
 
             $colliveryOptions['collection_time'] = $collectionTime;
