@@ -123,7 +123,6 @@ if ($mds->isEnabled()) {
                     $selectedTown = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'city');
                 }
 
-                //if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
                 $collivery = $mds->returnColliveryClass();
 
                 $towns = $collivery->getTowns();
@@ -138,11 +137,7 @@ if ($mds->isEnabled()) {
                     'placeholder' => 'Select town/city',
                     'selectedValue' => $selectedTown,
                 ]));
-                // } else {
-                // 	wp_send_json( View::make( '_options', [
-                // 		'placeholder' => 'First select province',
-                // 	] ) );
-                // }
+
             }
 
             add_action('wp_ajax_mds_collivery_generate_towns', 'generate_towns');
@@ -324,14 +319,15 @@ if ($mds->isEnabled()) {
                             'fields' => $key_value_array,
                             'placeholder' => 'Select suburb',
                             'selectedValue' => $id,
-                        ]));                    } else {
+                        ]));
+                    } else {
                         wp_send_json(View::make('_options', [
                             'placeholder' => 'Error retrieving data from server. Please try again later...',
                         ]));
                     }
                 } else {
                     wp_send_json(View::make('_options', [
-                        'placeholder' => 'First searchsuburb...',
+                        'placeholder' => 'First search suburb...',
                     ]));
                 }
             }

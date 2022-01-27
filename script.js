@@ -265,13 +265,13 @@ jQuery(document)
     }
   })
 
-let citySearchComboBilling = jQuery('#billing_town_city_search');
-let citySearchComboShipping = jQuery('#shipping_town_city_search');
+var citySearchComboBilling = jQuery('#billing_town_city_search');
+var citySearchComboShipping = jQuery('#shipping_town_city_search');
 
 
   if(citySearchComboBilling.length>0){
     citySearchComboBilling.change( function (e) {
-      let suburb_id = jQuery(e.target).val();
+      var suburb_id = jQuery(e.target).val();
       getProvince('billing_state', '_', suburb_id);
       getTown('billing_city', '_', suburb_id);
       getSuburb('billing_suburb', '_', suburb_id);
@@ -280,7 +280,7 @@ let citySearchComboShipping = jQuery('#shipping_town_city_search');
   }
   if(citySearchComboShipping.length>0){
     citySearchComboBilling.change( function (e) {
-      let suburb_id = jQuery(e.target).val();
+      var suburb_id = jQuery(e.target).val();
       getProvince('shipping_state', '_', suburb_id);
       getTown('shipping_city', '_', suburb_id);
       getSuburb('shipping_suburb', '_', suburb_id);
@@ -382,9 +382,9 @@ let citySearchComboShipping = jQuery('#shipping_town_city_search');
     });
   }
   jQuery('body').keyup( '.select2-search__field', function(e) {
-    let selectItem = jQuery('.select2-container--open').prev();
-    let id = selectItem.attr('id');
-    let searchInput = jQuery(e.target).val();
+    var selectItem = jQuery('.select2-container--open').prev();
+    var id = selectItem.attr('id');
+    var searchInput = jQuery(e.target).val();
     if (id === 'billing_town_city_search') {
       if (searchInput.length > 2) {
         var keyCode = e.keyCode || e.which;
@@ -394,7 +394,7 @@ let citySearchComboShipping = jQuery('#shipping_town_city_search');
       }
     }
     else if(id === 'shipping_town_city_search') {
-      let searchInput = select2.search;
+      var searchInput = select2.search;
       var keyCode = e.keyCode || e.which;
       if (keyCode === 13) {
         searchCityOrSuburb('shipping_town_city_search','town_city_search', '_', searchInput);
