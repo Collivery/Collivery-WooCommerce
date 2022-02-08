@@ -72,7 +72,7 @@ if ($mds->isEnabled()) {
          */
         function mds_custom_override_checkout_fields($address_fields) {
             $mdsCheckoutFields = new \MdsSupportingClasses\MdsCheckoutFields($address_fields);
-
+            $mds = MdsColliveryService::getInstance();
             $address_fields['billing'] = $mdsCheckoutFields->getCheckoutFields('billing');
             $address_fields['shipping'] = $mdsCheckoutFields->getCheckoutFields('shipping');
 
@@ -97,113 +97,274 @@ if ($mds->isEnabled()) {
                 unset($address_fields['billing']['billing_location_type']);
 
             }
-
+            if(!$mds->isTownsSuburbsSearchEnabled())            {
+                unset($address_fields['billing']['town_city_search']);
+                unset($address_fields['shipping']['town_city_search']);
+            }
             return $address_fields;
         }
 
         add_filter('woocommerce_checkout_fields', 'mds_custom_override_checkout_fields');
     }
 
+    if(!$mds->isTownsSuburbsSearchEnabled()) {
+        if (!function_exists('generate_towns')) {
+            /**
+             * Get the towns on province Change.
+             *
+             * @return string
+             */
+            function generate_towns()
+            {
+                $mds = MdsColliveryService::getInstance();
 
-    if (!function_exists('generate_towns')) {
-        /**
-         * Get the towns on province Change.
-         *
-         * @return string
-         */
-        function generate_towns() {
-            $mds = MdsColliveryService::getInstance();
+                $selectedTown = null;
+                if (get_current_user_id() > 0) {
+                    $selectedTown = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'city');
+                }
 
-            $selectedTown = null;
-            if (get_current_user_id() > 0) {
-                $selectedTown = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'city');
-            }
-
-            //if ( isset( $_POST['parentValue'] ) && $_POST['parentValue'] != '' ) {
-            $collivery = $mds->returnColliveryClass();
-
-            $towns = $collivery->getTowns();
-
-            $key_value_array = [];
-            foreach ($towns as $item) {
-                $key_value_array[$item['id']] = $item['name'];
-            }
-
-            wp_send_json(View::make('_options', [
-                'fields' => $key_value_array,
-                'placeholder' => 'Select town/city',
-                'selectedValue' => $selectedTown,
-            ]));
-            // } else {
-            // 	wp_send_json( View::make( '_options', [
-            // 		'placeholder' => 'First select province',
-            // 	] ) );
-            // }
-        }
-
-        add_action('wp_ajax_mds_collivery_generate_towns', 'generate_towns');
-        add_action('wp_ajax_nopriv_mds_collivery_generate_towns', 'generate_towns');
-    }
-
-    if (!function_exists('generate_suburbs')) {
-        /**
-         * Get the Suburbs on Town Change.
-         *
-         * @return string
-         */
-        function generate_suburbs() {
-            $mds = MdsColliveryService::getInstance();
-
-            $selectedSuburb = null;
-            if (get_current_user_id() > 0) {
-                $selectedSuburb = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'suburb');
-            }
-
-            if ((isset($_POST['parentValue'])) && ($_POST['parentValue'] != '')) {
                 $collivery = $mds->returnColliveryClass();
 
                 $towns = $collivery->getTowns();
 
                 $key_value_array = [];
-
                 foreach ($towns as $item) {
                     $key_value_array[$item['id']] = $item['name'];
                 }
 
+                wp_send_json(View::make('_options', [
+                    'fields' => $key_value_array,
+                    'placeholder' => 'Select town/city',
+                    'selectedValue' => $selectedTown,
+                ]));
 
-                $town_id = is_numeric($_POST['parentValue']) ?
-                    $_POST['parentValue'] :
-                    array_search($_POST['parentValue'], $key_value_array);
+            }
 
+            add_action('wp_ajax_mds_collivery_generate_towns', 'generate_towns');
+            add_action('wp_ajax_nopriv_mds_collivery_generate_towns', 'generate_towns');
+        }
 
-                $fields = $collivery->getSuburbs($town_id);
+        if (!function_exists('generate_suburbs')) {
+            /**
+             * Get the Suburbs on Town Change.
+             *
+             * @return string
+             */
+            function generate_suburbs()
+            {
+                $mds = MdsColliveryService::getInstance();
 
-                if (!empty($fields)) {
+                $selectedSuburb = null;
+                if (get_current_user_id() > 0) {
+                    $selectedSuburb = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'suburb');
+                }
+
+                if ((isset($_POST['parentValue'])) && ($_POST['parentValue'] != '')) {
+                    $collivery = $mds->returnColliveryClass();
+
+                    $towns = $collivery->getTowns();
 
                     $key_value_array = [];
-                    foreach ($fields as $item) {
+
+                    foreach ($towns as $item) {
                         $key_value_array[$item['id']] = $item['name'];
                     }
 
-                    wp_send_json(View::make('_options', [
-                        'fields' => $key_value_array,
-                        'placeholder' => 'Select suburb',
-                        'selectedValue' => $selectedSuburb,
-                    ]));
+
+                    $town_id = is_numeric($_POST['parentValue']) ?
+                        $_POST['parentValue'] :
+                        array_search($_POST['parentValue'], $key_value_array);
+
+
+                    $fields = $collivery->getSuburbs($town_id);
+
+                    if (!empty($fields)) {
+
+                        $key_value_array = [];
+                        foreach ($fields as $item) {
+                            $key_value_array[$item['id']] = $item['name'];
+                        }
+
+                        wp_send_json(View::make('_options', [
+                            'fields' => $key_value_array,
+                            'placeholder' => 'Select suburb',
+                            'selectedValue' => $selectedSuburb,
+                        ]));
+                    } else {
+                        wp_send_json(View::make('_options', [
+                            'placeholder' => 'Error retrieving data from server. Please try again later...',
+                        ]));
+                    }
                 } else {
                     wp_send_json(View::make('_options', [
-                        'placeholder' => 'Error retrieving data from server. Please try again later...',
+                        'placeholder' => 'First Select Town...',
                     ]));
                 }
-            } else {
-                wp_send_json(View::make('_options', [
-                    'placeholder' => 'First Select Town...',
-                ]));
             }
-        }
 
-        add_action('wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs');
-        add_action('wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs');
+            add_action('wp_ajax_mds_collivery_generate_suburbs', 'generate_suburbs');
+            add_action('wp_ajax_nopriv_mds_collivery_generate_suburbs', 'generate_suburbs');
+        }
     }
 
+    if($mds->isTownsSuburbsSearchEnabled()) {
+        if (!function_exists('generate_town_city_search')) {
+            /**
+             * Get the results on Town Suburb search
+             *
+             * @return string
+             */
+            function generate_town_city_search()
+            {
+                $mds = MdsColliveryService::getInstance();
+
+                $selectedSuburb = null;
+                if (get_current_user_id() > 0) {
+                    $selectedSuburb = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'suburb');
+                }
+
+                if ((isset($_POST['search_text'])) && ($_POST['search_text'] != '')) {
+                    $collivery = $mds->returnColliveryClass();
+                    $fields = $collivery->searchTownSuburbs($_POST['search_text']);
+                    if (!empty($fields)) {
+
+                        $key_value_array = [];
+                        foreach ($fields as $item) {
+                            $key_value_array[$item['suburb']['id']]=$item['formatted_result'] ;
+
+                        }
+                        wp_send_json(View::make('_options', [
+                            'fields' => $key_value_array,
+                            'placeholder' => 'Select suburb',
+                            'selectedValue' => $selectedSuburb,
+                        ]));
+                    } else {
+                        wp_send_json(View::make('_options', [
+                            'placeholder' => 'Error retrieving data from server. Please try again later...',
+                        ]));
+                    }
+                } else {
+                    wp_send_json(View::make('_options', [
+                        'placeholder' => 'First Select Town...',
+                    ]));
+                }
+            }
+
+            add_action('wp_ajax_mds_collivery_generate_town_city_search', 'generate_town_city_search');
+            add_action('wp_ajax_nopriv_mds_collivery_generate_town_city_search', 'generate_town_city_search');
+        }
+
+        if (!function_exists('generate_suburb')) {
+            /**
+             * Get the results on Suburb show
+             *
+             * @return string
+             */
+            function generate_suburb()
+            {
+                $mds = MdsColliveryService::getInstance();
+
+                $selectedSuburb = null;
+                if (get_current_user_id() > 0) {
+                    $selectedSuburb = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'suburb');
+                }
+
+                if ((isset($_POST['suburb_id'])) && ($_POST['suburb_id'] != '')) {
+                    $collivery = $mds->returnColliveryClass();
+                    $item = $collivery->getSuburb($_POST['suburb_id']);
+                    if ($item !=null) {
+                        $key_value_array[$item['id']] = $item['name'];
+
+                        if($selectedSuburb===null)
+                            $selectedSuburb= $item['id'];
+                        wp_send_json(View::make('_options', [
+                            'fields' => $key_value_array,
+                            'placeholder' => 'Select suburb',
+                            'selectedValue' => $selectedSuburb,
+                        ]));
+                    } else {
+                        wp_send_json(View::make('_options', [
+                            'placeholder' => 'Error retrieving data from server. Please try again later...',
+                        ]));
+                    }
+                } else {
+                    wp_send_json(View::make('_options', [
+                        'placeholder' => 'First Select Town...',
+                    ]));
+                }
+            }
+
+            add_action('wp_ajax_mds_collivery_generate_suburb', 'generate_suburb');
+            add_action('wp_ajax_nopriv_mds_collivery_generate_suburb', 'generate_suburb');
+        }
+
+        if (!function_exists('generate_town')) {
+            /**
+             * Get the results of Town search by suburb
+             *
+             * @return string
+             */
+            function generate_town()
+            {
+                $mds = MdsColliveryService::getInstance();
+
+                if ((isset($_POST['suburb_id'])) && ($_POST['suburb_id'] != '')) {
+                    $collivery = $mds->returnColliveryClass();
+                    $item = $collivery->getSuburb($_POST['suburb_id']);
+                    if ($item != null) {
+                        $key_value_array[$item['town']['id']] = $item['town']['name'];
+                        $id =$item['town']['id'];
+
+                        wp_send_json(View::make('_options', [
+                            'fields' => $key_value_array,
+                            'placeholder' => 'Select suburb',
+                            'selectedValue' => $id,
+                        ]));
+                    } else {
+                        wp_send_json(View::make('_options', [
+                            'placeholder' => 'Error retrieving data from server. Please try again later...',
+                        ]));
+                    }
+                } else {
+                    wp_send_json(View::make('_options', [
+                        'placeholder' => 'First search suburb...',
+                    ]));
+                }
+            }
+
+            add_action('wp_ajax_mds_collivery_generate_town', 'generate_town');
+            add_action('wp_ajax_nopriv_mds_collivery_generate_town', 'generate_town');
+        }
+        if (!function_exists('generate_province')) {
+            /**
+             * Get the results of Town search by suburb
+             *
+             * @return string
+             */
+            function generate_province()
+            {
+                $mds = MdsColliveryService::getInstance();
+
+                if ((isset($_POST['suburb_id'])) && ($_POST['suburb_id'] != '')) {
+                    $collivery = $mds->returnColliveryClass();
+                    $item = $collivery->getSuburb($_POST['suburb_id']);
+                    if ($item != null) {
+                      $province = $item['town']['province'];
+                        wp_send_json($province);
+                    } else {
+                        wp_send_json(View::make('_options', [
+                            'placeholder' => 'Error retrieving data from server. Please try again later...',
+                        ]));
+                    }
+                } else {
+                    wp_send_json(View::make('_options', [
+                        'placeholder' => 'First search suburb...',
+                    ]));
+                }
+            }
+
+            add_action('wp_ajax_mds_collivery_generate_province', 'generate_province');
+            add_action('wp_ajax_nopriv_mds_collivery_generate_province', 'generate_province');
+        }
+    }
 }

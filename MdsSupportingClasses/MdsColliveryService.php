@@ -1048,6 +1048,15 @@ class MdsColliveryService
     }
 
     /**
+     * Returns true or false depending on if the plugins towns_suburbs search is enabled or not.
+     *
+     * @return bool
+     */
+    public function isTownsSuburbsSearchEnabled()
+    {
+        return $this->settings->getValue('enable_town_suburb_search') == 'yes';
+    }
+    /**
      * Gets default address of the MDS Account.
      *
      * @return array
