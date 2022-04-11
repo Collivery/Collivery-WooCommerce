@@ -114,6 +114,7 @@ class Collivery
             $client = curl_init($url.'?'.$query);
         }
 
+        curl_setopt($client, CURLOPT_SSL_VERIFYPEER, false);
 
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
 
@@ -337,7 +338,7 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/town_suburb_search", ["search_text" => $searchText], 'GET');
-            } catch (CurlConnectionException $e) {
+            } catch (Exception $e) {
                 $this->catchException($e);
 
                 return [];

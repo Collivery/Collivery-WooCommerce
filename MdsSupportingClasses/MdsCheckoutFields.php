@@ -25,10 +25,11 @@ class MdsCheckoutFields
      * @param Array $data - Contains the array you want to modify
      * @param string $key - This is the name of the Id field
      * @param string $value - This is the name of the Value field
-     * 
+     *
      * @return Array $key_value_array - {key:value, key:value} - Used for setting up dropdown lists.
      */
-    private function make_key_value_array($data, $key, $value) {
+    private function make_key_value_array($data, $key, $value)
+    {
         $key_value_array = [];
 
         if (!is_array($data)) {
@@ -64,35 +65,34 @@ class MdsCheckoutFields
             }
 
             $towns = [];
-            if(!$service->isTownsSuburbsSearchEnabled())
-            {
-                $towns = $this->make_key_value_array($resources['towns'], 'id', 'name'   );
+            if (!$service->isTownsSuburbsSearchEnabled()) {
+                $towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
             }
             $location_types = $this->make_key_value_array($resources['location_types'], 'id', 'name');
 
             $towns = ['' => 'Select Town'] + $towns;
             $location_types = ['' => 'Select Premises Type'] + $location_types;
-	        $customer = WC()->customer;
-	        $cityPrefix = $prefix ?: 'billing_';
-            
+            $customer = WC()->customer;
+            $cityPrefix = $prefix ?: 'billing_';
+
             $townName = '';
 
             if ($customer) {
-	            $townName = $customer->{"get_{$cityPrefix}city"}();
-	        }
+                $townName = $customer->{"get_{$cityPrefix}city"}();
+            }
 
-	        $suburbs = ['' => 'First select town/city'];
+            $suburbs = ['' => 'First select town/city'];
             $searchSuburbs = ['' => 'Search then select town/city'];
-	        if ($townName) {
+            if ($townName) {
                 $array_search_towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
-		        $townId = array_search($townName, $array_search_towns);
+                $townId = array_search($townName, $array_search_towns);
                 $suburbs = $service->returnColliveryClass()->getSuburbs($townId);
                 $suburbs = $this->make_key_value_array($suburbs, 'id', 'name');
                 $suburbs = ['' => 'First select town/city'] + $suburbs;
             }
 
             $fields = [
-                $prefix.'country' => [
+                $prefix . 'country' => [
                     'priority' => 1,
                     'type' => 'country',
                     'label' => 'Country',
@@ -100,42 +100,7 @@ class MdsCheckoutFields
                     'autocomplete' => 'country',
                     'class' => ['form-row-wide', 'address-field', 'update_totals_on_change'],
                 ],
-                $prefix.'state' => [
-                    'priority' => 3,
-                    'type' => 'state',
-                    'label' => 'Province',
-                    'required' => true,
-                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
-                    'placeholder' => 'Please select',
-                    'validate' => ['state'],
-                    'autocomplete' => 'address-level1',
-                ],
-                $prefix.'city' => [
-                    'priority' => 5,
-                    'type' => 'select',
-                    'label' => 'Town / City',
-                    'required' => true,
-                    'placeholder' => 'Please select',
-                    'options' => $towns,
-                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
-                ],
-                $prefix."city_int"=> [
-                    "label"=> "Town / City",
-                    "required"=> true,
-                    "class"=> ["form-row-wide", "address-field", 'update_totals_on_change', "international", "inactive"],
-                    "autocomplete"=> "address-level2",
-                    "priority"=> 6
-                ],
-                $prefix.'suburb' => [
-                    'priority' => 7,
-                    'type' => 'select',
-                    'label' => 'Suburb',
-                    'required' => true,
-                    'placeholder' => 'Please select',
-                    'class' => ['form-row-wide', 'address-field', 'active'],
-                    'options' => $suburbs,
-                ],
-                $prefix.'location_type' => [
+                $prefix . 'location_type' => [
                     'priority' => 8,
                     'type' => 'select',
                     'label' => 'Location Type',
@@ -146,7 +111,7 @@ class MdsCheckoutFields
                     'default' => 'Private House',
                     'selected' => '',
                 ],
-                $prefix.'company' => [
+                $prefix . 'company' => [
                     'priority' => 9,
                     'label' => 'Company Name',
                     'placeholder' => 'Company (optional)',
@@ -154,7 +119,7 @@ class MdsCheckoutFields
                     'maxlength' => 50,
                     'class' => ['form-row-wide'],
                 ],
-                $prefix.'address_1' => [
+                $prefix . 'address_1' => [
                     'priority' => 10,
                     'label' => 'Street',
                     'placeholder' => 'Street number and name.',
@@ -163,7 +128,7 @@ class MdsCheckoutFields
                     'required' => true,
                     'class' => ['form-row-wide'],
                 ],
-                $prefix.'address_2' => [
+                $prefix . 'address_2' => [
                     'priority' => 11,
                     'label' => 'Building Details',
                     'placeholder' => 'Apartment, suite, unit etc. (optional)',
@@ -172,7 +137,7 @@ class MdsCheckoutFields
                     'maxlength' => 50,
                     'required' => false,
                 ],
-                $prefix.'first_name' => [
+                $prefix . 'first_name' => [
                     'priority' => 12,
                     'label' => 'First Name',
                     'placeholder' => 'First Name',
@@ -180,7 +145,7 @@ class MdsCheckoutFields
                     'required' => true,
                     'class' => ['form-row-wide'],
                 ],
-                $prefix.'last_name' => [
+                $prefix . 'last_name' => [
                     'priority' => 13,
                     'label' => 'Last Name',
                     'placeholder' => 'Last Name',
@@ -188,7 +153,7 @@ class MdsCheckoutFields
                     'required' => true,
                     'class' => ['form-row-wide'],
                 ],
-                $prefix.'phone' => [
+                $prefix . 'phone' => [
                     'priority' => 14,
                     'validate' => ['phone'],
                     'label' => 'Cell Phone',
@@ -196,7 +161,7 @@ class MdsCheckoutFields
                     'required' => true,
                     'class' => ['form-row-wide'],
                 ],
-                $prefix.'email' => [
+                $prefix . 'email' => [
                     'priority' => 15,
                     'validate' => ['email'],
                     'label' => 'Email Address',
@@ -204,27 +169,93 @@ class MdsCheckoutFields
                     'required' => true,
                     'class' => ['form-row-wide'],
                 ],
-                $prefix.'postcode' => [
-                    'priority'     => 16,
-                    'label'        => 'Postal Code',
-                    'placeholder'  => 'Postal Code',
-                    'required'     => true,
-                    'class'        => ['form-row-wide', 'address-field', 'update_totals_on_change'],
-                    'validate'     => ['postcode'],
+                $prefix . 'postcode' => [
+                    'priority' => 16,
+                    'label' => 'Postal Code',
+                    'placeholder' => 'Postal Code',
+                    'required' => true,
+                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change'],
+                    'validate' => ['postcode'],
                     'autocomplete' => 'postal-code',
                 ],
             ];
-            if($service->isTownsSuburbsSearchEnabled()){
-                $key_value_array[$prefix.'town_city_search']=[ 'priority' => 2,
+            if ($service->isTownsSuburbsSearchEnabled()) {
+                $key_value_array = [
+                    $prefix . 'town_city_search_field' => [
+                        'priority' => 2,
+                        'label' => 'Town / City Search',
+                        'placeholder' => 'Search min 3 chars',
+                        'class' => ['form-row-wide']
+                    ],
+                    $prefix . 'town_city_search' => [
+                        'priority' => 3,
+                        'type' => 'select',
+                        'label' => 'Town / City Search Result',
+                        'required' => true,
+                        'placeholder' => 'Please select',
+                        'options' => $towns,
+                        'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active']
+                    ],
+                    $prefix . 'city' => [
+                        'priority' => 5,
+                        'type' => 'hidden',
+                        'class' => ['update_totals_on_change'],
+                    ],
+                    $prefix . "city_int" => [
+                        "label" => "Town / City",
+                        "required" => true,
+                        "class" => ["form-row-wide", "address-field", 'update_totals_on_change', "international", "inactive"],
+                        "autocomplete" => "address-level2",
+                        "priority" => 6
+                    ],
+                    $prefix . 'suburb' => [
+                        'priority' => 7,
+                        'type' => 'hidden',
+                    ],
+                    $prefix . 'state' => [
+                        'priority' => 3,
+                        'type' => 'hidden'
+                    ]
+                ];;
+                $fields = array_merge($fields, $key_value_array);
+            } else {
+                $other_fields = [$prefix . 'city' => [
+                    'priority' => 5,
                     'type' => 'select',
-                    'label' => 'Town / City Search',
+                    'label' => 'Town / City',
                     'required' => true,
                     'placeholder' => 'Please select',
                     'options' => $towns,
-                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change','active']];
-                $fields =  array_merge($fields,$key_value_array) ;
+                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
+                ],
+                    $prefix . "city_int" => [
+                        "label" => "Town / City",
+                        "required" => true,
+                        "class" => ["form-row-wide", "address-field", 'update_totals_on_change', "international", "inactive"],
+                        "autocomplete" => "address-level2",
+                        "priority" => 6
+                    ],
+                    $prefix . 'suburb' => [
+                        'priority' => 7,
+                        'type' => 'select',
+                        'label' => 'Suburb',
+                        'required' => true,
+                        'placeholder' => 'Please select',
+                        'class' => ['form-row-wide', 'address-field', 'active'],
+                        'options' => $suburbs,
+                    ],
+                    $prefix . 'state' => [
+                        'priority' => 3,
+                        'type' => 'state',
+                        'label' => 'Province',
+                        'required' => true,
+                        'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
+                        'placeholder' => 'Please select',
+                        'validate' => ['state'],
+                        'autocomplete' => 'address-level1',
+                    ]];
+                $fields = array_merge($fields, $other_fields);
             }
-
             // Ensure we don't steamroll fields added by other plugins
             $customFields = array_diff_key($defaultFields, $fields);
 
