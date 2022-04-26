@@ -509,6 +509,7 @@ class MdsColliveryService
      */
     public function orderToCollivery(WC_Order $order, array $overrides) {
 
+
         if ($order->get_shipping_country() != "ZA" && $order->get_shipping_country() != "South Africa") {
             throw new InternationalAutomatedException('International shipping request detected! Please manually link the waybill using the "Link International MDS Waybill" found on the Order.', $this->loggerSettingsArray(), [
                 'order_id' => $order->get_id(),
@@ -803,7 +804,7 @@ class MdsColliveryService
         $location_types = $this->collivery->getLocationTypes();
 
         if (!is_numeric($array['town'])) {
-            $town_id = (int)array_search($array['town'], $towns);
+            $town_id = (int)array_search(strtolower($array['town']), array_map('strtolower', $towns));
         } else {
             $town_id = $array['town'];
         }
@@ -811,7 +812,8 @@ class MdsColliveryService
         $suburbs = $this->collivery->make_key_value_array($this->collivery->getSuburbs($town_id), 'id', 'name');
 
         if (!is_numeric($array['suburb'])) {
-            $suburb_id = (int)array_search($array['suburb'], $suburbs);
+            $suburb_id = (int)array_search(strtolower($array['suburb']), array_map('strtolower', $suburbs));
+
         } else {
             $suburb_id = $array['suburb'];
         }
