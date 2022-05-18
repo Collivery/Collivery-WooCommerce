@@ -66,7 +66,7 @@ class Collivery
     protected function authenticate()
     {
         $authCache = $this->cache->get('collivery.auth');
-        
+
         if (
             $this->check_cache &&
             $this->cache->has('collivery.auth') &&
@@ -113,8 +113,6 @@ class Collivery
             $query = http_build_query($data);
             $client = curl_init($url.'?'.$query);
         }
-
-        curl_setopt($client, CURLOPT_SSL_VERIFYPEER, false);
 
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
 
@@ -192,7 +190,7 @@ class Collivery
             ], 'POST', true);
 
             $authenticate = $authenticate['data'];
-            
+
             if (is_array($authenticate) && isset($authenticate['api_token'])) {
                 if ($this->check_cache) {
                     $this->cache->put('collivery.auth', $authenticate, 50);
@@ -437,7 +435,7 @@ class Collivery
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/location_types", ["api_token" => ""], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
-                
+
                 return false;
             }
 
@@ -612,7 +610,7 @@ class Collivery
             if (isset($result['data'])) {
                 // This might need to be updated, if the data isn't ordered by Date Ascending.
                 $result = array_reverse($result['data']);
-                
+
                 foreach ($result as $document) {
                     if ($document['type'] == "POD") {
                         $result = $this->consumeAPI($document['image_url'], ["api_token" => ""], 'GET');
@@ -859,7 +857,7 @@ class Collivery
                 $this->cache->forget('collivery.addresses.'.$this->client_id);
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
-                
+
                 return false;
             }
 
@@ -1075,9 +1073,9 @@ class Collivery
 
     /**
      * The Else in nearly every function found here, will set an error and return false
-     * 
+     *
      * @param Array $data - The Result that was returned by the API
-     * 
+     *
      * @return Boolean false
      */
     private function checkError($data) {
@@ -1187,7 +1185,7 @@ class Collivery
      * @param string $key - This is the name of the Id field
      * @param string $value - This is the name of the Value field
      * @param boolean $isContact - The contact array has a lot of text as it's value that isn't inherently known.
-     * 
+     *
      * @return Array $key_value_array - {key:value, key:value} - Used for setting up dropdown lists.
      */
     public function make_key_value_array($data, $key, $value, $isContact = false) {
@@ -1207,14 +1205,14 @@ class Collivery
             }
         }
 
-        
+
 
         return $key_value_array;
     }
 
     /**
      * Returns the Collivery User Id for the credentials used by the store owner.
-     * 
+     *
      * @return Integer - The User Id;
      */
     public function getColliveryUserId() {

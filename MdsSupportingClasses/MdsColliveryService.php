@@ -23,7 +23,7 @@ class MdsColliveryService
      */
     private static $instance;
 
-	/**
+    /**
      * @var UnitConverter
      */
     private $converter;
@@ -53,13 +53,13 @@ class MdsColliveryService
      */
     private $settings;
 
-	/**
-	 * @var EnvironmentInformationBag
-	 */
-	private $environment;
+    /**
+     * @var EnvironmentInformationBag
+     */
+    private $environment;
 
 
-	/**
+    /**
      * @param array|null $settings
      *
      * @return MdsColliveryService
@@ -175,12 +175,12 @@ class MdsColliveryService
             $this->validatePackageField($package, 'count', 'numeric');
             $this->validatePackageField($package, 'contents', 'array');
 
-	        foreach ( $package['contents'] as $cartItem ) {
-	            $this->validatePackageField($cartItem, 'length', 'numeric');
-	            $this->validatePackageField($cartItem, 'width', 'numeric');
-	            $this->validatePackageField($cartItem, 'height', 'numeric');
-	            $this->validatePackageField($cartItem, 'weight', 'numeric');
-	        }
+            foreach ( $package['contents'] as $cartItem ) {
+                $this->validatePackageField($cartItem, 'length', 'numeric');
+                $this->validatePackageField($cartItem, 'width', 'numeric');
+                $this->validatePackageField($cartItem, 'height', 'numeric');
+                $this->validatePackageField($cartItem, 'weight', 'numeric');
+            }
 
             return true;
         } catch (InvalidCartPackageException $e) {
@@ -361,25 +361,25 @@ class MdsColliveryService
         if ($this->settings->getValue('include_vat') === 'yes') {
             $returnedAmount *= 1.15;
         }
-        
+
         return Money::make($returnedAmount, $markup, $fixedPrice, $discount, $this->settings->getValue('round') == 'yes')->amount;
     }
 
-	/**
-	 * Adds the delivery request to MDS Collivery.
-	 *
-	 * @param array $array
-	 *
-	 * @return bool|array
-	 * @throws InvalidColliveryDataException
-	 */
+    /**
+     * Adds the delivery request to MDS Collivery.
+     *
+     * @param array $array
+     *
+     * @return bool|array
+     * @throws InvalidColliveryDataException
+     */
     public function addCollivery(array $array)
     {
         $this->validated_data = $validatedData = $this->validateCollivery($array);
 
-	    if (empty($validatedData) || is_bool($validatedData)) {
-		    return false;
-	    }
+        if (empty($validatedData) || is_bool($validatedData)) {
+            return false;
+        }
 
         if (isset($this->validated_data['time_changed']) && $this->validated_data['time_changed'] == 1) {
             $id = $this->validated_data['service'];
@@ -731,14 +731,14 @@ class MdsColliveryService
         }
     }
 
-	/**
-	 * Auto process to send collection requests to MDS.
-	 *
-	 * @param      $order_id
-	 * @param bool $processing
-	 *
-	 * @return void
-	 */
+    /**
+     * Auto process to send collection requests to MDS.
+     *
+     * @param      $order_id
+     * @param bool $processing
+     *
+     * @return void
+     */
     public function automatedOrderToCollivery($order_id, $processing = false)
     {
         $order = new WC_Order($order_id);
@@ -850,8 +850,8 @@ class MdsColliveryService
             'suburb_id' => $suburb_id,
             'town_id' => $town_id,
             'contact' => [
-                'full_name' => $array['full_name'], 
-                'cellphone' => preg_replace('/[^0-9]/', '', $array['cellphone']), 
+                'full_name' => $array['full_name'],
+                'cellphone' => preg_replace('/[^0-9]/', '', $array['cellphone']),
                 'work_phone' => (!empty($array['phone'])) ? preg_replace('/[^0-9]/', '', $array['phone']) : '',
                 'email_address' => $array['email']],
             'custom_id' => $array['custom_id']
@@ -1070,9 +1070,9 @@ class MdsColliveryService
             return [];
         }
 
-	    $contacts  = $default_address['contacts'] ?? $this->collivery->getContacts( $default_address_id );
+        $contacts  = $default_address['contacts'] ?? $this->collivery->getContacts( $default_address_id );
 
-	    return [
+        return [
             'address' => $default_address,
             'default_address_id' => $default_address_id,
             'contacts' => $contacts,
@@ -1180,4 +1180,31 @@ class MdsColliveryService
 
         return (int)array_search($suburbName, $suburbs);
     }
+
+    /**
+     * @param string|int $suburb
+     *
+     * @return int|null
+     * @throws CurlConnectionException
+     */
+    public function getSuburb($suburb )
+    {
+        if(empty($suburb)) {
+            return;
+        }
+
+        if (!is_numeric($suburb)) {
+            return (string) $suburb;
+        }
+
+        $collivery = $this->returnColliveryClass();
+
+        $result    = $collivery->getSuburb($suburb);
+        if (isset($result['id']) || $result['id'] != null) {
+            return $result;
+        }
+
+        return $suburb;
+    }
+
 }

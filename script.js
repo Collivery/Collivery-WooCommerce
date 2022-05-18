@@ -38,7 +38,7 @@ jQuery(document)
         }
       });
 
-      if (jQuery(':hidden#billing_city').length > 0) {
+      if (!jQuery(':hidden#billing_city').length > 0) {
 
         var ajaxUpdates = [
           {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
