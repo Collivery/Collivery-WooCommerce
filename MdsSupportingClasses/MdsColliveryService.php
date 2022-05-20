@@ -1189,24 +1189,24 @@ class MdsColliveryService
      * @return int|null
      * @throws CurlConnectionException
      */
-    public function getSuburb($suburb )
+    public function getSuburb($suburbId)
     {
-        if(empty($suburb)) {
+        if (empty($suburbId)) {
             return;
         }
 
-        if (!is_numeric($suburb)) {
-            return (string) $suburb;
+        if (!is_numeric($suburbId)) {
+            return (string)$suburbId;
         }
 
         $collivery = $this->returnColliveryClass();
 
-        $result    = $collivery->getSuburb($suburb);
+        $result = $collivery->getSuburb($suburbId);
         if (isset($result['id']) || $result['id'] != null) {
             return $result;
         }
 
-        return $suburb;
+        return $suburbId;
     }
 
 }

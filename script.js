@@ -39,7 +39,6 @@ jQuery(document)
       });
 
       if (!jQuery(':hidden#billing_city').length > 0) {
-
         var ajaxUpdates = [
           {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
           {fromField: 'billing_city', field: 'billing_suburb', prefix: 'suburbs', db_prefix: 'billing'},
@@ -388,6 +387,7 @@ function getProvince(field,db_prefix,suburb_id)
     success: function (response) {
       isProvinceChange = true;
       setValue(el,response)
+      setSelected(el,response);
     },
     error: function () {
       setValue(el, '');
@@ -402,7 +402,6 @@ jQuery(window).load(function () {
     console.log('Key Up Fired');
     console.log('e', e.target.value)
 
-    debugger
     if (e.target.value.trim().length >= 3) {
       var searchInput = e.target.value.trim();
       clearTimeout(typingTimer);
@@ -414,7 +413,7 @@ jQuery(window).load(function () {
   jQuery(document).on("keyup", '#shipping_town_city_search_field', function (E) {
     console.log('Key Up Fired');
     console.log('e', e.target.value)
-    debugger
+
     if (e.target.value.trim().length >= 3) {
       var searchInput = e.target.value.trim();
       clearTimeout(typingTimer);

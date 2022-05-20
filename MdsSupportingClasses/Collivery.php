@@ -336,7 +336,7 @@ class Collivery
         } else {
             try {
                 $result = $this->consumeAPI("https://api.collivery.co.za/v3/town_suburb_search", ["search_text" => $searchText], 'GET');
-            } catch (Exception $e) {
+            } catch (CurlConnectionException $e) {
                 $this->catchException($e);
 
                 return [];
