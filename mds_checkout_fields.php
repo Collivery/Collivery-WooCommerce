@@ -228,25 +228,17 @@ if ($mds->isEnabled()) {
                     $fields = $collivery->searchTownSuburbs($_POST['search_text']);
                     if (!empty($fields)) {
 
+
                         $key_value_array = [];
                         foreach ($fields as $item) {
-                            $key_value_array[$item['suburb']['id']]=$item['formatted_result'] ;
-
+                            array_push($key_value_array,['id'=>$item['suburb']['id'],'text'=>$item['formatted_result']]);
                         }
-                        wp_send_json(View::make('_options', [
-                            'fields' => $key_value_array,
-                            'placeholder' => 'Select suburb',
-                            'selectedValue' => $selectedSuburb,
-                        ]));
+                        wp_send_json($key_value_array);
                     } else {
-                        wp_send_json(View::make('_options', [
-                            'placeholder' => 'Error retrieving data from server. Please try again later...',
-                        ]));
+                        wp_send_json(['id'=>0,'text'=>'Error retrieving data from server. Please try again later...']);
                     }
                 } else {
-                    wp_send_json(View::make('_options', [
-                        'placeholder' => 'First Select Town...',
-                    ]));
+                    wp_send_json(['id'=>0,'text'=>'Type in search item']);
                 }
             }
 
@@ -277,20 +269,12 @@ if ($mds->isEnabled()) {
 
                         if($selectedSuburb===null)
                             $selectedSuburb= $item['id'];
-                        wp_send_json(View::make('_options', [
-                            'fields' => $key_value_array,
-                            'placeholder' => 'Select suburb',
-                            'selectedValue' => $selectedSuburb,
-                        ]));
+                        wp_send_json($selectedSuburb);
                     } else {
-                        wp_send_json(View::make('_options', [
-                            'placeholder' => 'Error retrieving data from server. Please try again later...',
-                        ]));
+                        wp_send_json('');
                     }
                 } else {
-                    wp_send_json(View::make('_options', [
-                        'placeholder' => 'First Select Town...',
-                    ]));
+                    wp_send_json('');
                 }
             }
 
@@ -312,23 +296,15 @@ if ($mds->isEnabled()) {
                     $collivery = $mds->returnColliveryClass();
                     $item = $collivery->getSuburb($_POST['suburb_id']);
                     if ($item != null) {
-                        $key_value_array[$item['town']['id']] = $item['town']['name'];
                         $id =$item['town']['id'];
+                        wp_send_json($id);
 
-                        wp_send_json(View::make('_options', [
-                            'fields' => $key_value_array,
-                            'placeholder' => 'Select suburb',
-                            'selectedValue' => $id,
-                        ]));
                     } else {
-                        wp_send_json(View::make('_options', [
-                            'placeholder' => 'Error retrieving data from server. Please try again later...',
-                        ]));
+                        wp_send_json('');
+
                     }
                 } else {
-                    wp_send_json(View::make('_options', [
-                        'placeholder' => 'First search suburb...',
-                    ]));
+                    wp_send_json('');
                 }
             }
 
@@ -349,17 +325,13 @@ if ($mds->isEnabled()) {
                     $collivery = $mds->returnColliveryClass();
                     $item = $collivery->getSuburb($_POST['suburb_id']);
                     if ($item != null) {
-                      $province = $item['town']['province'];
+                        $province = $item['town']['province'];
                         wp_send_json($province);
                     } else {
-                        wp_send_json(View::make('_options', [
-                            'placeholder' => 'Error retrieving data from server. Please try again later...',
-                        ]));
+                        wp_send_json('');
                     }
                 } else {
-                    wp_send_json(View::make('_options', [
-                        'placeholder' => 'First search suburb...',
-                    ]));
+                    wp_send_json('');
                 }
             }
 
