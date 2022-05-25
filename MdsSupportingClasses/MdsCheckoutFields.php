@@ -82,7 +82,6 @@ class MdsCheckoutFields
             }
 
             $suburbs = ['' => 'First select town/city'];
-            $searchSuburbs = ['' => 'Search then select town/city'];
             if ($townName) {
                 $array_search_towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
                 $townId = array_search($townName, $array_search_towns);
@@ -191,16 +190,10 @@ class MdsCheckoutFields
             ];
             if ($service->isTownsSuburbsSearchEnabled()) {
                 $key_value_array = [
-                    $prefix . 'town_city_search_field' => [
-                        'priority' => 3,
-                        'label' => 'Town / City Search',
-                        'placeholder' => 'Search min 3 chars',
-                        'class' => ['form-row-wide']
-                    ],
                     $prefix . 'town_city_search' => [
                         'priority' => 4,
                         'type' => 'select',
-                        'label' => 'Town / City Search Result',
+                        'label' => 'Town / City Search',
                         'required' => true,
                         'placeholder' => 'Please select',
                         'options' => $towns,
@@ -222,7 +215,7 @@ class MdsCheckoutFields
                         'priority' => 8,
                         'type' => 'hidden',
                     ]
-                ];;
+                ];
                 $fields = array_merge($fields, $key_value_array);
             } else {
                 $other_fields = [$prefix . 'city' => [

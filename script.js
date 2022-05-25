@@ -3,20 +3,42 @@ var overrideChange = false;
 var inZA = true;
 var colliveryClass = 'colliveryfied';
 var isProvinceChange = false;
-var typingTimer;
-var doneTypingInterval = 750; //time in ms,0.75 seconds
 jQuery(document)
     .ready(function () {
       // Allow for some narrowing of scope in our css
       jQuery('.woocommerce-checkout').addClass(colliveryClass)
 
       var select2fields;
-
       if (jQuery(':hidden#billing_city').length > 0) {
         select2fields = {
           location_type: 'Select your location type',
-          town_city_search: 'Please type in your keyword'
         };
+        var el = jQuery('#billing_town_city_search,#shipping_town_city_search');
+        el.select2({
+          minimumInputLength:3,
+          ajax: {
+            url: woocommerce_params.ajax_url,
+            type: "POST",
+            data:function (params) {
+              var query = {
+                action: 'mds_collivery_generate_' + 'town_city_search',
+                security: woocommerce_params.update_order_review_nonce,
+                prefix: '_',
+                search_text: params.term
+              }
+              // Query parameters will be ?search=[term]&page=[page]
+              return query;
+            },
+            processResults: function (data) {
+              // Transforms the top-level key of the response object from 'items' to 'results'
+              return {
+                results: data
+              };
+            }
+          }
+        });
+
+
       } else {
         select2fields = {
           city: 'Select your city/town',
@@ -397,27 +419,3 @@ function getProvince(field,db_prefix,suburb_id)
     }
   });
 }
-jQuery(window).load(function () {
-  jQuery(document).on("keyup", '#billing_town_city_search_field', function (e) {
-    console.log('Key Up Fired');
-    console.log('e', e.target.value)
-
-    if (e.target.value.trim().length >= 3) {
-      var searchInput = e.target.value.trim();
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout( searchCityOrSuburb('billing_town_city_search','town_city_search' ,'_', searchInput), doneTypingInterval);
-    }
-  });
-
-  /* Keyup on shipping section text-box */
-  jQuery(document).on("keyup", '#shipping_town_city_search_field', function (E) {
-    console.log('Key Up Fired');
-    console.log('e', e.target.value)
-
-    if (e.target.value.trim().length >= 3) {
-      var searchInput = e.target.value.trim();
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout( searchCityOrSuburb('shipping_town_city_search','town_city_search' ,'_', searchInput), doneTypingInterval);
-    }
-  });
-});
