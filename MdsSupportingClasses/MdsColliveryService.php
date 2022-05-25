@@ -1200,7 +1200,6 @@ class MdsColliveryService
         }
 
         $collivery = $this->returnColliveryClass();
-
         $result = $collivery->getSuburb($suburbId);
         if (isset($result['id']) || $result['id'] != null) {
             return $result;

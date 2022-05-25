@@ -178,8 +178,8 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
 
                 $order = new WC_Order($order_id);
 
-                $billingSuburb = $order->get_meta("_billing_suburb");
-                $shippingSuburb = $order->get_meta("_shipping_suburb");
+                $billingSuburb = $order->get_meta('_billing_suburb');
+                $shippingSuburb = $order->get_meta('_shipping_suburb');
 
                 $billingCity = $order->get_billing_city();
                 $shippingCity = $order->get_shipping_city();
@@ -200,8 +200,8 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
                     $shippingCity = $result['town']['name'];
                 }
 
-                $order->update_meta_data("_billing_suburb", $billingSuburb);
-                $order->update_meta_data("_shipping_suburb", $shippingSuburb);
+                $order->update_meta_data('_billing_suburb', $billingSuburb);
+                $order->update_meta_data('_shipping_suburb', $shippingSuburb);
                 $order->save_meta_data();
                 $order->set_shipping_city($shippingCity);
                 $order->set_billing_city($billingCity);
