@@ -1,4 +1,5 @@
 var colliveryFieldsValues = {};
+var saProvinces = ['EC','FS','GP','KZN','LP','MP','NC','NW','WC']
 var overrideChange = false;
 var inZA = true;
 var colliveryClass = 'colliveryfied';
@@ -228,7 +229,8 @@ function updateSelect(fromField, field, prefix, db_prefix) {
     var fromEl = jQuery('#' + fromField),
         el = jQuery('#' + field),
         fromSelect2 = fromEl.data('select2'),
-        isChange = fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[fromField];
+        isChange = (fromEl.val() !== '' && fromEl.val() != colliveryFieldsValues[fromField])|| saProvinces.includes(fromEl.val()),
+        fromText = jQuery('#' + fromField + ' option:selected' ).text();
 
     if (overrideChange) {
         overrideChange = false;
@@ -271,6 +273,7 @@ function updateSelect(fromField, field, prefix, db_prefix) {
                 security: woocommerce_params.update_order_review_nonce,
                 parentValue: fromEl.val(),
                 db_prefix: db_prefix + '_',
+                parentItem:fromText
             },
             success: function (response) {
                 resetSelect(el, response);

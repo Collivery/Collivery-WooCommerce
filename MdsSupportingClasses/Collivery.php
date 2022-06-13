@@ -252,22 +252,23 @@ class Collivery
      * @return array List of towns and their ID's
      * @throws Exception
      */
-    public function getTowns($country = 'ZAF')
+    public function getTowns( $country = 'ZAF', $province = '')
     {
-        if (($this->check_cache) && $this->cache->has('collivery.towns.'.$country)) {
-            return $this->cache->get('collivery.towns.'.$country);
+        if (($this->check_cache) && trim($province) !== '' && $this->cache->has('collivery.towns.' . str_replace(' ', '', $province))) {
+            return $this->cache->get('collivery.towns.' . str_replace(' ', '', $province));
+        } else if (($this->check_cache) && $this->cache->has('collivery.towns.' . $country)) {
+            return $this->cache->get('collivery.towns.' . $country);
         } else {
             try {
-                $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns", ["country" => $country, "per_page" => "0"], 'GET');
+                $result = $this->consumeAPI("https://api.collivery.co.za/v3/towns",trim($province) === ''? ["country" => $country, "per_page" => "0"]:["per_page" => "0","province" => $province], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
-
                 return false;
             }
 
             if (isset($result['data'])) {
                 if ($this->check_cache) {
-                    $this->cache->put('collivery.towns.'.$country, $result['data'], 60 * 24);
+                    $this->cache->put('collivery.towns.'.trim($province) === ''? $country:str_replace(' ', '',$province), $result['data'], 60 * 24);
                 }
 
                 return $result['data'];
@@ -869,14 +870,14 @@ class Collivery
         }
     }
 
-	/**
-	 * Returns the price based on the data provided.
-	 *
-	 * @param array $data Your Collivery Details
-	 *
-	 * @return array Pricing for details supplied
-	 * @throws Exception
-	 */
+    /**
+     * Returns the price based on the data provided.
+     *
+     * @param array $data Your Collivery Details
+     *
+     * @return array Pricing for details supplied
+     * @throws Exception
+     */
     public function getPrice(array $data)
     {
         // HERE WE GO

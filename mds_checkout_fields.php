@@ -122,11 +122,14 @@ if ($mds->isEnabled()) {
                 if (get_current_user_id() > 0) {
                     $selectedTown = $mds->extractUserProfileField(get_current_user_id(), $_POST['db_prefix'] . 'city');
                 }
-
                 $collivery = $mds->returnColliveryClass();
+                if ((isset($_POST['parentItem'])) && ($_POST['parentItem'] != '')) {
+                    $province = str_replace('-', ' ',$_POST['parentItem']);
+                    $towns = $collivery->getTowns('',$province);
 
-                $towns = $collivery->getTowns();
-
+                }else {
+                    $towns = $collivery->getTowns();
+                }
                 $key_value_array = [];
                 foreach ($towns as $item) {
                     $key_value_array[$item['id']] = $item['name'];
