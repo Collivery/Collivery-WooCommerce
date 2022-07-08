@@ -88,16 +88,8 @@ class ShippingPackageData
 	    ];
 
         $customer = WC()->customer;
-        $ship_to_different_address = false;
 
-        if (isset($input['post_data'])) {
-            parse_str($input['post_data'], $postData);
-            $ship_to_different_address = $postData['ship_to_different_address'] ?? $ship_to_different_address;
-        } else {
-            $ship_to_different_address = $input['ship_to_different_address'] ?? $ship_to_different_address;
-        }
-
-		if ($ship_to_different_address) {
+		if (wc_ship_to_billing_address_only()) {
             $destination['state'] = $customer->get_billing_state();
             $destination['postcode'] = $customer->get_billing_postcode();
             $destination['address'] = $customer->get_billing_address_1();
