@@ -2,7 +2,7 @@ var colliveryFieldsValues = {};
 var saProvinces = ['EC','FS','GP','KZN','LP','MP','NC','NW','WC']
 var overrideChange = false;
 var inZA = true;
-var colliveryClass = 'colliveryfied';
+var colliveryClass = 'colliveryfield';
 var isProvinceChange = false;
 jQuery(document)
     .ready(function () {
