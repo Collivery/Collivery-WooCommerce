@@ -116,7 +116,7 @@ class MdsCache
     public function put($name, $value, $time = 1440)
     {
         $cache = ['value' => $value, 'valid' => time() + ($time * 60)];
-        if (file_put_contents($this->cache_dir.$name, json_encode($cache))) {
+        if ($name && file_put_contents($this->cache_dir.$name, json_encode($cache))) {
             $this->cache[$name] = $cache;
 
             return true;
