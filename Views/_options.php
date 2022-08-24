@@ -22,9 +22,9 @@ if (!empty($fields)) {
             }
         } else {
             if ((isset($selectedValue) && $selectedValue !== '' && $selectedValue === $value)) {
-                echo '<option value="'.$text.'" selected="selected">'.$text.'</option>';
+                echo '<option value="'.$value.'" selected="selected">'.$text.'</option>';
             } else {
-                echo '<option value="'.$text.'">'.$text.'</option>';
+                echo '<option value="'.$value.'">'.$text.'</option>';
             }
         }   
     }
