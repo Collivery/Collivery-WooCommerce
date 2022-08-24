@@ -266,7 +266,7 @@ function updateSelect(fromField, field, prefix, db_prefix) {
         return ajax = jQuery.ajax({
             type: 'POST',
             async: true,
-            timeout: 10000,
+            timeout: 0,
             url: woocommerce_params.ajax_url,
             data: {
                 action: 'mds_collivery_generate_' + prefix,
