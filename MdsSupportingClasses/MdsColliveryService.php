@@ -206,7 +206,7 @@ class MdsColliveryService
         }
 
         if ($type == 'int') {
-            if (!is_integer($array[$field])) {
+            if (!ctype_digit($array[$field])) {
                 throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
             }
         }
