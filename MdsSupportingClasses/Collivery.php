@@ -256,13 +256,14 @@ class Collivery
      */
     public function getTowns( $country = 'ZAF', $province = '')
     {
-        if (($this->check_cache) && trim($province) !== '' && $this->cache->has('collivery.towns.' . str_replace(' ', '', $province))) {
-            return $this->cache->get('collivery.towns.' . str_replace(' ', '', $province));
-        } else if (($this->check_cache) && $this->cache->has('collivery.towns.' . $country)) {
-            return $this->cache->get('collivery.towns.' . $country);
+        $province = trim($province);
+        $suffixCleaned = str_replace(' ', '', $province === '' ? $country : $province);
+        $cacheName ='collivery.towns.'.$suffixCleaned;
+        if (($this->check_cache) && $this->cache->has($cacheName)) {
+            return $this->cache->get($cacheName);
         } else {
             try {
-                $result = $this->consumeAPI($this->getUrl('towns'),trim($province) === ''? ["country" => $country, "per_page" => "0"]:["per_page" => "0","province" => $province], 'GET');
+                $result = $this->consumeAPI('towns',$province === ''? ["country" => $country, "per_page" => "0"]:["per_page" => "0","province" => $province], 'GET');
             } catch (CurlConnectionException $e) {
                 $this->catchException($e);
                 return false;
@@ -270,7 +271,7 @@ class Collivery
 
             if (isset($result['data'])) {
                 if ($this->check_cache) {
-                    $this->cache->put('collivery.towns.'.trim($province) === ''? $country:str_replace(' ', '',$province), $result['data'], 60 * 24);
+                    $this->cache->put($cacheName, $result['data'], 60 * 24); //ToDo set own cache-timeout
                 }
 
                 return $result['data'];
