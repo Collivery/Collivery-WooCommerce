@@ -58,7 +58,7 @@ class ShippingPackageData
             return $packages;
         }
 
-        if (!is_int($requiredFields['to_town_id'])) {
+        if (!ctype_digit($requiredFields['to_town_id'])) {
             // Assume it's the town name.
             $towns = $this->collivery->getTowns();
             foreach ($towns as $item) {
@@ -69,7 +69,7 @@ class ShippingPackageData
             }
         }
         
-        if (is_int($requiredFields['to_town_id'])) {
+        if (ctype_digit($requiredFields['to_town_id'])) {
             $suburb = $this->collivery->getSuburbs($requiredFields['to_town_id']);
             $city = $suburb[0]['town']['name'];
             $country = 'ZA';

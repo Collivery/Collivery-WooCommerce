@@ -205,13 +205,7 @@ class MdsColliveryService
             throw new InvalidCartPackageException($field . ' does not exist in array', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
         }
 
-        if ($type == 'int') {
-            if (!is_integer($array[$field])) {
-                throw new InvalidCartPackageException($field . ' is not an integer', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
-            }
-        }
-
-        if ($type == 'numeric') {
+        if ($type == 'numeric' || $type == 'int') {
             if (!is_numeric($array[$field])) {
                 throw new InvalidCartPackageException($field . ' is not numeric', 'MdsColliveryService::validPackage()', $this->loggerSettingsArray(), $array);
             }
