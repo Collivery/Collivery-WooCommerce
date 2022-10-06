@@ -75,14 +75,16 @@ class MdsCheckoutFields
             $customer = WC()->customer;
             $cityPrefix = $prefix ?: 'billing_';
 
-            $townId = '';
+            $townName = '';
 
             if ($customer) {
-                $townId = $customer->{"get_{$cityPrefix}city"}();
+                $townName = $customer->{"get_{$cityPrefix}city"}();
             }
 
             $suburbs = ['' => 'First select town/city'];
-            if ($townId) {
+            if ($townName) {
+                $array_search_towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
+                $townId = array_search($townName, $array_search_towns);
                 $suburbs = $service->returnColliveryClass()->getSuburbs($townId);
                 $suburbs = $this->make_key_value_array($suburbs, 'id', 'name');
                 $suburbs = ['' => 'First select town/city'] + $suburbs;
