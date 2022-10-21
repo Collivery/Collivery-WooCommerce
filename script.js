@@ -63,6 +63,7 @@ jQuery(document)
             var ajaxUpdates = [
                 {fromField: 'billing_state', field: 'billing_city', prefix: 'towns', db_prefix: 'billing'},
                 {fromField: 'billing_city', field: 'billing_suburb', prefix: 'suburbs', db_prefix: 'billing'},
+                {fromField: 'billing_city', field: 'billing_city_int', prefix: 'suburbs', db_prefix: 'billing'},
                 {fromField: 'shipping_state', field: 'shipping_city', prefix: 'towns', db_prefix: 'shipping'},
                 {fromField: 'shipping_city', field: 'shipping_suburb', prefix: 'suburbs', db_prefix: 'shipping'}
             ];
@@ -147,6 +148,7 @@ jQuery(document)
                 var suburb_id = jQuery(e.target).val();
                 getProvince('billing_state', '_', suburb_id);
                 getTown('billing_city', '_', suburb_id);
+                getTown('billing_city_int', '_', suburb_id);
                 getSuburb('billing_suburb', '_', suburb_id);
 
             });
@@ -156,6 +158,7 @@ jQuery(document)
                 var suburb_id = jQuery(e.target).val();
                 getProvince('shipping_state', '_', suburb_id);
                 getTown('shipping_city', '_', suburb_id);
+                getTown('shipping_city_int', '_', suburb_id);
                 getSuburb('shipping_suburb', '_', suburb_id);
 
             });
