@@ -7,7 +7,8 @@ var isProvinceChange = false;
 jQuery(document)
     .ready(function () {
         // Allow for some narrowing of scope in our css
-        jQuery('.woocommerce-checkout').addClass(colliveryClass)
+      jQuery('.woocommerce-checkout').addClass(colliveryClass)
+      jQuery('.woocommerce-edit-address').addClass(colliveryClass)
 
         var select2fields;
         if (jQuery(':hidden#billing_city').length > 0) {
