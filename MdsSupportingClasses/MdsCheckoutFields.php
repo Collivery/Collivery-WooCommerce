@@ -218,15 +218,16 @@ class MdsCheckoutFields
                 ];
                 $fields = array_merge($fields, $key_value_array);
             } else {
-                $other_fields = [$prefix . 'city' => [
-                    'priority' => 6,
-                    'type' => 'select',
-                    'label' => 'Town / City',
-                    'required' => true,
-                    'placeholder' => 'Please select',
-                    'options' => $towns,
-                    'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
-                ],
+                $other_fields = [
+                    $prefix . 'city' => [
+                        'priority' => 6,
+                        'type' => 'select',
+                        'label' => 'Town / City',
+                        'required' => true,
+                        'placeholder' => 'Please select',
+                        'options' => $towns,
+                        'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
+                    ],
                     $prefix . "city_int" => [
                         "label" => "Town / City",
                         "required" => true,
