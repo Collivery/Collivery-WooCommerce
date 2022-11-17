@@ -75,19 +75,20 @@ class MdsCheckoutFields
             $customer = WC()->customer;
             $cityPrefix = $prefix ?: 'billing_';
 
-            $townName = '';
-
-            if ($customer) {
-                $townName = $customer->{"get_{$cityPrefix}city"}();
-            }
 
             $suburbs = ['' => 'First select town/city'];
-            if ($townName) {
-                $array_search_towns = $this->make_key_value_array($resources['towns'], 'id', 'name');
-                $townId = array_search($townName, $array_search_towns);
-                $suburbs = $service->returnColliveryClass()->getSuburbs($townId);
+            $savedSuburbId  = $mdsSuburb = $mdsSuburbId = $mdsSuburbName = $mdsTown = $mdsTownId = $mdsTownName = $customer->get_meta("{$cityPrefix}suburb");
+            $savedLocationTypeId = $customer->get_meta("{$cityPrefix}location_type");
+
+            if($savedSuburbId) {
+                $mdsSuburb =  (object) $service->returnColliveryClass()->getSuburb($savedSuburbId);
+                $mdsSuburbId = $mdsSuburb->id;
+                $mdsSuburbName = $mdsSuburb->name;
+                $mdsTown = (object) $mdsSuburb->town;
+                $mdsTownId = $mdsTown->id;
+                $mdsTownName = $mdsTown->name;
+                $suburbs = $service->returnColliveryClass()->getSuburbs($mdsTownId);
                 $suburbs = $this->make_key_value_array($suburbs, 'id', 'name');
-                $suburbs = ['' => 'First select town/city'] + $suburbs;
             }
 
             $fields = [
@@ -108,7 +109,7 @@ class MdsCheckoutFields
                     'placeholder' => 'Please select',
                     'options' => $location_types,
                     'default' => 'Private House',
-                    'selected' => '',
+                    'selected' => $savedLocationTypeId,
                 ],
                 $prefix . 'company' => [
                     'priority' => 10,
@@ -218,6 +219,7 @@ class MdsCheckoutFields
                 ];
                 $fields = array_merge($fields, $key_value_array);
             } else {
+                $customer->get_meta_data('shipping_town_city_search');
                 $other_fields = [
                     $prefix . 'city' => [
                         'priority' => 6,
@@ -227,13 +229,15 @@ class MdsCheckoutFields
                         'placeholder' => 'Please select',
                         'options' => $towns,
                         'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
+                        'selected' => $mdsTownId,
                     ],
                     $prefix . "city_int" => [
                         "label" => "Town / City",
                         "required" => true,
                         "class" => ["form-row-wide", "address-field", 'update_totals_on_change', "international", "inactive"],
                         "autocomplete" => "address-level2",
-                        "priority" => 7
+                        "priority" => 7,
+                        'value' => $mdsTownId,
                     ],
                     $prefix . 'suburb' => [
                         'priority' => 8,
@@ -243,6 +247,7 @@ class MdsCheckoutFields
                         'placeholder' => 'Please select',
                         'class' => ['form-row-wide', 'address-field', 'active'],
                         'options' => $suburbs,
+                        'selected' => $mdsSuburbId,
                     ]];
                 $fields = array_merge($fields, $other_fields);
             }
