@@ -4,6 +4,7 @@ var overrideChange = false;
 var inZA = true;
 var colliveryClass = 'colliveryfield';
 var isProvinceChange = false;
+var isBuildingPage = true;
 jQuery(document)
     .ready(function () {
         // Allow for some narrowing of scope in our css
@@ -165,8 +166,11 @@ jQuery(document)
             });
         }
 
-
     });
+
+jQuery(window).load(function(){
+  isBuildingPage = false;
+});
 
 function updateInternational(type) {
     var fromEl = jQuery('#' + type + "_country");
@@ -230,6 +234,9 @@ function updateFields(db_prefix) {
 }
 
 function updateSelect(fromField, field, prefix, db_prefix) {
+    if(isBuildingPage){
+      return ;
+    }
     var fromEl = jQuery('#' + fromField),
         el = jQuery('#' + field),
         fromSelect2 = fromEl.data('select2'),
