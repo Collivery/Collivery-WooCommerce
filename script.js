@@ -336,7 +336,7 @@ function cacheValue(key, val) {
 }
 
 function getSuburb(field, db_prefix, suburb_id) {
-    var el = jQuery('#' + field);
+    var el = jQuery('input[name="'+field+'"]');
     return ajax = jQuery.ajax({
         type: 'POST',
         url: woocommerce_params.ajax_url,
@@ -358,7 +358,7 @@ function getSuburb(field, db_prefix, suburb_id) {
 }
 
 function getTown(field, db_prefix, suburb_id) {
-    var el = jQuery('#' + field);
+    var el = jQuery('input[name="'+field+'"]');
     return ajax = jQuery.ajax({
         type: 'POST',
         url: woocommerce_params.ajax_url,
@@ -380,7 +380,7 @@ function getTown(field, db_prefix, suburb_id) {
 }
 
 function getProvince(field, db_prefix, suburb_id) {
-    var el = jQuery('#' + field);
+    var el = jQuery('input[name="'+field+'"]');
     return ajax = jQuery.ajax({
         type: 'POST',
         url: woocommerce_params.ajax_url,
