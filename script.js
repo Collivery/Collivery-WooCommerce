@@ -4,10 +4,12 @@ var overrideChange = false;
 var inZA = true;
 var colliveryClass = 'colliveryfield';
 var isProvinceChange = false;
+var isBuildingPage = true;
 jQuery(document)
     .ready(function () {
         // Allow for some narrowing of scope in our css
-        jQuery('.woocommerce-checkout').addClass(colliveryClass)
+      jQuery('.woocommerce-checkout').addClass(colliveryClass)
+      jQuery('.woocommerce-edit-address').addClass(colliveryClass)
 
         var select2fields;
         if (jQuery(':hidden#billing_city').length > 0) {
@@ -164,8 +166,11 @@ jQuery(document)
             });
         }
 
-
     });
+
+jQuery(window).load(function(){
+  isBuildingPage = false;
+});
 
 function updateInternational(type) {
     var fromEl = jQuery('#' + type + "_country");
@@ -229,6 +234,9 @@ function updateFields(db_prefix) {
 }
 
 function updateSelect(fromField, field, prefix, db_prefix) {
+    if(isBuildingPage){
+      return ;
+    }
     var fromEl = jQuery('#' + fromField),
         el = jQuery('#' + field),
         fromSelect2 = fromEl.data('select2'),
@@ -328,7 +336,7 @@ function cacheValue(key, val) {
 }
 
 function getSuburb(field, db_prefix, suburb_id) {
-    var el = jQuery('#' + field);
+    var el = jQuery('input[name="'+field+'"]');
     return ajax = jQuery.ajax({
         type: 'POST',
         url: woocommerce_params.ajax_url,
@@ -350,7 +358,7 @@ function getSuburb(field, db_prefix, suburb_id) {
 }
 
 function getTown(field, db_prefix, suburb_id) {
-    var el = jQuery('#' + field);
+    var el = jQuery('input[name="'+field+'"]');
     return ajax = jQuery.ajax({
         type: 'POST',
         url: woocommerce_params.ajax_url,
@@ -372,7 +380,7 @@ function getTown(field, db_prefix, suburb_id) {
 }
 
 function getProvince(field, db_prefix, suburb_id) {
-    var el = jQuery('#' + field);
+    var el = jQuery('input[name="'+field+'"]');
     return ajax = jQuery.ajax({
         type: 'POST',
         url: woocommerce_params.ajax_url,
