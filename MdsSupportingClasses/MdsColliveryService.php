@@ -673,23 +673,6 @@ class MdsColliveryService
 
         if (isset($overrides['collection_time']) && $overrides['collection_time']) {
             $colliveryOptions['collection_time'] = $overrides['collection_time'];
-        } else {
-            $leadTime = $this->settings->getValue('lead_time') ?? self::TWENTY_FOUR_HOURS;
-            $collectionTime = date('Y-m-d H:i:s', strtotime(current_time('Y-m-d H:i:s')." + {$leadTime} hours + 5 minutes"));
-            // Ensure it's a week day
-            while(!(date('H', strtotime($collectionTime)) >= 6 && date('H', strtotime($collectionTime)) < 14)) {
-                $collectionTime = date('Y-m-d H:i:s', strtotime($collectionTime.' + 4 hours'));
-            }
-
-            $colliveryOptions['collection_time'] = $collectionTime;
-        }
-
-        if ($serviceId == Collivery::ONX_10) {
-            $deliveryTime =  date('Y-m-d H:i:s', strtotime(date('Y-m-d', strtotime($colliveryOptions['collection_time'])).' 10:00:00 + 2 days'));
-            // Ensure it's a week day
-            while(date('H', strtotime($deliveryTime)) >= 10 && date('H', strtotime($collectionTime)) < 14) {
-                $deliveryTime = date('Y-m-d H:i:s', strtotime($deliveryTime.' + 4 hours'));
-            }
         }
 
         $collivery = $this->addCollivery($colliveryOptions);
