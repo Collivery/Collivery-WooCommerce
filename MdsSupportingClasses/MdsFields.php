@@ -177,14 +177,6 @@ class MdsFields
                 ),
                 'default' => 'yes',
             ],
-            'lead_time' => [
-                'title' => __('Lead Time'),
-                'type' => 'number',
-                'description' => __(
-                    'The time in hours you would like to delay the collection of waybills generated from the Auto Processing'
-                ),
-                'default' => 24,
-            ],
             'enable_town_suburb_search'=> [
                 'title' => __('Enable Town Suburb Search'),
                 'type' => 'checkbox',

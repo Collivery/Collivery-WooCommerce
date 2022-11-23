@@ -168,7 +168,7 @@ jQuery(document)
 
     });
 
-jQuery(window).load(function(){
+jQuery(window).on('load', function(){
   isBuildingPage = false;
 });
 
