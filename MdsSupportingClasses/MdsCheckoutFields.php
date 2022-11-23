@@ -198,28 +198,31 @@ class MdsCheckoutFields
                         'required' => true,
                         'placeholder' => 'Please select',
                         'options' => $towns,
-                        'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active']
+                        'class' => ['form-row-wide', 'address-field', 'update_totals_on_change', 'active'],
+                        'selected' => $mdsTownId,
                     ],
                     $prefix . 'city' => [
                         'priority' => 6,
                         'type' => 'hidden',
                         'class' => ['update_totals_on_change'],
+                        'value' => $mdsTownId,
                     ],
                     $prefix . "city_int" => [
                         "label" => "Town / City",
                         "required" => true,
                         "class" => ["form-row-wide", "address-field", 'update_totals_on_change', "international", "inactive"],
                         "autocomplete" => "address-level2",
-                        "priority" => 7
+                        "priority" => 7,
+                        'value' => $mdsTownId,
                     ],
                     $prefix . 'suburb' => [
                         'priority' => 8,
                         'type' => 'hidden',
+                        'value' => $mdsSuburbId,
                     ]
                 ];
                 $fields = array_merge($fields, $key_value_array);
             } else {
-                $customer->get_meta_data('shipping_town_city_search');
                 $other_fields = [
                     $prefix . 'city' => [
                         'priority' => 6,
