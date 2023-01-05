@@ -77,8 +77,13 @@ class MdsCheckoutFields
 
 
             $suburbs = ['' => 'First select town/city'];
-            $savedSuburbId  = $mdsSuburb = $mdsSuburbId = $mdsSuburbName = $mdsTown = $mdsTownId = $mdsTownName = $customer->get_meta("{$cityPrefix}suburb");
-            $savedLocationTypeId = $customer->get_meta("{$cityPrefix}location_type");
+            $customerDetails = $savedLocationTypeId = '';
+            if(!is_null($customer)) {
+                $customerDetails =  $customer->get_meta("{$cityPrefix}suburb");
+                $savedLocationTypeId = $customer->get_meta("{$cityPrefix}location_type");
+            }
+            $savedSuburbId  = $mdsSuburb = $mdsSuburbId = $mdsSuburbName = $mdsTown = $mdsTownId = $mdsTownName = $customerDetails;
+
 
             if($savedSuburbId) {
                 $mdsSuburb =  (object) $service->returnColliveryClass()->getSuburb($savedSuburbId);
