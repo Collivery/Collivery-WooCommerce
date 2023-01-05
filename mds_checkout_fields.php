@@ -62,6 +62,52 @@ if ($mds->isEnabled()) {
         add_action('woocommerce_checkout_update_order_meta', 'mds_custom_checkout_field_update_order_meta');
     }
 
+    if (!function_exists('mds_custom_address_fields_display')) {
+        /**
+         * Display address fields
+         *
+         * @param $address_fields
+         */
+        function mds_custom_address_fields_display($address_fields)
+        {
+            $suburbId = explode(',', $address_fields['city'])[0];
+            $service = MdsColliveryService::getInstance();
+            if(is_numeric($suburbId)) {
+                $mdsSuburb = (object)$service->returnColliveryClass()->getSuburb($suburbId);
+                $mdsTown = (object)$mdsSuburb->town;
+                $address_fields['city'] = "{$mdsSuburb->name}, {$mdsTown->name}";
+            }
+            return $address_fields;
+        }
+
+        add_action('woocommerce_my_account_my_address_formatted_address', 'mds_custom_address_fields_display');
+        add_action('woocommerce_order_formatted_shipping_address', 'mds_custom_address_fields_display');
+        add_action('woocommerce_order_formatted_billing_address', 'mds_custom_address_fields_display');
+    }
+
+    if (!function_exists('mds_custom_order_address_fields_display')) {
+        /**
+         * Display address fields
+         *
+         * @param $address_fields
+         */
+        function mds_custom_order_address_fields_display($address_fields)
+        {
+            $checkoutTownId = explode(',', $address_fields['city'])[0];
+            if(is_numeric($checkoutTownId)) {
+                $service = MdsColliveryService::getInstance();
+                $towns = $service->returnColliveryClass()->getTowns();
+                $townIndex = array_search($checkoutTownId, array_column($service->returnColliveryClass()->getTowns(), 'id'));
+                $mdsTown = (object)$towns[$townIndex];
+                $address_fields['city'] = $mdsTown->name;
+            }
+            return $address_fields;
+        }
+        add_action('woocommerce_get_order_address', 'mds_custom_order_address_fields_display');
+        add_action('woocommerce_order_formatted_shipping_address', 'mds_custom_order_address_fields_display');
+        add_action('woocommerce_order_formatted_billing_address', 'mds_custom_order_address_fields_display');
+    }
+
     if (!function_exists('mds_custom_override_checkout_fields')) {
         /**
          * Override the Billing and Shipping fields in Checkout.
