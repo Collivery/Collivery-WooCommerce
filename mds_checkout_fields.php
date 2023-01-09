@@ -123,13 +123,15 @@ if ($mds->isEnabled()) {
         function getFields($address_fields, string $prefix)
         {
             $service = MdsColliveryService::getInstance();
-            $checkoutData = WC_Checkout::instance()->get_posted_data();
-            if(array_key_exists("{$prefix}suburb", $checkoutData) && $checkoutData["{$prefix}suburb"]) {
-                $mdsSuburb = (object)$service->returnColliveryClass()->getSuburb($checkoutData["{$prefix}suburb"]);
-                $mdsSuburbName = $mdsSuburb->name;
-                $mdsTown = (object)$mdsSuburb->town;
-                $mdsTownName = $mdsTown->name;
-                $address_fields['city'] = "{$mdsSuburbName}, {$mdsTownName}";
+            if(WC()->cart) {
+                $checkoutData = WC_Checkout::instance()->get_posted_data();
+                if (array_key_exists("{$prefix}suburb", $checkoutData) && $checkoutData["{$prefix}suburb"]) {
+                    $mdsSuburb = (object)$service->returnColliveryClass()->getSuburb($checkoutData["{$prefix}suburb"]);
+                    $mdsSuburbName = $mdsSuburb->name;
+                    $mdsTown = (object)$mdsSuburb->town;
+                    $mdsTownName = $mdsTown->name;
+                    $address_fields['city'] = "{$mdsSuburbName}, {$mdsTownName}";
+                }
             }
 
             return $address_fields;
