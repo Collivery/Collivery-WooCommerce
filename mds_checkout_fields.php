@@ -81,8 +81,6 @@ if ($mds->isEnabled()) {
         }
 
         add_action('woocommerce_my_account_my_address_formatted_address', 'mds_custom_address_fields_display');
-        add_action('woocommerce_order_formatted_shipping_address', 'mds_custom_address_fields_display');
-        add_action('woocommerce_order_formatted_billing_address', 'mds_custom_address_fields_display');
     }
 
     if (!function_exists('mds_custom_order_address_fields_display')) {
@@ -104,8 +102,41 @@ if ($mds->isEnabled()) {
             return $address_fields;
         }
         add_action('woocommerce_get_order_address', 'mds_custom_order_address_fields_display');
-        add_action('woocommerce_order_formatted_shipping_address', 'mds_custom_order_address_fields_display');
-        add_action('woocommerce_order_formatted_billing_address', 'mds_custom_order_address_fields_display');
+    }
+
+    if (!function_exists('mds_custom_order_billing_address_fields_display_with_suburb')) {
+        /**
+         * Display address fields
+         *
+         * @param $address_fields
+         */
+        function mds_custom_order_billing_address_fields_display_with_suburb($address_fields)
+        {
+            return getFields($address_fields, 'billing_');
+        }
+
+        function mds_custom_order_shipping_address_fields_display_with_suburb($address_fields)
+        {
+            return getFields($address_fields, 'shipping_');
+        }
+
+        function getFields($address_fields, string $prefix)
+        {
+            $service = MdsColliveryService::getInstance();
+            $checkoutData = WC_Checkout::instance()->get_posted_data();
+            if(array_key_exists("{$prefix}suburb", $checkoutData) && $checkoutData["{$prefix}suburb"]) {
+                $mdsSuburb = (object)$service->returnColliveryClass()->getSuburb($checkoutData["{$prefix}suburb"]);
+                $mdsSuburbName = $mdsSuburb->name;
+                $mdsTown = (object)$mdsSuburb->town;
+                $mdsTownName = $mdsTown->name;
+                $address_fields['city'] = "{$mdsSuburbName}, {$mdsTownName}";
+            }
+
+            return $address_fields;
+        }
+        add_action('woocommerce_order_formatted_billing_address', 'mds_custom_order_billing_address_fields_display_with_suburb');
+        add_action('woocommerce_order_formatted_shipping_address', 'mds_custom_order_shipping_address_fields_display_with_suburb');
+
     }
 
     if (!function_exists('mds_custom_override_checkout_fields')) {
