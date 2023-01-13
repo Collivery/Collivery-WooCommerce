@@ -85,7 +85,7 @@ class MdsCheckoutFields
             $savedSuburbId  = $mdsSuburb = $mdsSuburbId = $mdsSuburbName = $mdsTown = $mdsTownId = $mdsTownName = $customerDetails;
 
 
-            if($savedSuburbId) {
+            if(is_numeric($savedSuburbId)) {
                 $mdsSuburb =  (object) $service->returnColliveryClass()->getSuburb($savedSuburbId);
                 $mdsSuburbId = $mdsSuburb->id;
                 $mdsSuburbName = $mdsSuburb->name;
