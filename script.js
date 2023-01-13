@@ -239,8 +239,12 @@ function removeStyle(el){
 
 function updateFields(db_prefix) {
     if (!getIsInternational(db_prefix)) {
-      jQuery('#' + db_prefix + '_city').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
-      jQuery('#' + db_prefix + '_suburb').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+        // If TRUE, then Not International
+      jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
+    } else {
+        // If False, Is International
+      jQuery('#' + db_prefix + '_city')[0].value = jQuery('#' + db_prefix + "_city_int").val();
+      jQuery('#' + db_prefix + '_suburb')[0].value = jQuery('#' + db_prefix + "_city_int").val();
     }
 }
 
@@ -416,8 +420,7 @@ function getProvince(field, db_prefix, suburb_id) {
 }
 
 function getIsInternational(prefix) {
-  console.log(jQuery(`#_${prefix}_country`).val());
-  return jQuery(`#_${prefix}_country`).val() != "ZA";
+  return jQuery(`#${prefix}_country`).val() != "ZA";
 }
 
 function setInternational(prefix, value) {
