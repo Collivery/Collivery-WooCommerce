@@ -306,22 +306,6 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
         }
     }
 
-    if (!function_exists('mds_change_default_checkout_country')) {
-        /**
-         * Sets South Africa as the default country during checkout.
-         *
-         * @return string
-         */
-        function mds_change_default_checkout_country()
-        {
-            return 'ZA';
-        }
-
-        if ($mds->isEnabled()) {
-            add_filter( 'default_checkout_billing_country', 'mds_change_default_checkout_country' );
-        }
-    }
-
     if (!function_exists('mds_show_my_account_address_suburb')) {
         function mds_show_my_account_address_suburb($address, $id, $type)
         {
