@@ -239,12 +239,8 @@ function removeStyle(el){
 
 function updateFields(db_prefix) {
     if (!getIsInternational(db_prefix)) {
-        // If TRUE, then Not International
-        jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
-    } else {
-        // If False, Is International
-        jQuery('#' + db_prefix + '_city').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
-        jQuery('#' + db_prefix + '_suburb').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+      jQuery('#' + db_prefix + '_city').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+      jQuery('#' + db_prefix + '_suburb').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
     }
 }
 
