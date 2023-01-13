@@ -98,6 +98,7 @@ jQuery(document)
 
         jQuery.each(internationalUpdates, function (index, row) {
 
+            updateInternational(row.type);
             var countryEl = jQuery('#' + row.type + "_country");
             countryEl.on('keydown', function (e) {
                 var keyCode = e.keyCode || e.which;
