@@ -1,7 +1,7 @@
 var colliveryFieldsValues = {};
 var saProvinces = ['EC','FS','GP','KZN','LP','MP','NC','NW','WC']
 var overrideChange = false;
-var inZA = true;
+var inZA = getIsInternational();
 var colliveryClass = 'colliveryfield';
 var isProvinceChange = false;
 var isBuildingPage = true;
@@ -402,4 +402,10 @@ function getProvince(field, db_prefix, suburb_id) {
 
         }
     });
+}
+
+function getIsInternational() {
+  var billingCountry = jQuery('#_billing_country').val() == "ZA";
+  var shippingCountry = jQuery('#_shipping_country').val() == "ZA";
+  return billingCountry || shippingCountry;
 }
