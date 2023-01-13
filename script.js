@@ -195,32 +195,45 @@ function updateInternational(type) {
             jQuery('#' + type + '_city .removal').remove();
             jQuery('#' + type + '_suburb .removal').remove();
 
-            jQuery('#' + type + '_city_field')[0].classList.remove('inactive');
-            jQuery('#' + type + '_city_field')[0].classList.add('active');
-            jQuery('#' + type + '_suburb_field')[0].classList.remove('inactive');
-            jQuery('#' + type + '_suburb_field')[0].classList.add('active');
 
-            jQuery('#' + type + '_city_int_field')[0].classList.remove('active');
-            jQuery('#' + type + '_city_int_field')[0].classList.add('inactive');
+          activate(jQuery('#' + type + '_suburb_field')[0]);
+          activate(jQuery('#' + type + '_city_field')[0]);
+          deActivate(jQuery('#' + type + '_city_int_field')[0]);
+
         } else {
             // Disable MDS Settings
             inZA = false;
+          deActivate(jQuery('#' + type + '_city_field')[0]);
+          deActivate(jQuery('#' + type + '_suburb_field')[0]);
+          deActivate(jQuery('#' + type + '_city_field')[0]);
+          activate(jQuery('#' + type + '_city_int_field')[0]);
 
-            jQuery('#' + type + '_city_field')[0].classList.remove('active');
-            jQuery('#' + type + '_city_field')[0].classList.add('inactive');
-            jQuery('#' + type + '_suburb_field')[0].classList.remove('active');
-            jQuery('#' + type + '_suburb_field')[0].classList.add('inactive');
-
-            jQuery('#' + type + '_city_int_field')[0].classList.remove('inactive');
-            jQuery('#' + type + '_city_int_field')[0].classList.add('active');
         }
     }
 }
+function activate(el){
+  if(el){
+    el.classList.add('active');
+    el.classList.remove('inactive');
+  }
+}
+
+function deActivate(el){
+  if(el){
+    el.classList.remove('active');
+    el.classList.add('inactive');
+  }
+}
 
 function removeInlineStyling(type) {
-    jQuery('#' + type + '_city_field')[0].style.display = "";
-    jQuery('#' + type + '_suburb_field')[0].style.display = "";
-    jQuery('#' + type + '_city_int_field')[0].style.display = "";
+  removeStyle(jQuery('#' + type + '_city_field')[0]);
+  removeStyle(jQuery('#' + type + '_suburb_field')[0]);
+  removeStyle(jQuery('#' + type + '_city_int_field')[0]);
+}
+function removeStyle(el){
+  if(el){
+    el.style.display = "";
+  }
 }
 
 function updateFields(db_prefix) {
