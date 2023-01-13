@@ -157,7 +157,7 @@ jQuery(document)
             });
         }
         if (citySearchComboShipping.length > 0) {
-            citySearchComboBilling.change(function (e) {
+            citySearchComboShipping.change(function (e) {
                 var suburb_id = jQuery(e.target).val();
                 getProvince('shipping_state', '_', suburb_id);
                 getTown('shipping_city', '_', suburb_id);
