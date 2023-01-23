@@ -72,10 +72,8 @@ class ShippingPackageData
         if (ctype_digit($requiredFields['to_town_id'])) {
             $suburb = $this->collivery->getSuburbs($requiredFields['to_town_id']);
             $city = $suburb[0]['town']['name'];
-            $country = 'ZA';
         } else {
             $city = $requiredFields['to_town_id'];
-            $country = $packages[0]['destination']['country'];
         }
 
 	    $destination = [
@@ -84,7 +82,7 @@ class ShippingPackageData
 		    'city' => $city,
 		    'to_town_id' => (int) $requiredFields['to_town_id'],
 		    'to_location_type' => (int) $requiredFields['to_town_type'],
-		    'country' => $country,
+		    'country' => $packages[0]['destination']['country'],
 	    ];
 
         $customer = WC()->customer;

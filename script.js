@@ -1,7 +1,8 @@
 var colliveryFieldsValues = {};
 var saProvinces = ['EC','FS','GP','KZN','LP','MP','NC','NW','WC']
 var overrideChange = false;
-var inZA = true;
+var billingInternational = getIsInternational('billing');
+var shippingInternational = getIsInternational('shipping');
 var colliveryClass = 'colliveryfield';
 var isProvinceChange = false;
 var isBuildingPage = true;
@@ -98,6 +99,7 @@ jQuery(document)
 
         jQuery.each(internationalUpdates, function (index, row) {
 
+            updateInternational(row.type);
             var countryEl = jQuery('#' + row.type + "_country");
             countryEl.on('keydown', function (e) {
                 var keyCode = e.keyCode || e.which;
@@ -156,7 +158,7 @@ jQuery(document)
             });
         }
         if (citySearchComboShipping.length > 0) {
-            citySearchComboBilling.change(function (e) {
+            citySearchComboShipping.change(function (e) {
                 var suburb_id = jQuery(e.target).val();
                 getProvince('shipping_state', '_', suburb_id);
                 getTown('shipping_city', '_', suburb_id);
@@ -189,47 +191,60 @@ function updateInternational(type) {
 
         if (fromEl.val() == "ZA") {
             // Enable MDS Settings
-            inZA = true;
+            setInternational(type, true);
 
             jQuery('#' + type + '_city .removal').remove();
             jQuery('#' + type + '_suburb .removal').remove();
 
-            jQuery('#' + type + '_city_field')[0].classList.remove('inactive');
-            jQuery('#' + type + '_city_field')[0].classList.add('active');
-            jQuery('#' + type + '_suburb_field')[0].classList.remove('inactive');
-            jQuery('#' + type + '_suburb_field')[0].classList.add('active');
 
-            jQuery('#' + type + '_city_int_field')[0].classList.remove('active');
-            jQuery('#' + type + '_city_int_field')[0].classList.add('inactive');
+          activate(jQuery('#' + type + '_suburb_field')[0]);
+          activate(jQuery('#' + type + '_city_field')[0]);
+          deActivate(jQuery('#' + type + '_city_int_field')[0]);
+
         } else {
             // Disable MDS Settings
-            inZA = false;
+          setInternational(type, false);
+          deActivate(jQuery('#' + type + '_city_field')[0]);
+          deActivate(jQuery('#' + type + '_suburb_field')[0]);
+          deActivate(jQuery('#' + type + '_city_field')[0]);
+          activate(jQuery('#' + type + '_city_int_field')[0]);
 
-            jQuery('#' + type + '_city_field')[0].classList.remove('active');
-            jQuery('#' + type + '_city_field')[0].classList.add('inactive');
-            jQuery('#' + type + '_suburb_field')[0].classList.remove('active');
-            jQuery('#' + type + '_suburb_field')[0].classList.add('inactive');
-
-            jQuery('#' + type + '_city_int_field')[0].classList.remove('inactive');
-            jQuery('#' + type + '_city_int_field')[0].classList.add('active');
         }
     }
 }
+function activate(el){
+  if(el){
+    el.classList.add('active');
+    el.classList.remove('inactive');
+  }
+}
+
+function deActivate(el){
+  if(el){
+    el.classList.remove('active');
+    el.classList.add('inactive');
+  }
+}
 
 function removeInlineStyling(type) {
-    jQuery('#' + type + '_city_field')[0].style.display = "";
-    jQuery('#' + type + '_suburb_field')[0].style.display = "";
-    jQuery('#' + type + '_city_int_field')[0].style.display = "";
+  removeStyle(jQuery('#' + type + '_city_field')[0]);
+  removeStyle(jQuery('#' + type + '_suburb_field')[0]);
+  removeStyle(jQuery('#' + type + '_city_int_field')[0]);
+}
+function removeStyle(el){
+  if(el){
+    el.style.display = "";
+  }
 }
 
 function updateFields(db_prefix) {
-    if (inZA) {
+    if (!getIsInternational(db_prefix)) {
         // If TRUE, then Not International
-        jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
+      jQuery('#' + db_prefix + '_city_int')[0].value = jQuery('#' + db_prefix + "_city").val();
     } else {
         // If False, Is International
-        jQuery('#' + db_prefix + '_city').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
-        jQuery('#' + db_prefix + '_suburb').append('<option class="removal" selected >' + jQuery('#' + db_prefix + "_city_int").val() + '</option>');
+      jQuery('#' + db_prefix + '_city')[0].value = jQuery('#' + db_prefix + "_city_int").val();
+      jQuery('#' + db_prefix + '_suburb')[0].value = jQuery('#' + db_prefix + "_city_int").val();
     }
 }
 
@@ -402,4 +417,16 @@ function getProvince(field, db_prefix, suburb_id) {
 
         }
     });
+}
+
+function getIsInternational(prefix) {
+  return jQuery(`#${prefix}_country`).val() != "ZA";
+}
+
+function setInternational(prefix, value) {
+  if(prefix === 'billing'){
+    billingInternational = value;
+  }else {
+    shippingInternational = value;
+  }
 }
