@@ -302,7 +302,7 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
         }
 
         if ($mds->isEnabled() && $settings->getValue('toggle_automatic_mds_processing') == 'yes') {
-            add_action('woocommerce_order_status_processing', 'automated_add_collivery_status_processing');
+            add_action('woocommerce_order_status_changed', 'automated_add_collivery_status_processing');
         }
     }
 
