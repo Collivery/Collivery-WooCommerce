@@ -730,9 +730,9 @@ class MdsColliveryService
 		$defaultHooks = [
 			'processing'
 		];
-		$mustProcessHooks = $this->settings->getValue('automatic_mds_processing_statuses', $defaultHooks);
+		$mustProcessStatuses = $this->settings->getValue('automatic_mds_processing_statuses', $defaultHooks);
 
-		$canProcess = count(array_filter($mustProcessHooks, fn($value) =>
+		$canProcess = count(array_filter($mustProcessStatuses, fn($value) =>
 			str_contains($value, $order->get_status())));
 
 		if(!$canProcess){
