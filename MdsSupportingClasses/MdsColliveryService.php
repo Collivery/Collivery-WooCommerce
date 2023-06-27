@@ -735,12 +735,12 @@ class MdsColliveryService
 		$canProcess = count(array_filter($mustProcessStatuses, fn($value) =>
 			str_contains($value, $order->get_status())));
 
-		if(!$canProcess){
+		if(!$canProcess && $processing){
 			return;
 		}
 
         try {
-            $this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', false, 'processing');
+            $this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
             $this->orderToCollivery($order, compact('processing'));
         } catch (OrderAlreadyProcessedException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
