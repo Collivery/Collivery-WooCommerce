@@ -13,8 +13,13 @@ class Collivery
     const FRT = 3;
     const ECO = 5;
     const ONX_10 = 6;
+	public static $serviceTexts = [
+		self::ONX => 'Over Night',
+		self::ECO  => 'Road Freight Express',
+		self::FRT  => 'Road Freight'
+	];
 
-    protected $token;
+	protected $token;
     protected $client;
     protected $config;
     protected $errors = [];
