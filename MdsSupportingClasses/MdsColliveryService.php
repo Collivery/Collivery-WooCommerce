@@ -529,7 +529,14 @@ class MdsColliveryService
         }
 
         if (!isset($serviceId)) {
-            throw new InvalidServiceException('No MDS shipping method used', 'automatedOrderToCollivery', $this->loggerSettingsArray(), $order->get_shipping_methods());
+			$serviceId = $this->settings->getValue('fall_back_service')?? Collivery::ONX;
+			$this->updateStatusOrAddNote(
+				$order,
+				sprintf( 'Order has been no service fallback service (%d) used.',
+					Collivery::$serviceTexts[(int)$serviceId]
+				),
+				false,
+			);
         }
 
         $processing = $overrides['processing'] ?? false;
@@ -720,9 +727,20 @@ class MdsColliveryService
     public function automatedOrderToCollivery($order_id, $processing = false)
     {
         $order = new WC_Order($order_id);
+		$defaultHooks = [
+			'processing'
+		];
+		$mustProcessHooks = $this->settings->getValue('automatic_mds_processing_statuses', $defaultHooks);
+
+		$canProcess = count(array_filter($mustProcessHooks, fn($value) =>
+			str_contains($value, $order->get_status())));
+
+		if(!$canProcess){
+			return;
+		}
 
         try {
-            $this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
+            $this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', false, 'processing');
             $this->orderToCollivery($order, compact('processing'));
         } catch (OrderAlreadyProcessedException $e) {
             $this->updateStatusOrAddNote($order, $e->getMessage(), $processing, 'processing');
