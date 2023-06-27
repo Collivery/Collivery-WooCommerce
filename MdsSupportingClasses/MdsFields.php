@@ -180,13 +180,13 @@ class MdsFields
                 'default' => 'no',
             ],
 			'automatic_mds_processing_statuses' => [
-				'title'       => __('Auto Processing Status'),
+				'title'       => __('Auto Processing Statuses'),
 				'type'        => 'multiselect',
 				'options'     => $wcStatuses,
 				'default'     => [
 					'processing'
 				],
-				'description' => __('Select the statuses that will trigger Automatic MDS Processing. (Hold CTRL to select multiple'),
+				'description' => __('Select the statuses that will trigger Automatic MDS Processing. (Hold CTRL to select multiple)'),
 			],
             'auto_accept' => [
                 'title' => __('Auto accept'),
