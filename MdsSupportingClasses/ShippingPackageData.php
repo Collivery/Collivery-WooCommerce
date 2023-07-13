@@ -328,7 +328,7 @@ class ShippingPackageData
 			$package['contents'][$hash] = $item;
 
 			// Work out Volumetric Weight based on MDS calculations
-			$volWeight = ($length * $width * $height) / 4000;
+            $volWeight = ((int)$length * (int)$width * (int)$height) / 4000;
 
 			$package['max_weight'] += $volWeight > $weight ?
 				$volWeight * $quantity :
