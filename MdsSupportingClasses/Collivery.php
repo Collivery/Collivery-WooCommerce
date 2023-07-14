@@ -783,7 +783,7 @@ class Collivery
         if (!isset($data['location_type'])) {
             $this->setError('missing_data', 'location_type not set.');
         } elseif (!isset($location_types[$data['location_type']])) {
-            $this->setError('invalid_data', 'Invalid location_type.');
+            $data['location_type'] = 1;
         }
 
         if (!isset($data['town_id'])) {
