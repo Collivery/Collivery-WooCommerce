@@ -16,7 +16,7 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
 
- * Version: 4.4.2
+ * Version: 4.4.3
 
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
