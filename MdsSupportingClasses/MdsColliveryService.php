@@ -820,7 +820,7 @@ class MdsColliveryService
         }
 
         if (empty($array['location_type']) || !isset($location_types[$location_type_id])) {
-            throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), [$array, $location_types, $location_type_id]);
+            $location_type_id = 1;
         }
 
         if (empty($array['town']) || !isset($towns[$town_id])) {
