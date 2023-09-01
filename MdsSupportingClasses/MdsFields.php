@@ -9,6 +9,16 @@ class MdsFields
 {
     public static function getFields()
     {
+		$services = Collivery::$serviceTexts;
+
+		$orderStatuses = wc_get_order_statuses();
+
+		$wcStatuses = array();
+		foreach ($orderStatuses as $key => $label) {
+			$modifiedKey = str_replace('wc-', '', $key);
+			$wcStatuses[$modifiedKey] = $label;
+		}
+
         return [
             'downloadLogs' => [
                 'title' => __('Clear Cache/Download Error Logs?'),
@@ -169,6 +179,15 @@ class MdsFields
                 ),
                 'default' => 'no',
             ],
+			'automatic_mds_processing_statuses' => [
+				'title'       => __('Auto Processing Statuses'),
+				'type'        => 'multiselect',
+				'options'     => $wcStatuses,
+				'default'     => [
+					'processing'
+				],
+				'description' => __('Select the statuses that will trigger Automatic MDS Processing. (Hold CTRL to select multiple)'),
+			],
             'auto_accept' => [
                 'title' => __('Auto accept'),
                 'type' => 'checkbox',
@@ -177,13 +196,21 @@ class MdsFields
                 ),
                 'default' => 'yes',
             ],
-            'enable_town_suburb_search'=> [
-                'title' => __('Enable Town Suburb Search'),
-                'type' => 'checkbox',
-                'default' => 'no',
-                'description' => __('Allow searching for suburb on checkout.'),
+			'enable_town_suburb_search'=> [
+				'title' => __('Enable Town Suburb Search'),
+				'type' => 'checkbox',
+				'default' => 'no',
+				'description' => __('Allow searching for suburb on checkout.'),
 
-            ]
+			],
+			'fall_back_service'=> [
+				'title' => __('Fall Back Service'),
+				'type' => 'select',
+				'options' => $services,
+				'default' => 2,
+				'description' => __('Default Service when no service selected on checkout. Allows you to have any shipping method but still create MDS Collivery Waybills'),
+
+			]
         ];
     }
 
