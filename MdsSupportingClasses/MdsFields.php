@@ -4,6 +4,7 @@ namespace MdsSupportingClasses;
 
 use MdsExceptions\InvalidResourceDataException;
 use MdsExceptions\CurlConnectionException;
+include_once(WP_PLUGIN_DIR.'/woocommerce/woocommerce.php');
 
 class MdsFields
 {
