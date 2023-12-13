@@ -5,7 +5,7 @@ use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
 
-define('MDS_VERSION', '4.4.4');
+define('MDS_VERSION', '4.4.5');
 
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
