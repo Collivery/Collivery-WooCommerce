@@ -31,6 +31,11 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
     $mds = MdsColliveryService::getInstance();
     $settings = $mds->returnPluginSettings();
 
+    add_action('before_woocommerce_init', function(){
+        if ( class_exists( FeaturesUtil::class ) ) {
+            FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        }
+    });
 
     if (!function_exists('activate_mds')) {
         /**
