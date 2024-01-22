@@ -53,8 +53,9 @@ if ($mds->isEnabled()) {
             foreach (['shipping_', 'billing_'] as $prefix) {
                 foreach (['suburb', 'location_type'] as $field) {
                     if (!empty($_POST[$prefix . $field])) {
-                        update_post_meta($order_id, $prefix . $field, sanitize_text_field($_POST[$prefix . $field]));
-                    }
+                        $order = wc_get_order( $order_id );
+                        $order->update_meta_data($order_id, $prefix . $field, sanitize_text_field($_POST[$prefix . $field]));
+                        $order->save();                    }
                 }
             }
         }
