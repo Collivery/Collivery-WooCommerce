@@ -13,6 +13,11 @@ class Collivery
     const FRT = 3;
     const ECO = 5;
     const ONX_10 = 6;
+    public static $serviceTexts = [
+        self::ONX => 'Over Night',
+        self::ECO  => 'Road Freight Express',
+        self::FRT  => 'Road Freight'
+    ];
 
     protected $token;
     protected $client;
@@ -776,9 +781,9 @@ class Collivery
         $suburbs = $this->make_key_value_array($this->getSuburbs($data['town_id']), 'id', 'name');
 
         if (!isset($data['location_type'])) {
-            $this->setError('missing_data', 'location_type not set.');
+            $data['location_type'] = 1;
         } elseif (!isset($location_types[$data['location_type']])) {
-            $this->setError('invalid_data', 'Invalid location_type.');
+            $data['location_type'] = 1;
         }
 
         if (!isset($data['town_id'])) {

@@ -529,7 +529,14 @@ class MdsColliveryService
         }
 
         if (!isset($serviceId)) {
-            throw new InvalidServiceException('No MDS shipping method used', 'automatedOrderToCollivery', $this->loggerSettingsArray(), $order->get_shipping_methods());
+			$serviceId = $this->settings->getValue('fall_back_service')?? Collivery::ONX;
+			$this->updateStatusOrAddNote(
+				$order,
+				sprintf( 'Order has been no service fallback service (%d) used.',
+					Collivery::$serviceTexts[(int)$serviceId]
+				),
+				false,
+			);
         }
 
         $processing = $overrides['processing'] ?? false;
@@ -720,6 +727,20 @@ class MdsColliveryService
     public function automatedOrderToCollivery($order_id, $processing = false)
     {
         $order = new WC_Order($order_id);
+		$defaultHooks = [
+			'processing'
+		];
+		$mustProcessStatuses = $this->settings->getValue('automatic_mds_processing_statuses', $defaultHooks);
+
+        $canProcess = count(
+            array_filter($mustProcessStatuses, function($value) use ($order) {
+                return  strpos($value, $order->get_status()) !== false;
+            })
+        );
+
+		if(!$canProcess && $processing){
+			return;
+		}
 
         try {
             $this->updateStatusOrAddNote($order, 'MDS auto processing has begun.', $processing, 'processing');
@@ -802,7 +823,7 @@ class MdsColliveryService
         }
 
         if (empty($array['location_type']) || !isset($location_types[$location_type_id])) {
-            throw new InvalidAddressDataException('Invalid location type', 'MdsColliveryService::addColliveryAddress()', $this->loggerSettingsArray(), [$array, $location_types, $location_type_id]);
+            $location_type_id = 1;
         }
 
         if (empty($array['town']) || !isset($towns[$town_id])) {
