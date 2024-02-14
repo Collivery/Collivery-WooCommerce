@@ -3,7 +3,7 @@
 Contributors: Your WordPress.org Username
 Tags: MDS Collivery, Collivery, MDS
 Requires at least: 5.0
-Tested up to: 8.2.13
+Tested up to: 6.4.3
 Stable tag: 4.4.6
 License: GNU/GPL version 3 or later
 License URI: http://www.gnu.org/licenses/gpl.html
