@@ -1,6 +1,6 @@
 === MDS Collivery ===
 
-Contributors: Your WordPress.org Username
+Contributors: itedevelopers
 Tags: MDS Collivery, Collivery, MDS
 Requires at least: 5.0
 Tested up to: 6.4.3
@@ -18,3 +18,7 @@ Plugin to add support for MDS Collivery in WooCommerce.
 
 1. Upload the plugin folder to your /wp-content/plugins/ folder.
 1. Go to the **Plugins** page and activate the plugin.
+
+== Frequently Asked Questions ==
+
+link:https://collivery.net/integration/woocommerce
