@@ -21,16 +21,21 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
  * Requires PHP: 7.4.0
- * Requires at least: 5.0
- * Tested up to: 8.2.13
- * WC requires at least: 4.0
- * WC tested up to: 8.5.2
+ * Requires at least: 7.4.0
+ * Tested up to: 8.3
+ * WC requires at least: 6.9.4
+ * WC tested up to: 8.5.1
  */
 if( is_plugin_active('woocommerce/woocommerce.php')) {
     register_activation_hook(__FILE__, 'activate_mds');
     $mds = MdsColliveryService::getInstance();
     $settings = $mds->returnPluginSettings();
 
+    add_action('before_woocommerce_init', function(){
+        if ( class_exists( FeaturesUtil::class ) ) {
+            FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+        }
+    });
 
     if (!function_exists('activate_mds')) {
         /**

@@ -32,10 +32,10 @@ class Collivery
     /**
      * Setup class with basic Config.
      *
-     * @param array $config Configuration Array
-     * @param Class $cache  Caching Class with functions has, get, put, forget
+     * @param array         $config Configuration Array
+     * @param MdsCache|null $cache Caching Class with functions has, get, put, forget
      */
-    public function __construct(array $config = [], $cache = null)
+    public function __construct(array $config = [],MdsCache $cache = null)
     {
         if (is_null($cache)) {
             $cache_dir = array_key_exists('cache_dir', $config) ? $config['cache_dir'] : null;
