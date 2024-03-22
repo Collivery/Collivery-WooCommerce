@@ -36,10 +36,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
      * @var MdsSettings
      */
     private $mdsSettings;
-    private $admin_page_description;
-    private $admin_page_heading;
-    private $method_description;
-    private $method_title;
+    public $admin_page_description;
+    public $admin_page_heading;
+    public $method_description;
+    public $method_title;
 
     /**
      * WC_Mds_Shipping_Method constructor.
