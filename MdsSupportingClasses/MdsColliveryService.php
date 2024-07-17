@@ -687,7 +687,8 @@ class MdsColliveryService
         if (is_array($collivery) && $collivery['data']['id'] ?? false) {
             // Save the results from validation into our table
             $this->addColliveryToProcessedTable($collivery, $order->get_id());
-
+            $order->update_meta_data('collivery_waybill', $collivery['data']['id']);
+            $order->save();
             // Is prepaid
             if( isset($collivery['meta']['payment_needed']) ) {
                 $url = $collivery['meta']['payment_needed'];
