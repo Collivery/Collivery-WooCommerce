@@ -251,8 +251,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
                 $label = $service['text'];
                 if ( $price <= 0 ) {
-                    $price = 0.00;
-                    $label .= ' - FREE!';
+                 return;
                 }
                 $this->id = 'mds_' . $service['id'];
                 $this->add_rate( [
