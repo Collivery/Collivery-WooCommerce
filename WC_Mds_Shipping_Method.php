@@ -250,10 +250,15 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                 }
 
                 $label = $service['text'];
-                if ( $price <= 0 ) {
+                if ($price <= 0) {
                     $price = 0.00;
-                    $label .= ' - FREE!';
+                    wc_add_notice(
+                        __('Due to the dimensions of the product and location of the delivery, there is no price available. Please contact us for a quote.'),
+                        'error'
+                    );
+                    return;
                 }
+
                 $this->id = 'mds_' . $service['id'];
                 $this->add_rate( [
                     'id'    => 'mds_' . $service['id'],
