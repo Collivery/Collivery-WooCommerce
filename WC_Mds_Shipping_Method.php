@@ -254,7 +254,7 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     $price = 0.00;
                     wc_add_notice(
                         __('Due to the dimensions of the product and location of the delivery, there is no price available. Please contact us for a quote.'),
-                        'error'
+                        'notice'
                     );
                     return;
                 }
