@@ -226,34 +226,39 @@ class MdsFields
 
         try {
             $resources = self::getResources($service);
+
             foreach ($resources['services'] as $item) {
-                $fields['method_'.$item['id']] = [
-                    'title' => __($item['text']),
+                if ($item['code'] === 'BLK') {
+                    continue; // Skip bulk service
+                }
+            
+                $id = $item['id'];
+                $text = __($item['text']);
+            
+                $fields["method_$id"] = [
+                    'title' => $text,
                     'type' => 'checkbox',
                     'default' => 'yes',
                 ];
-                $fields['fixed_price_'.$item['id']] = [
-                    'title' => __($item['text'].' Fixed Price Amount'),
+            
+                $fields["fixed_price_$id"] = [
+                    'title' => $text . ' Fixed Price Amount',
                     'type' => 'number',
                     'description' => 'Amount greater than 0 enables it, markup is then ignored. This will override any free or discounted shipping',
                     'default' => '0',
-                    'custom_attributes' => [
-                        'step' => 'any',
-                        'min' => '0',
-                    ],
+                    'custom_attributes' => ['step' => 'any', 'min' => '0'],
                 ];
-                $fields['markup_'.$item['id']] = [
-                    'title' => __($item['text'].' Markup'),
+            
+                $fields["markup_$id"] = [
+                    'title' => $text . ' Markup',
                     'type' => 'number',
                     'default' => '10',
                     'description' => 'Percentage markup you would like to apply to MDS\'s Price',
-                    'custom_attributes' => [
-                        'step' => 'any',
-                        'min' => '0',
-                    ],
+                    'custom_attributes' => ['step' => 'any', 'min' => '0'],
                 ];
-                $fields['wording_'.$item['id']] = [
-                    'title' => __($item['text'].' Wording'),
+            
+                $fields["wording_$id"] = [
+                    'title' => $text . ' Wording',
                     'type' => 'text',
                     'default' => $item['text'],
                     'description' => 'The wording you would like on the checkout page for this service',
