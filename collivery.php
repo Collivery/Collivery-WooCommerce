@@ -5,7 +5,7 @@ use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
 
-define('MDS_VERSION', '4.4.9');
+define('MDS_VERSION', '4.5.0');
 
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
@@ -16,7 +16,7 @@ include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
 
- * Version: 4.4.9
+ * Version: 4.5.0
 
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
@@ -331,3 +331,14 @@ function need_woocommerce() {
     $message = '<div class="error"><p>' . $error . '</p></div>';
     echo $message;
 }
+
+// This declares HPOS compatibility so WooCommerce stops showing the warning
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'custom_order_tables',
+            __FILE__,
+            true
+        );
+    }
+});
