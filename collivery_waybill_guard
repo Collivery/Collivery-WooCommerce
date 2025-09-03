@@ -18,8 +18,8 @@ class Collivery_Waybill_Guard {
         self::strip('woocommerce_payment_complete');
         self::strip('woocommerce_order_status_changed');
 
-        add_action('woocommerce_payment_complete',        [__CLASS__, 'book_if_collivery'], 10, 1);
-        add_action('woocommerce_order_status_changed',    [__CLASS__, 'book_if_collivery'], 10, 1);
+        add_action('woocommerce_payment_complete',     [__CLASS__, 'book_if_collivery'], 10, 1);
+        add_action('woocommerce_order_status_changed', [__CLASS__, 'book_if_collivery'], 10, 1);
     }
 
     public static function book_if_collivery( $order_id ) {
@@ -29,9 +29,10 @@ class Collivery_Waybill_Guard {
 
         foreach ( $o->get_items('shipping') as $it ) {
             $id = $it->get_method_id(); // e.g. local_pickup, flat_rate, mds_collivery_shipping
-            if ( $id === 'mds_collivery_shipping' || strpos($id, 'mds_') === 0 ) {
+            if ( $id === 'mds_collivery_shipping' || strpos((string)$id, 'mds_') === 0 ) {
                 if ( class_exists('\MdsSupportingClasses\MdsColliveryService') ) {
-                    \MdsSupportingClasses\MdsColliveryService::getInstance()->automatedOrderToCollivery($order_id);
+                    \MdsSupportingClasses\MdsColliveryService::getInstance()
+                        ->automatedOrderToCollivery($order_id, true);
                 }
                 break;
             }
