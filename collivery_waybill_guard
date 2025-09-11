@@ -1,0 +1,55 @@
+<?php
+// Only auto-book when: (1) auto-processing is ON and (2) Collivery was selected.
+if ( ! defined('ABSPATH') ) exit;
+
+class Collivery_Waybill_Guard {
+
+    public static function boot() {
+        add_action('plugins_loaded', [__CLASS__, 'init'], 9999);
+    }
+
+    public static function init() {
+        if ( ! class_exists('\MdsSupportingClasses\MdsColliveryService') ) return;
+        $svc = \MdsSupportingClasses\MdsColliveryService::getInstance();
+        $settings = $svc ? $svc->initSettings() : null;
+        if ( ! $settings || $settings->getValue('toggle_automatic_mds_processing') !== 'yes' ) return;
+
+        // Replace vendor autobooking with the guard.
+        self::strip('woocommerce_payment_complete');
+        self::strip('woocommerce_order_status_changed');
+
+        add_action('woocommerce_payment_complete',     [__CLASS__, 'book_if_collivery'], 10, 1);
+        add_action('woocommerce_order_status_changed', [__CLASS__, 'book_if_collivery'], 10, 1);
+    }
+
+    public static function book_if_collivery( $order_id ) {
+        $o = wc_get_order($order_id);
+        if ( ! $o ) return;
+        if ( $o->get_meta('_collivery_waybill_id') ) return; // optional safety
+
+        foreach ( $o->get_items('shipping') as $it ) {
+            $id = $it->get_method_id(); // e.g. local_pickup, flat_rate, mds_collivery_shipping
+            if ( $id === 'mds_collivery_shipping' || strpos((string)$id, 'mds_') === 0 ) {
+                if ( class_exists('\MdsSupportingClasses\MdsColliveryService') ) {
+                    \MdsSupportingClasses\MdsColliveryService::getInstance()
+                        ->automatedOrderToCollivery($order_id, true);
+                }
+                break;
+            }
+        }
+    }
+
+    private static function strip( $hook ) {
+        global $wp_filter;
+        if ( empty($wp_filter[$hook]) ) return;
+        foreach ( (array) $wp_filter[$hook]->callbacks as $prio => $items ) {
+            foreach ( $items as $cb ) {
+                $fn = $cb['function'];
+                $name = is_string($fn) ? $fn : (is_array($fn)&&isset($fn[1]) ? ((is_object($fn[0])?get_class($fn[0]):$fn[0]).'::'.$fn[1]) : '');
+                if ( strpos(strtolower($name), 'automated_add_collivery_') !== false ) {
+                    remove_action($hook, $fn, $prio);
+                }
+            }
+        }
+    }
+}
