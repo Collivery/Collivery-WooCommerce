@@ -345,3 +345,11 @@ add_action( 'before_woocommerce_init', function() {
         );
     }
 });
+
+// Make Collivery location type fields to always start blank on checkout.
+add_filter('woocommerce_checkout_get_value', function ($value, $input) {
+    if (in_array($input, ['billing_location_type','shipping_location_type'], true)) {
+        return '';
+    }
+    return $value;
+}, 10, 2);
