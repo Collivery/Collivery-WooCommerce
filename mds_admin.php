@@ -622,3 +622,69 @@ function mds_register_collivery()
 
     echo View::make('order', compact('order', 'total', 'shipping_method', 'collivery', 'parcels', 'defaults', 'addresses', 'instructions', 'include_product_titles', 'towns', 'location_types', 'suburbs', 'populatedSuburbs', 'services', 'riskCover'));
 }
+add_action('admin_footer', function () {
+    // Only on: WooCommerce > Settings > Shipping > MDS Collivery
+    if (
+        !isset($_GET['page'], $_GET['tab'], $_GET['section']) ||
+        $_GET['page'] !== 'wc-settings' ||
+        $_GET['tab'] !== 'shipping' ||
+        $_GET['section'] !== 'mds_collivery'
+    ) {
+        return;
+    }
+    ?>
+    <script>
+    (function(){
+      const demo = document.querySelector("input[name='woocommerce_mds_collivery_demo_mode']");
+      const user = document.querySelector("input[name='woocommerce_mds_collivery_mds_user']");
+      const pass = document.querySelector("input[name='woocommerce_mds_collivery_mds_pass']");
+      if (!demo || !user || !pass) return;
+
+      // Create a hidden clone (same name) so value is submitted even when the visible input is disabled
+      function ensureShadow(el){
+        let h = el.parentNode.querySelector("input[type='hidden'][data-shadow-for='"+el.name+"']");
+        if (!h) {
+          h = document.createElement('input');
+          h.type = 'hidden';
+          h.name = el.name; // same name so WC saves the same option
+          h.setAttribute('data-shadow-for', el.name);
+          el.parentNode.appendChild(h);
+        }
+        h.value = el.value || '';
+      }
+
+      function removeShadow(el){
+        const h = el.parentNode.querySelector("input[type='hidden'][data-shadow-for='"+el.name+"']");
+        if (h) h.remove();
+      }
+
+      function setDisabled(el, on){
+        el.disabled = on;
+        el.style.opacity = on ? 0.6 : 1;
+      }
+
+      function sync(){
+        const on = demo.checked;
+
+        if (on) {
+          // Do NOT change visible values. Just disable them and shadow the current values.
+          ensureShadow(user);
+          ensureShadow(pass);
+          setDisabled(user, true);
+          setDisabled(pass, true);
+        } else {
+          // Back to production: enable editing and remove shadows
+          setDisabled(user, false);
+          setDisabled(pass, false);
+          removeShadow(user);
+          removeShadow(pass);
+        }
+      }
+
+      demo.addEventListener('change', sync);
+      sync(); // initial
+    })();
+    </script>
+    <?php
+});
+
