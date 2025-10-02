@@ -49,6 +49,7 @@ class Collivery
             'app_version' => '0.0.1',            // Application Version
             'app_host' => '', // Framework/CMS name and version, eg 'Wordpress 3.8.1 WooCommerce 2.0.20' / 'Joomla! 2.5.17 VirtueMart 2.0.26d'
             'app_url' => '', // URL your site is hosted on
+            'base_url'      => self::BASE_URL,
             'user_email' => 'api@collivery.co.za',
             'user_password' => 'api123',
             'demo' => false,
@@ -61,6 +62,9 @@ class Collivery
         if ($this->config->demo) {
             $this->config->user_email = 'api@collivery.co.za';
             $this->config->user_password = 'api123';
+
+        if (!isset($this->config->base_url) || empty($this->config->base_url) || $this->config->base_url === self::BASE_URL) {
+            $this->config->base_url = 'https://dev.api.collivery.co.za/v3/';
         }
     }
 
@@ -101,10 +105,26 @@ class Collivery
      * @throws CurlConnectionException
      */
     private function consumeAPI($url, $data, $type, $isAuthenticating = false) {
-        $url = self::BASE_URL . $url;
+
+        $base = isset($this->config->base_url) && $this->config->base_url
+            ? rtrim($this->config->base_url, '/')
+            : rtrim(self::BASE_URL, '/');
+            $endpoint = ltrim($url, '/');
+            $url      = $base . '/' . $endpoint;
+
         if (!$isAuthenticating) {
-            $data["api_token"] = $this->token ?: $this->authenticate()['api_token'];
-        }
+            if ($this->token) {
+                $data['api_token'] = $this->token;
+            } else {
+                $auth  = $this->authenticate(); // may return []
+                $token = is_array($auth) && isset($auth['api_token']) ? $auth['api_token'] : null;
+                if (!$token) {
+                    $this->setError('auth_failed', 'Unable to authenticate with Collivery API.');
+                    return ['error' => ['http_code' => 401, 'message' => 'Authentication failed']];
+                }
+                $data['api_token'] = $token;
+            }
+    }
 
         $client  = curl_init($url);
 

@@ -138,6 +138,8 @@ class MdsColliveryService
      */
     public function initMdsCollivery()
     {
+        $isDemo = strtolower($this->settings->getValue('demo_mode')) === 'yes';
+
         $colliveryInitData = [
             'app_name' => $this->environment->appName,
             'app_version' => $this->environment->appVersion,
@@ -145,10 +147,20 @@ class MdsColliveryService
             'app_url' => $this->environment->appUrl,
             'user_email' => wp_specialchars_decode($this->settings->getValue('mds_user')),
             'user_password' => wp_specialchars_decode($this->settings->getValue('mds_pass')),
+            'demo'          => $isDemo,
         ];
 
-        $this->collivery = new Collivery($colliveryInitData, $this->cache);
+        if ($isDemo) {
+        // Make demo credentials + dev API
+            $colliveryInitData['user_email']    = 'api@collivery.co.za';
+            $colliveryInitData['user_password'] = 'api123';
+            $colliveryInitData['base_url']      = 'https://dev.api.collivery.co.za/v3';
     }
+
+        $this->collivery = new Collivery($colliveryInitData, $this->cache);
+}
+
+ 
 
     /**
      * Validate the package before using the package to get prices.

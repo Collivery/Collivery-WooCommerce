@@ -34,18 +34,23 @@ class MdsFields
                 'title' => __('Enabled?'),
                 'type' => 'checkbox',
                 'default' => 'yes',
+            ],'demo_mode' => [
+                'title'       => __('Demo mode'),
+                'type'        => 'checkbox',
+                'description' => __('When enabled, uses demo credentials. Your configured Username/Password are ignored.'),
+                'default'     => 'no',
             ],
             'mds_user' => [
                 'title' => 'MDS '.__('Username'),
                 'type' => 'text',
                 'description' => __('Email address associated with your MDS account.'),
-                'default' => 'api@collivery.co.za',
+                'default' => '',
             ],
             'mds_pass' => [
                 'title' => 'MDS '.__('Password'),
                 'type' => 'text',
                 'description' => __('The password used when logging in to MDS.'),
-                'default' => 'api123',
+                'default' => '',
             ],
             'include_product_titles' => [
                 'title' => __('Include product titles'),
