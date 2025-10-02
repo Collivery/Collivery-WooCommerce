@@ -67,6 +67,7 @@ class Collivery
             $this->config->base_url = 'https://dev.api.collivery.co.za/v3/';
         }
     }
+}
 
     /**
      * Authenticate and set the token.
