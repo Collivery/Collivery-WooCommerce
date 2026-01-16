@@ -5,7 +5,7 @@ use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
 
-define('MDS_VERSION', '4.5.3');
+define('MDS_VERSION', '4.5.4');
 
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
@@ -20,7 +20,7 @@ Collivery_Waybill_Guard::boot();
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
 
- * Version: 4.5.3
+ * Version: 4.5.4
 
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
