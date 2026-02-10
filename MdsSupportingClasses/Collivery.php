@@ -156,6 +156,12 @@ class Collivery
 
         curl_setopt($client, CURLOPT_HTTPHEADER, $headerArray);
 
+        // Prevent long hangs when the API is slow/unreachable.
+        $connectTimeout = isset($this->config->connect_timeout) ? (int) $this->config->connect_timeout : 10;
+        $timeout = isset($this->config->timeout) ? (int) $this->config->timeout : 20;
+        curl_setopt($client, CURLOPT_CONNECTTIMEOUT, max(1, $connectTimeout));
+        curl_setopt($client, CURLOPT_TIMEOUT, max(1, $timeout));
+
         $result = curl_exec($client);
 
         if (curl_errno($client)) {
@@ -171,16 +177,6 @@ class Collivery
             ]);
         }
 
-        if (isset($result['error'])) {
-            $error = $result['error'];
-            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
-                'Code'    => $error['http_code'],
-                'Message' => $error['message'],
-                'URL'     => $url,
-                'Result' => $result
-            ]);
-        }
-
         curl_close($client);
 
         // If $result is already an array.
@@ -188,7 +184,12 @@ class Collivery
             return $result;
         }
 
-        return json_decode($result, true);
+        $decoded = json_decode($result, true);
+        if (!is_array($decoded)) {
+            return ['error' => ['http_code' => 500, 'message' => 'Invalid response from Collivery API']];
+        }
+
+        return $decoded;
     }
 
     /**
@@ -216,6 +217,16 @@ class Collivery
                 "email" => $user_email,
                 "password" => $user_password
             ], 'POST', true);
+
+            if (!is_array($authenticate)) {
+                $this->setError('result_unexpected', 'No result returned.');
+                return [];
+            }
+
+            if (!isset($authenticate['data'])) {
+                $this->checkError($authenticate);
+                return [];
+            }
 
             $authenticate = $authenticate['data'];
 
