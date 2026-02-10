@@ -19,11 +19,40 @@ class MdsCache
      */
     public function __construct($cache_dir = 'cache/mds_collivery/')
     {
-        if ($cache_dir === null) {
+        if ($cache_dir === null || $cache_dir === '') {
             $cache_dir = 'cache/mds_collivery/';
         }
 
-        $this->cache_dir = $cache_dir;
+        // Resolve relative paths to a writable base when possible.
+        if (!$this->is_absolute_path($cache_dir)) {
+            if (defined('WP_CONTENT_DIR') && WP_CONTENT_DIR) {
+                $cache_dir = rtrim(WP_CONTENT_DIR, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($cache_dir, '/\\');
+            } else {
+                $cache_dir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'mds_collivery/';
+            }
+        }
+
+        $this->cache_dir = rtrim($cache_dir, '/\\') . DIRECTORY_SEPARATOR;
+    }
+
+    /**
+     * Determine if a path is absolute.
+     *
+     * @param string $path
+     *
+     * @return bool
+     */
+    private function is_absolute_path($path)
+    {
+        if ($path === '') {
+            return false;
+        }
+
+        if ($path[0] === '/' || $path[0] === '\\') {
+            return true;
+        }
+
+        return (bool) preg_match('/^[A-Za-z]:[\/\\\\]/', $path);
     }
 
     /**

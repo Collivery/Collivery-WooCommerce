@@ -81,6 +81,14 @@ class Collivery
         if (
             $this->check_cache &&
             $this->cache->has('collivery.auth') &&
+            is_array($authCache) &&
+            isset(
+                $authCache['email_address'],
+                $authCache['client']['primary_address']['id'],
+                $authCache['client']['id'],
+                $authCache['id'],
+                $authCache['api_token']
+            ) &&
             $authCache['email_address'] == $this->config->user_email
         ) {
             $this->default_address_id = $authCache['client']['primary_address']['id'];
@@ -127,13 +135,13 @@ class Collivery
             }
     }
 
-        $client  = curl_init($url);
-
         if ($type == 'POST') {
+            $client  = curl_init($url);
             curl_setopt($client, CURLOPT_POST, 1);
             $data = json_encode($data);
             curl_setopt($client, CURLOPT_POSTFIELDS, $data);
         } else if ($type == 'PUT') {
+            $client  = curl_init($url);
             curl_setopt($client, CURLOPT_CUSTOMREQUEST, 'PUT');
             $data = json_encode($data);
             curl_setopt($client, CURLOPT_POSTFIELDS, $data);
@@ -1254,10 +1262,12 @@ class Collivery
     /**
      * Returns the Collivery User Id for the credentials used by the store owner.
      *
-     * @return Integer - The User Id;
+     * @return int|null - The User Id;
      */
     public function getColliveryUserId() {
-        return $this->authenticate()['id'];
+        $auth = $this->authenticate();
+
+        return (is_array($auth) && isset($auth['id'])) ? $auth['id'] : null;
     }
 
     public function filterServices(array $services)
