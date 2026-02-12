@@ -30,6 +30,12 @@ class MdsFields
                 'placeholder' => admin_url().'admin.php?page=mds_download_log_files',
                 'default' => null,
             ],
+            'debug_logging' => [
+                'title' => __('Debug logging'),
+                'type' => 'checkbox',
+                'description' => __('When enabled, logs include request/response details and can grow quickly.'),
+                'default' => 'no',
+            ],
             'enabled' => [
                 'title' => __('Enabled?'),
                 'type' => 'checkbox',
@@ -322,8 +328,14 @@ class MdsFields
             foreach (['towns', 'location_types', 'services'] as $resource) {
                 $result = $collivery->{'get'.str_replace('_', '', ucwords($resource))}();
                 if (!is_array($result)) {
+                    $errorMessage = 'Unable to retrieve fields from the API';
+                    $errors = $collivery->getErrors();
+                    if (!empty($errors)) {
+                        $errorMessage .= ': '.implode('; ', array_values($errors));
+                    }
+
                     throw new InvalidResourceDataException(
-                        'Unable to retrieve fields from the API',
+                        $errorMessage,
                         $service->loggerSettingsArray()
                     );
                 }

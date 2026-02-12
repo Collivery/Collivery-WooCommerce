@@ -12,6 +12,10 @@ This plugin makes use of our [REST API](https://collivery.net/integration/api/v3
 
 If you wish to submit any changes, simply fork this repository and submit a pull request.
 
+Test credentials:
+MDS Username: api@collivery.co.za
+MDS Password: api123
+
 License
 --------
 

@@ -2,6 +2,7 @@
 
 use MdsExceptions\InvalidColliveryDataException;
 use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\MdsLogger;
 use MdsSupportingClasses\View;
 
 /*******************************************************************************
@@ -21,6 +22,10 @@ if (is_admin()) {
             add_action('wp_loaded', 'mds_download_log_files');
         } elseif ($_GET['page'] == 'mds_clear_cache_files') {
             add_action('wp_loaded', 'mds_clear_cache_files');
+        } elseif ($_GET['page'] == 'mds_clear_log_files') {
+            add_action('wp_loaded', 'mds_clear_log_files');
+        } elseif ($_GET['page'] == 'mds_clear_woo_log_files') {
+            add_action('wp_loaded', 'mds_clear_woo_log_files');
         }
     }
 }
@@ -35,10 +40,37 @@ function mds_admin_menu()
 }
 
 /**
+ * Enqueue admin scripts for settings actions.
+ */
+add_action('admin_enqueue_scripts', 'mds_admin_enqueue_scripts');
+function mds_admin_enqueue_scripts($hook)
+{
+    if ($hook !== 'woocommerce_page_wc-settings') {
+        return;
+    }
+
+    wp_register_script('mds_collivery_js', plugin_dir_url(__FILE__).'/Views/js/mds_collivery.js');
+    wp_enqueue_script('mds_collivery_js');
+
+    wp_localize_script('mds_collivery_js', 'woocommerce_mds_collivery', [
+        'nonce_download_logs' => wp_create_nonce('mds_download_log_files'),
+        'nonce_clear_cache' => wp_create_nonce('mds_clear_cache_files'),
+        'nonce_clear_logs' => wp_create_nonce('mds_clear_log_files'),
+        'nonce_clear_woo_logs' => wp_create_nonce('mds_clear_woo_log_files'),
+    ]);
+}
+
+/**
  * Download the error log file.
  */
 function mds_download_log_files()
 {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have permission to perform this action.'));
+    }
+
+    check_admin_referer('mds_download_log_files');
+
     /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     if ($file = $mds->downloadLogFiles()) {
@@ -59,10 +91,52 @@ function mds_download_log_files()
  */
 function mds_clear_cache_files()
 {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have permission to perform this action.'));
+    }
+
+    check_admin_referer('mds_clear_cache_files');
+
     /** @var MdsColliveryService $mds */
     $mds = MdsColliveryService::getInstance();
     $cache = $mds->returnCacheClass();
     $cache->delete();
+
+    wp_redirect(get_admin_url().'admin.php?page=wc-settings&tab=shipping&section=mds_collivery');
+    exit;
+}
+
+/**
+ * Clear the error and warning log files.
+ */
+function mds_clear_log_files()
+{
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have permission to perform this action.'));
+    }
+
+    check_admin_referer('mds_clear_log_files');
+
+    $logger = new MdsLogger();
+    $logger->clearLogFiles();
+
+    wp_redirect(get_admin_url().'admin.php?page=wc-settings&tab=shipping&section=mds_collivery');
+    exit;
+}
+
+/**
+ * Clear WooCommerce log files for this plugin.
+ */
+function mds_clear_woo_log_files()
+{
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have permission to perform this action.'));
+    }
+
+    check_admin_referer('mds_clear_woo_log_files');
+
+    $logger = new MdsLogger();
+    $logger->clearWooLogFiles();
 
     wp_redirect(get_admin_url().'admin.php?page=wc-settings&tab=shipping&section=mds_collivery');
     exit;
@@ -687,4 +761,3 @@ add_action('admin_footer', function () {
     </script>
     <?php
 });
-

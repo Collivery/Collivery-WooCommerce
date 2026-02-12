@@ -24,6 +24,9 @@ class Collivery
     protected $config;
     protected $errors = [];
     protected $check_cache = true;
+    protected $cache;
+    protected $last_http_code;
+    protected $last_request_url;
 
     protected $default_address_id;
     protected $client_id;
@@ -120,6 +123,7 @@ class Collivery
             : rtrim(self::BASE_URL, '/');
             $endpoint = ltrim($url, '/');
             $url      = $base . '/' . $endpoint;
+            $this->last_request_url = $url;
 
         if (!$isAuthenticating) {
             if ($this->token) {
@@ -172,12 +176,14 @@ class Collivery
 
         $result = curl_exec($client);
 
+        $this->last_http_code = curl_getinfo($client, CURLINFO_HTTP_CODE);
+
         if (curl_errno($client)) {
             $errno = curl_errno($client);
             $errmsg = curl_error($client);
             curl_close($client);
 
-            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
+            throw new CurlConnectionException('Error executing request: '.$errmsg, 'ConsumeAPI()', [
                 'Code'    => $errno,
                 'Message' => $errmsg,
                 'URL'     => $url,
@@ -228,11 +234,13 @@ class Collivery
 
             if (!is_array($authenticate)) {
                 $this->setError('result_unexpected', 'No result returned.');
+                $this->logAuthFailure($authenticate, $user_email);
                 return [];
             }
 
             if (!isset($authenticate['data'])) {
                 $this->checkError($authenticate);
+                $this->logAuthFailure($authenticate, $user_email);
                 return [];
             }
 
@@ -260,9 +268,55 @@ class Collivery
             }
         } catch (CurlConnectionException $e) {
             $this->catchException($e);
+            $this->logAuthFailure(['exception' => $e->getMessage()], $user_email);
         }
 
         return [];
+    }
+
+    /**
+     * Log additional diagnostics for authentication failures.
+     *
+     * @param mixed  $response
+     * @param string $user_email
+     */
+    private function logAuthFailure($response, $user_email)
+    {
+        $logger = new MdsLogger();
+        $headers = [
+            'X-App-Name' => $this->config->app_name,
+            'X-App-Version' => $this->config->app_version,
+            'X-App-Host' => $this->config->app_host,
+            'X-App-Lang' => 'PHP '.phpversion(),
+            'X-App-Url' => $this->config->app_url,
+        ];
+
+        if (!is_array($response)) {
+            $response = ['raw' => $response];
+        }
+
+        $logger->warning(
+            'Collivery::makeAuthenticationRequest',
+            'Authentication request failed',
+            [
+                'app_name' => $this->config->app_name,
+                'app_version' => $this->config->app_version,
+                'app_host' => $this->config->app_host,
+                'app_url' => $this->config->app_url,
+                'base_url' => $this->config->base_url,
+            ],
+            [
+                'request' => [
+                    'url' => $this->last_request_url,
+                    'email' => $user_email,
+                    'headers' => $headers,
+                    'password' => '[redacted]',
+                ],
+                'response' => $response,
+                'http_code' => $this->last_http_code,
+                'errors' => $this->errors,
+            ]
+        );
     }
 
     /**
@@ -1130,6 +1184,9 @@ class Collivery
     private function checkError($data) {
         if (isset($data['error'])) {
             $this->setError($data['error']['http_code'], $data['error']['message']);
+        } elseif (isset($data['message'])) {
+            $code = $this->last_http_code ? $this->last_http_code : 'result_unexpected';
+            $this->setError($code, $data['message']);
         } else {
             $this->setError('result_unexpected', 'No result returned.');
         }

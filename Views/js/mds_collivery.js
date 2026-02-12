@@ -347,8 +347,16 @@ jQuery(function() {
   var downloadSetting = jQuery("#woocommerce_mds_collivery_downloadLogs");
   if (downloadSetting.length > 0) {
     var url = downloadSetting.attr('placeholder');
+    var downloadUrl = url + '&_wpnonce=' + encodeURIComponent(woocommerce_mds_collivery.nonce_download_logs);
+    var clearCacheUrl = url.replace('mds_download_log_files', 'mds_clear_cache_files') +
+        '&_wpnonce=' + encodeURIComponent(woocommerce_mds_collivery.nonce_clear_cache);
+    var clearLogsUrl = url.replace('mds_download_log_files', 'mds_clear_log_files') +
+        '&_wpnonce=' + encodeURIComponent(woocommerce_mds_collivery.nonce_clear_logs);
+    var clearWooLogsUrl = url.replace('mds_download_log_files', 'mds_clear_woo_log_files') +
+        '&_wpnonce=' + encodeURIComponent(woocommerce_mds_collivery.nonce_clear_woo_logs);
+
     var downloadButton = document.createElement('a');
-    downloadButton.setAttribute('href', url);
+    downloadButton.setAttribute('href', downloadUrl);
     downloadButton.setAttribute('class', 'button-primary');
     downloadButton.innerHTML = 'Download Error Logs';
     downloadButton.setAttribute('id', 'woocommerce_mds_collivery_downloadLogs');
@@ -358,11 +366,28 @@ jQuery(function() {
     clearCacheButton.innerHTML = 'Clear Cache';
     clearCacheButton.setAttribute('class', 'button-primary');
     clearCacheButton.setAttribute('id', 'woocommerce_mds_collivery_clearCache');
-    clearCacheButton.setAttribute('href',
-        url.replace('mds_download_log_files', 'mds_clear_cache_files'));
+    clearCacheButton.setAttribute('href', clearCacheUrl);
     jQuery(clearCacheButton)
         .css('margin-right', '10px')
         .insertBefore('#woocommerce_mds_collivery_downloadLogs');
+
+    var clearLogsButton = document.createElement('a');
+    clearLogsButton.innerHTML = 'Clear Plugin Logs';
+    clearLogsButton.setAttribute('class', 'button-secondary');
+    clearLogsButton.setAttribute('id', 'woocommerce_mds_collivery_clearLogs');
+    clearLogsButton.setAttribute('href', clearLogsUrl);
+    jQuery(clearLogsButton)
+        .css('margin-left', '10px')
+        .insertAfter('#woocommerce_mds_collivery_downloadLogs');
+
+    var clearWooLogsButton = document.createElement('a');
+    clearWooLogsButton.innerHTML = 'Clear Woo Logs (MDS)';
+    clearWooLogsButton.setAttribute('class', 'button-secondary');
+    clearWooLogsButton.setAttribute('id', 'woocommerce_mds_collivery_clearWooLogs');
+    clearWooLogsButton.setAttribute('href', clearWooLogsUrl);
+    jQuery(clearWooLogsButton)
+        .css('margin-left', '10px')
+        .insertAfter('#woocommerce_mds_collivery_clearLogs');
   }
 })
 
