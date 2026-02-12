@@ -1,0 +1,19 @@
+Changelog
+=========
+
+4.5.5 - 2026-02-12
+- Guard missing auth data to prevent warnings and hard failures.
+- Add cURL connect/total timeouts to reduce admin hangs.
+- Resolve cache directory to a writable base when given a relative path.
+- Validate cached auth structure before use.
+- Avoid cURL handle leaks on GET requests.
+- Declare the cache property to avoid PHP 8.2 dynamic property deprecations.
+- Normalise plugin header placement.
+- Improve API error handling (surface response messages and cURL errors).
+- Keep credentials on auth failure and show detailed auth errors in admin.
+- Add auth failure diagnostics logging (request/response, redacted).
+- Mirror plugin logs into WooCommerce logs (source: mds_collivery).
+- Add debug logging toggle for verbose request/response logging.
+- Add log throttling and 1MB rotation to limit growth.
+- Add buttons to clear plugin logs and WooCommerce logs for this plugin.
+- Add nonce/capability checks for log and cache actions.

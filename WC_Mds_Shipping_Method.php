@@ -306,11 +306,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                 'email' => $userName,
                 'password' => $password,
             ]);
-    
+            $authErrors = $this->collivery->getErrors();
+
             try {
                 if (!$authentication) {
+                    $message = 'MDS authentication failed. Please verify credentials or API connectivity.';
+                    if (!empty($authErrors)) {
+                        $message .= ' Details: '.implode('; ', array_values($authErrors));
+                    }
+
                     throw new InvalidColliveryDataException(
-                        'Incorrect MDS account details, username and password discarded',
+                        $message,
                         'WC_Mds_Shipping_Method::validate_settings_fields',
                         $this->collivery_service->loggerSettingsArray(),
                         $postData
@@ -322,15 +328,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         }
 
         if ($error) {
-            unset($postData[$userNameKey.'mds_user']);
-            unset($postData[$passwordKey.'mds_pass']);
-            $this->set_post_data($postData);
             $this->add_error($error);
         }
 
         $this->display_errors();
 
-        $result = $authentication && parent::process_admin_options();
+        $result = parent::process_admin_options();
         if ($result && !$error) {
             $this->collivery_service = $this->collivery_service->newInstance($this->settings);
 

@@ -1,11 +1,25 @@
 <?php
+/*
+ * Plugin Name: MDS Collivery
+ * Plugin URI: https://collivery.net/integration/woocommerce
+ * Description: Plugin to add support for MDS Collivery in WooCommerce.
+ * Version: 4.5.5
+ * Author: MDS Technologies
+ * License: GPLv3 or later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
+ * Requires PHP: 7.4
+ * Requires at least: 5.9.8
+ * Tested up to: 8.2.13
+ * WC requires at least: 6.9.4
+ * WC tested up to: 8.5.1
+ */
 
 use MdsSupportingClasses\MdsColliveryService;
 use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
 
-define('MDS_VERSION', '4.5.4');
+define('MDS_VERSION', '4.5.5');
 
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
@@ -14,22 +28,6 @@ require_once plugin_dir_path(__FILE__) . 'includes/admin-profile-checkout-fields
 
 require_once __DIR__ . '/collivery_waybill_guard';
 Collivery_Waybill_Guard::boot();
-
-/*
- * Plugin Name: MDS Collivery
- * Plugin URI: https://collivery.net/integration/woocommerce
- * Description: Plugin to add support for MDS Collivery in WooCommerce.
-
- * Version: 4.5.4
-
- * Author: MDS Technologies
- * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
- * Requires PHP: 7.4.0
- * Requires at least: 5.9.8
- * Tested up to: 8.2.13
- * WC requires at least: 6.9.4
- * WC tested up to: 8.5.1
- */
 if( is_plugin_active('woocommerce/woocommerce.php')) {
     register_activation_hook(__FILE__, 'activate_mds');
     $mds = MdsColliveryService::getInstance();
