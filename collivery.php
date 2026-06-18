@@ -5,7 +5,7 @@ use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
 
-define('MDS_VERSION', '4.5.5');
+define('MDS_VERSION', '4.5.6');
 
 include 'autoload.php';
 require_once ABSPATH.'wp-includes/functions.php';
@@ -20,7 +20,7 @@ Collivery_Waybill_Guard::boot();
  * Plugin URI: https://collivery.net/integration/woocommerce
  * Description: Plugin to add support for MDS Collivery in WooCommerce.
 
- * Version: 4.5.5
+ * Version: 4.5.6
 
  * Author: MDS Technologies
  * License: GNU/GPL version 3 or later: http://www.gnu.org/licenses/gpl.html
@@ -32,10 +32,174 @@ Collivery_Waybill_Guard::boot();
  */
 if( is_plugin_active('woocommerce/woocommerce.php')) {
     register_activation_hook(__FILE__, 'activate_mds');
-    $mds = MdsColliveryService::getInstance();
-    $settings = $mds->returnPluginSettings();
+	    $mds = MdsColliveryService::getInstance();
+	    $settings = $mds->returnPluginSettings();
 
-    add_action('before_woocommerce_init', function(){
+	    if (!function_exists('mds_collivery_admin_error_notices')) {
+	        /**
+	         * Show Collivery/MDS errors throughout wp-admin only.
+	         *
+	         * These notices intentionally do not include logged settings or request data,
+	         * because those arrays can contain account credentials and customer details.
+	         */
+	        function mds_collivery_admin_error_notices()
+	        {
+	            if (!is_admin()) {
+	                return;
+	            }
+
+	            if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+	                return;
+	            }
+
+	            $notices = mds_collivery_collect_admin_notices();
+	            if (empty($notices)) {
+	                return;
+	            }
+
+	            ?>
+	            <div class="notice notice-error mds-collivery-admin-errors">
+	                <p><strong><?php esc_html_e('MDS Collivery requires attention.', 'woocommerce-mds-shipping'); ?></strong></p>
+	                <ul style="margin-left: 1.2em; list-style: disc;">
+	                    <?php foreach ($notices as $notice) : ?>
+	                        <li>
+	                            <?php if (!empty($notice['time'])) : ?>
+	                                <strong><?php echo esc_html($notice['time']); ?></strong>
+	                            <?php endif; ?>
+	                            <?php if (!empty($notice['type'])) : ?>
+	                                <?php echo esc_html('[' . ucfirst($notice['type']) . ']'); ?>
+	                            <?php endif; ?>
+	                            <?php echo esc_html($notice['message']); ?>
+	                            <?php if (!empty($notice['function'])) : ?>
+	                                <em><?php echo esc_html('(' . $notice['function'] . ')'); ?></em>
+	                            <?php endif; ?>
+	                        </li>
+	                    <?php endforeach; ?>
+	                </ul>
+	            </div>
+	            <?php
+	        }
+	    }
+
+	    if (!function_exists('mds_collivery_collect_admin_notices')) {
+	        /**
+	         * @return array<int, array{type:string,time:string,function:string,message:string}>
+	         */
+	        function mds_collivery_collect_admin_notices()
+	        {
+	            $notices = [];
+	            $seen = [];
+
+	            foreach (['error', 'warning'] as $type) {
+	                foreach (mds_collivery_read_log_entries($type) as $entry) {
+	                    $message = isset($entry['data']['error']) ? trim((string) $entry['data']['error']) : '';
+	                    if ($message === '' && isset($entry['data']['message'])) {
+	                        $message = trim((string) $entry['data']['message']);
+	                    }
+
+	                    if ($message === '') {
+	                        continue;
+	                    }
+
+	                    $function = isset($entry['data']['function']) ? trim((string) $entry['data']['function']) : '';
+	                    $key = $type . '|' . $entry['time'] . '|' . $function . '|' . $message;
+	                    if (isset($seen[$key])) {
+	                        continue;
+	                    }
+
+	                    $seen[$key] = true;
+	                    $notices[] = [
+	                        'type' => $type,
+	                        'time' => $entry['time'],
+	                        'function' => $function,
+	                        'message' => $message,
+	                    ];
+	                }
+	            }
+
+	            $currentErrors = MdsColliveryService::getInstance()->getColliveryErrors();
+	            if (is_array($currentErrors)) {
+	                foreach ($currentErrors as $message) {
+	                    $message = trim((string) $message);
+	                    if ($message === '') {
+	                        continue;
+	                    }
+
+	                    $key = 'current|||' . $message;
+	                    if (isset($seen[$key])) {
+	                        continue;
+	                    }
+
+	                    $seen[$key] = true;
+	                    $notices[] = [
+	                        'type' => 'error',
+	                        'time' => '',
+	                        'function' => 'Collivery API',
+	                        'message' => $message,
+	                    ];
+	                }
+	            }
+
+	            return $notices;
+	        }
+	    }
+
+	    if (!function_exists('mds_collivery_read_log_entries')) {
+	        /**
+	         * @return array<int, array{time:string,data:array}>
+	         */
+	        function mds_collivery_read_log_entries($type)
+	        {
+	            $file = ABSPATH . '/cache/mds_collivery/' . $type;
+	            if (!is_readable($file)) {
+	                return [];
+	            }
+
+	            $content = trim((string) file_get_contents($file));
+	            if ($content === '') {
+	                return [];
+	            }
+
+	            $decoded = json_decode($content, true);
+	            if (!is_array($decoded)) {
+	                $decoded = json_decode('[' . preg_replace('/}\s*{/', '},{', $content) . ']', true);
+	            }
+
+	            if (!is_array($decoded)) {
+	                return [];
+	            }
+
+	            if (mds_collivery_is_sequential_array($decoded)) {
+	                $decoded = array_merge(...array_filter($decoded, 'is_array'));
+	            }
+
+	            $entries = [];
+	            foreach ($decoded as $time => $data) {
+	                if (!is_array($data)) {
+	                    continue;
+	                }
+
+	                $entries[] = [
+	                    'time' => is_string($time) ? $time : '',
+	                    'data' => $data,
+	                ];
+	            }
+
+	            return $entries;
+	        }
+	    }
+
+	    if (!function_exists('mds_collivery_is_sequential_array')) {
+	        function mds_collivery_is_sequential_array(array $array)
+	        {
+	            return array_keys($array) === range(0, count($array) - 1);
+	        }
+	    }
+
+	    add_action('admin_notices', 'mds_collivery_admin_error_notices');
+	    add_action('network_admin_notices', 'mds_collivery_admin_error_notices');
+
+	    add_action('before_woocommerce_init', function(){
         if ( class_exists( FeaturesUtil::class ) ) {
             FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
         }

@@ -145,37 +145,53 @@ class ShippingPackageData
     public function extractRequiredFields(array $array, array $packages)
     {
     	$to_town_id = $to_town_type = null;
-        if (isset($array['post_data'])) {
-            parse_str($array['post_data'], $postData);
-            if (!isset($postData['ship_to_different_address']) || $postData['ship_to_different_address'] != true) {
-                $to_town_id = isset($postData['billing_city']) ? $postData['billing_city'] : $postData['billing_city_int'];
-                $to_town_type = $postData['billing_location_type'];
-            } else {
-                $to_town_id = isset($postData['shipping_city']) ? $postData['shipping_city'] : $postData['shipping_city_int'];
-                $to_town_type = $postData['shipping_location_type'];
-            }
-        } elseif (isset($array['ship_to_different_address'])) {
-            if (!isset($array['ship_to_different_address']) || $array['ship_to_different_address'] != true) {
-                $to_town_id = isset($array['billing_city']) ? $array['billing_city'] : $array['billing_city_int'];
-                $to_town_type = $array['billing_location_type'];
-            } else {
-                $to_town_id = isset($array['shipping_city']) ? $array['shipping_city'] : $array['shipping_city_int'];
-                $to_town_type = $array['shipping_location_type'];
-            }
-        } elseif (isset($packages[0]['destination'])) {
-            $to_town_id = $packages[0]['destination']['city'];
-            if (!isset($array['ship_to_different_address']) || $array['ship_to_different_address'] != true) {
-                if (isset($array['billing_location_type'])) {
+	        if (isset($array['post_data'])) {
+	            parse_str($array['post_data'], $postData);
+	            if (!isset($postData['ship_to_different_address']) || $postData['ship_to_different_address'] != true) {
+	                $to_town_id = isset($postData['billing_city']) ? $postData['billing_city'] : ($postData['billing_city_int'] ?? null);
+	                $to_town_type = $postData['billing_location_type'] ?? null;
+	            } else {
+	                $to_town_id = isset($postData['shipping_city']) ? $postData['shipping_city'] : ($postData['shipping_city_int'] ?? null);
+	                $to_town_type = $postData['shipping_location_type'] ?? null;
+	            }
+	        } elseif (isset($array['ship_to_different_address'])) {
+	            if (!isset($array['ship_to_different_address']) || $array['ship_to_different_address'] != true) {
+	                $to_town_id = isset($array['billing_city']) ? $array['billing_city'] : ($array['billing_city_int'] ?? null);
+	                $to_town_type = $array['billing_location_type'] ?? null;
+	            } else {
+	                $to_town_id = isset($array['shipping_city']) ? $array['shipping_city'] : ($array['shipping_city_int'] ?? null);
+	                $to_town_type = $array['shipping_location_type'] ?? null;
+	            }
+	        } elseif (isset($packages[0]['destination'])) {
+	            $to_town_id = $packages[0]['destination']['city'];
+	            if (!isset($array['ship_to_different_address']) || $array['ship_to_different_address'] != true) {
+	                if (isset($array['billing_location_type'])) {
                     $to_town_type = $array['billing_location_type'];
                 }
             } else {
                 if (isset($array['shipping_location_type'])) {
                     $to_town_type = $array['shipping_location_type'];
-                }
-            }
-        }
+	                }
+	            }
+	        }
 
-        return ["to_town_id" => $to_town_id, "to_town_type" => $to_town_type];
+	        if (empty($to_town_id) && function_exists('mds_blocks_get_town_city_search')) {
+	            $townCitySearch = \mds_blocks_get_town_city_search();
+
+	            if (!empty($townCitySearch['town_id'])) {
+	                $to_town_id = $townCitySearch['town_id'];
+	            } elseif (!empty($townCitySearch['town_name'])) {
+	                $to_town_id = $townCitySearch['town_name'];
+	            } elseif (!empty($townCitySearch['suburb_id']) && is_numeric($townCitySearch['suburb_id'])) {
+	                $suburb = $this->service->getSuburb($townCitySearch['suburb_id']);
+
+	                if (is_array($suburb) && isset($suburb['town']['id'])) {
+	                    $to_town_id = $suburb['town']['id'];
+	                }
+	            }
+	        }
+
+	        return ["to_town_id" => $to_town_id, "to_town_type" => $to_town_type];
         //return (object) compact('to_town_id', 'to_town_type');
     }
 
