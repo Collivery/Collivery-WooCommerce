@@ -145,6 +145,10 @@ class ShippingPackageData
     public function extractRequiredFields(array $array, array $packages)
     {
     	$to_town_id = $to_town_type = null;
+	    $blocks_town_city_search_required = function_exists('mds_is_checkout_blocks_context') &&
+	        \mds_is_checkout_blocks_context() &&
+	        $this->service->isTownsSuburbsSearchEnabled();
+
 	        if (isset($array['post_data'])) {
 	            parse_str($array['post_data'], $postData);
 	            if (!isset($postData['ship_to_different_address']) || $postData['ship_to_different_address'] != true) {
@@ -175,8 +179,9 @@ class ShippingPackageData
 	            }
 	        }
 
-	        if (empty($to_town_id) && function_exists('mds_blocks_get_town_city_search')) {
-	            $townCitySearch = \mds_blocks_get_town_city_search();
+	        if ($blocks_town_city_search_required && function_exists('mds_blocks_get_town_city_search')) {
+	            $to_town_id = null;
+	            $townCitySearch = \mds_blocks_get_town_city_search(true);
 
 	            if (!empty($townCitySearch['town_id'])) {
 	                $to_town_id = $townCitySearch['town_id'];
@@ -189,6 +194,44 @@ class ShippingPackageData
 	                    $to_town_id = $suburb['town']['id'];
 	                }
 	            }
+	        }
+
+	        if (!$blocks_town_city_search_required && empty($to_town_id) && function_exists('mds_blocks_get_town_city_search')) {
+	            $townCitySearch = \mds_blocks_get_town_city_search(true);
+
+	            if (!empty($townCitySearch['town_id'])) {
+	                $to_town_id = $townCitySearch['town_id'];
+	            } elseif (!empty($townCitySearch['town_name'])) {
+	                $to_town_id = $townCitySearch['town_name'];
+	            } elseif (!empty($townCitySearch['suburb_id']) && is_numeric($townCitySearch['suburb_id'])) {
+	                $suburb = $this->service->getSuburb($townCitySearch['suburb_id']);
+
+	                if (is_array($suburb) && isset($suburb['town']['id'])) {
+	                    $to_town_id = $suburb['town']['id'];
+	                }
+	            }
+	        }
+
+	        if (!$blocks_town_city_search_required && empty($to_town_id) && function_exists('WC') && WC()->customer) {
+	            $customer = WC()->customer;
+	            $to_town_id = $customer->get_meta('_shipping_city_int') ?: $customer->get_meta('_billing_city_int');
+
+	            if (empty($to_town_id)) {
+	                $suburb_id = $customer->get_meta('_shipping_suburb') ?: $customer->get_meta('_billing_suburb');
+
+	                if (!empty($suburb_id) && is_numeric($suburb_id)) {
+	                    $suburb = $this->service->getSuburb($suburb_id);
+
+	                    if (is_array($suburb) && isset($suburb['town']['id'])) {
+	                        $to_town_id = $suburb['town']['id'];
+	                    }
+	                }
+	            }
+	        }
+
+	        if (empty($to_town_type) && function_exists('WC') && WC()->customer) {
+	            $customer = WC()->customer;
+	            $to_town_type = $customer->get_meta('_shipping_location_type') ?: $customer->get_meta('_billing_location_type');
 	        }
 
 	        return ["to_town_id" => $to_town_id, "to_town_type" => $to_town_type];

@@ -266,6 +266,8 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                     'label' => $label,
                     'cost'  => $price,
                 ] );
+
+                $this->clear_admin_notice_logs();
             }
         } catch ( CurlConnectionException $e ) {
             ( new MdsLogger() )->error( 'WC_Mds_Shipping_Method::calculate_shipping()',
@@ -337,11 +339,17 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
         $result = $authentication && parent::process_admin_options();
         if ($result && !$error) {
+            $this->clear_admin_notice_logs();
             $this->collivery_service = $this->collivery_service->newInstance($this->settings);
 
             return true;
         } else {
             return false;
         }
+    }
+
+    private function clear_admin_notice_logs()
+    {
+        (new MdsLogger())->clear();
     }
 }

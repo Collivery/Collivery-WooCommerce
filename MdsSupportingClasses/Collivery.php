@@ -200,6 +200,8 @@ class Collivery
      */
     public function makeAuthenticationRequest($settings = null)
     {
+        $this->clearErrors();
+
         if ($settings) {
             $user_email = $settings['email'];
             $user_password = $settings['password'];
@@ -230,6 +232,8 @@ class Collivery
                     $this->user_id = $authenticate['id'];
                     $this->token = $authenticate['api_token'];
                 }
+
+                (new MdsLogger())->clear();
 
                 return $authenticate;
             } else {
@@ -909,6 +913,8 @@ class Collivery
      */
     public function getPrice(array $data)
     {
+        $this->clearErrors();
+
         // HERE WE GO
         $towns = $this->make_key_value_array($this->getTowns(), 'id', 'name');
 
@@ -944,6 +950,8 @@ class Collivery
         }
 
         if (isset($result['data'])) {
+            (new MdsLogger())->clear();
+
             return $result;
         } else {
             return $this->checkError($result);
