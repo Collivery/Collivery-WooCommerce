@@ -492,6 +492,8 @@ class MdsColliveryService
             // Save the results from validation into our table
             $this->addColliveryToProcessedTable($collivery, $order->get_id());
             $this->updateStatusOrAddNote($order, 'Order has been linked to MDS Collivery, Waybill Number: ' . $collivery['data']['id'] . ', please have order ready for collection' . $collectionTime . '.', false, 'completed');
+            $this->collivery->clearErrors();
+            $this->logger->clear();
 
             return $collivery;
         } else {
@@ -721,6 +723,8 @@ class MdsColliveryService
                 $processing,
                 'completed'
             );
+            $this->collivery->clearErrors();
+            $this->logger->clear();
 
             return $collivery;
         } else {

@@ -43,6 +43,28 @@ if ($mds->isEnabled()) {
         add_filter('woocommerce_default_address_fields', 'mds_custom_override_default_address_fields');
     }
 
+    if (!function_exists('mds_blocks_make_woo_city_optional')) {
+        function mds_blocks_make_woo_city_optional($locale)
+        {
+            if (!mds_is_checkout_blocks_context()) {
+                return $locale;
+            }
+
+            foreach (['default', 'ZA'] as $country) {
+                if (!isset($locale[$country]['city']) || !is_array($locale[$country]['city'])) {
+                    $locale[$country]['city'] = [];
+                }
+
+                $locale[$country]['city']['required'] = false;
+                $locale[$country]['city']['hidden'] = true;
+            }
+
+            return $locale;
+        }
+
+        add_filter('woocommerce_get_country_locale', 'mds_blocks_make_woo_city_optional', 20);
+    }
+
     if (!function_exists('mds_custom_override_checkout_fields')) {
         /**
          * Override the Billing and Shipping fields in Checkout.
@@ -499,9 +521,8 @@ add_action('woocommerce_init', function () {
             'id'       => 'mds/town',
             'label'    => 'Town / City',
             'location' => 'address',
-            'type'     => 'select',
-            'required' => true,
-            'options'  => $towns,
+            'type'     => 'text',
+            'required' => false,
         ]);
 
         woocommerce_register_additional_checkout_field([
@@ -617,6 +638,38 @@ add_action('wp_enqueue_scripts', function () {
         .mds-hide-woo-city {
             display: none !important;
         }
+
+        input[name="city"],
+        input[name="shipping_city"],
+        input[name="billing_city"],
+        input[id="shipping-city"],
+        input[id="billing-city"],
+        input[autocomplete="address-level2"],
+        select[name="city"],
+        select[name="shipping_city"],
+        select[name="billing_city"],
+        select[id="shipping-city"],
+        select[id="billing-city"],
+        select[autocomplete="address-level2"] {
+            display: none !important;
+        }
+
+        .wc-block-components-address-form__city,
+        .wc-block-components-text-input:has(input[name="city"]),
+        .wc-block-components-text-input:has(input[name="shipping_city"]),
+        .wc-block-components-text-input:has(input[name="billing_city"]),
+        .wc-block-components-text-input:has(input[id="shipping-city"]),
+        .wc-block-components-text-input:has(input[id="billing-city"]),
+        .wc-block-components-text-input:has(input[autocomplete="address-level2"]),
+        .wc-block-components-form-row:has(input[name="city"]),
+        .wc-block-components-form-row:has(input[name="shipping_city"]),
+        .wc-block-components-form-row:has(input[name="billing_city"]),
+        .wc-block-components-form-row:has(input[id="shipping-city"]),
+        .wc-block-components-form-row:has(input[id="billing-city"]),
+        .wc-block-components-form-row:has(input[autocomplete="address-level2"]) {
+            display: none !important;
+        }
+
     ');
 
     $search_enabled_js = $search_enabled ? 'true' : 'false';
@@ -654,6 +707,73 @@ add_action('wp_enqueue_scripts', function () {
 	                });
 	            }
 
+	            function refreshMdsBlocksCartData() {
+	                if (window.wp && window.wp.data) {
+	                    try {
+	                        var cartDispatch = window.wp.data.dispatch('wc/store/cart');
+	                        if (cartDispatch && cartDispatch.invalidateResolutionForStoreSelector) {
+	                            cartDispatch.invalidateResolutionForStoreSelector('getCartData');
+	                        }
+	                    } catch (error) {}
+	                }
+	            }
+
+	            function getMdsBlocksCookie(name) {
+	                var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+	                for (var i = 0; i < cookies.length; i++) {
+	                    var parts = cookies[i].split('=');
+	                    var key = parts.shift();
+
+	                    if (key === name) {
+	                        return decodeURIComponent(parts.join('=') || '');
+	                    }
+	                }
+
+	                return '';
+	            }
+
+	            function getMdsBlocksSelectedSuburbValue() {
+	                var field = $('input[name=\"mds/suburb\"], input[id*=\"mds-suburb\"], input[name*=\"mds/suburb\"]');
+	                var search = $('#mds_blocks_suburb_search');
+	                var suburbSelect = $('#mds_blocks_suburb_select');
+	                var value = field.val() || search.val() || suburbSelect.val() || '';
+
+	                if (!value && search.length && search.data('select2')) {
+	                    var selected = search.select2('data');
+
+	                    if (selected && selected.length && selected[0].id) {
+	                        value = selected[0].id;
+	                    }
+	                }
+
+	                if (!value) {
+	                    value = getMdsBlocksCookie('mds_blocks_suburb_id');
+	                }
+
+	                if (value && field.length) {
+	                    setMdsBlocksAddressValue(field, value);
+	                }
+
+	                return value || '';
+	            }
+
+	            function clearMdsBlocksValidation(keys) {
+	                if (!(window.wp && window.wp.data && window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.validationStore)) {
+	                    return;
+	                }
+
+	                var validation = window.wp.data.dispatch(window.wc.wcBlocksData.validationStore);
+
+	                if (!validation || !validation.clearValidationError) {
+	                    return;
+	                }
+
+	                $.each(keys, function(index, key) {
+	                    validation.clearValidationError(key);
+	                });
+	            }
+
 	            function applyMdsBlocksTownData(data) {
 	                if (!data || !data.success || !data.data) return;
 
@@ -664,6 +784,24 @@ add_action('wp_enqueue_scripts', function () {
 	                if (data.data.province) {
 	                    setMdsBlocksAddressValue('select[name=\"state\"], select[name=\"shipping_state\"], select[name=\"billing_state\"], select[id=\"shipping-state\"], select[id=\"billing-state\"]', data.data.province);
 	                }
+
+	                if (data.data.town_id) {
+	                    document.cookie = 'mds_blocks_town_id=' + encodeURIComponent(data.data.town_id) + '; path=/; SameSite=Lax';
+	                }
+
+	                refreshMdsBlocksCartData();
+	            }
+
+	            function clearMdsBlocksTownCitySearch() {
+	                setMdsBlocksAddressValue('input[name=\"mds/suburb\"], input[id*=\"mds-suburb\"], input[name*=\"mds/suburb\"]', '');
+	                setMdsBlocksAddressValue('input[name=\"city\"], input[name=\"shipping_city\"], input[name=\"billing_city\"], input[id=\"shipping-city\"], input[id=\"billing-city\"], input[autocomplete=\"address-level2\"]', '');
+	                document.cookie = 'mds_blocks_suburb_id=; Max-Age=0; path=/; SameSite=Lax';
+	                document.cookie = 'mds_blocks_town_city_label=; Max-Age=0; path=/; SameSite=Lax';
+	                document.cookie = 'mds_blocks_town_id=; Max-Age=0; path=/; SameSite=Lax';
+
+	                $.post('" . admin_url('admin-ajax.php') . "', {
+	                    action: 'mds_blocks_clear_town_city_search'
+	                }).always(refreshMdsBlocksCartData);
 	            }
 
             function initMdsBlocksSuburb() {
@@ -684,10 +822,12 @@ add_action('wp_enqueue_scripts', function () {
 
                 field.before(wrapper);
                 wrapper.append(label).append(select).append(error);
+                clearMdsBlocksTownCitySearch();
 
                 select.selectWoo({
                     minimumInputLength: 3,
                     placeholder: 'Search town / city',
+                    allowClear: true,
                     ajax: {
                         url: '" . admin_url('admin-ajax.php') . "',
                         type: 'POST',
@@ -711,9 +851,15 @@ add_action('wp_enqueue_scripts', function () {
                     var value = selected.id || '';
                     var label = selected.text || selected.id || '';
                     var input = field.get(0);
+                    var labelParts = label.split(',');
+                    var selectedTownName = $.trim(labelParts.length > 1 ? labelParts[1] : label);
 
 	                    if (input) {
 	                        setMdsBlocksAddressValue(field, value);
+	                    }
+
+	                    if (selectedTownName) {
+	                        setMdsBlocksAddressValue('input[name=\"city\"], input[name=\"shipping_city\"], input[name=\"billing_city\"], input[id=\"shipping-city\"], input[id=\"billing-city\"], input[autocomplete=\"address-level2\"]', selectedTownName);
 	                    }
 
 	                    $.post('" . admin_url('admin-ajax.php') . "', {
@@ -726,14 +872,12 @@ add_action('wp_enqueue_scripts', function () {
                     document.cookie = 'mds_blocks_town_city_label=' + encodeURIComponent(label) + '; path=/; SameSite=Lax';
                     wrapper.removeClass('has-error');
 
-                    if (window.wp && window.wp.data && window.wc && window.wc.wcBlocksData && window.wc.wcBlocksData.validationStore) {
-                        var validation = window.wp.data.dispatch(window.wc.wcBlocksData.validationStore);
+                    clearMdsBlocksValidation(['mds/suburb', 'shipping_address_mds/suburb', 'billing_address_mds/suburb']);
+                });
 
-                        if (validation && validation.clearValidationError) {
-                            validation.clearValidationError('mds/suburb');
-                            validation.clearValidationError('shipping_address_mds/suburb');
-                            validation.clearValidationError('billing_address_mds/suburb');
-                        }
+                select.on('select2:clear change', function() {
+                    if (!select.val()) {
+                        clearMdsBlocksTownCitySearch();
                     }
                 });
             }
@@ -741,10 +885,16 @@ add_action('wp_enqueue_scripts', function () {
             function initMdsBlocksTownSuburbSelects() {
                 if (mdsTownSuburbSearchEnabled || $('#mds_blocks_suburb_select').length) return;
 
-                var town = $('select[name=\"mds/town\"], select[id*=\"mds-town\"], select[name*=\"mds/town\"]');
+                var town = $('input[name=\"mds/town\"], select[name=\"mds/town\"], input[id*=\"mds-town\"], select[id*=\"mds-town\"], input[name*=\"mds/town\"], select[name*=\"mds/town\"]');
                 var suburbField = $('input[name=\"mds/suburb\"], input[id*=\"mds-suburb\"], input[name*=\"mds/suburb\"]');
 
                 if (!town.length || !suburbField.length) return;
+
+                town.hide();
+                town.siblings('label').hide();
+                if (town.attr('id')) {
+                    $('label[for=\"' + town.attr('id') + '\"]').hide();
+                }
 
                 suburbField.hide();
                 suburbField.siblings('label').hide();
@@ -752,13 +902,23 @@ add_action('wp_enqueue_scripts', function () {
                     $('label[for=\"' + suburbField.attr('id') + '\"]').hide();
                 }
 
+                var townWrapper = $('<div class=\"mds-blocks-suburb-field mds-blocks-suburb-field-wrap\"></div>');
+                var townLabel = $('<span class=\"mds-blocks-suburb-field-label\">Town / City</span>');
+                var townSelect = $('<select id=\"mds_blocks_town_select\" style=\"width:100%\"><option value=\"\">Select a town / city</option></select>');
                 var wrapper = $('<div class=\"mds-blocks-suburb-field mds-blocks-suburb-field-wrap\"></div>');
                 var label = $('<span class=\"mds-blocks-suburb-field-label\">Suburb</span>');
                 var suburbSelect = $('<select id=\"mds_blocks_suburb_select\" style=\"width:100%\"><option value=\"\">First select town/city</option></select>');
                 var error = $('<div class=\"mds-blocks-suburb-field-error\" role=\"alert\">Please select a suburb</div>');
 
+                town.before(townWrapper);
+                townWrapper.append(townLabel).append(townSelect);
                 suburbField.before(wrapper);
                 wrapper.append(label).append(suburbSelect).append(error);
+
+                townSelect.selectWoo({
+                    placeholder: 'Select a town / city',
+                    minimumResultsForSearch: 8
+                });
 
                 suburbSelect.selectWoo({
                     placeholder: 'Select suburb',
@@ -771,6 +931,30 @@ add_action('wp_enqueue_scripts', function () {
 	                    document.cookie = 'mds_blocks_suburb_id=' + encodeURIComponent(value) + '; path=/; SameSite=Lax';
 	                    document.cookie = 'mds_blocks_town_city_label=; Max-Age=0; path=/; SameSite=Lax';
 	                }
+
+                function loadTowns(province) {
+                    setMdsBlocksAddressValue(town, '');
+                    setSuburbValue('');
+                    townSelect.html('<option value=\"\">Loading towns...</option>').trigger('change.select2');
+                    suburbSelect.html('<option value=\"\">First select town/city</option>').trigger('change.select2');
+
+                    $.ajax({
+                        url: '" . admin_url('admin-ajax.php') . "',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'mds_collivery_generate_towns',
+                            parentItem: province || '',
+                            db_prefix: 'shipping_'
+                        },
+                        success: function(response) {
+                            townSelect.html(response || '<option value=\"\">Select town/city</option>').val('').trigger('change.select2');
+                        },
+                        error: function() {
+                            townSelect.html('<option value=\"\">Error loading towns</option>').trigger('change.select2');
+                        }
+                    });
+                }
 
                 function loadSuburbs(townId) {
                     setSuburbValue('');
@@ -799,22 +983,37 @@ add_action('wp_enqueue_scripts', function () {
                     });
                 }
 
-	                town.on('change', function() {
-	                    loadSuburbs($(this).val());
+	                townSelect.on('change', function() {
+	                    var townValue = $(this).val() || '';
+	                    setMdsBlocksAddressValue(town, townValue);
+	                    loadSuburbs(townValue);
 	                    var selectedTownName = $(this).find('option:selected').text() || '';
-	                    if (selectedTownName && $(this).val()) {
+	                    if (selectedTownName && townValue) {
 	                        setMdsBlocksAddressValue('input[name=\"city\"], input[name=\"shipping_city\"], input[name=\"billing_city\"], input[id=\"shipping-city\"], input[id=\"billing-city\"], input[autocomplete=\"address-level2\"]', selectedTownName);
 	                    }
-	                    document.cookie = 'mds_blocks_town_id=' + encodeURIComponent($(this).val() || '') + '; path=/; SameSite=Lax';
+	                    document.cookie = 'mds_blocks_town_id=' + encodeURIComponent(townValue) + '; path=/; SameSite=Lax';
+	                    clearMdsBlocksValidation(['mds/town', 'shipping_address_mds/town', 'billing_address_mds/town']);
+	                    refreshMdsBlocksCartData();
 	                });
+
+                $('select[name=\"state\"], select[name=\"shipping_state\"], select[name=\"billing_state\"], select[id=\"shipping-state\"], select[id=\"billing-state\"]').on('change', function() {
+                    loadTowns($(this).val() || '');
+                    refreshMdsBlocksCartData();
+                });
 
                 suburbSelect.on('change', function() {
                     setSuburbValue($(this).val() || '');
+                    clearMdsBlocksValidation(['mds/suburb', 'shipping_address_mds/suburb', 'billing_address_mds/suburb']);
+                    refreshMdsBlocksCartData();
                 });
 
                 if (town.val()) {
+                    townSelect.val(town.val()).trigger('change.select2');
                     document.cookie = 'mds_blocks_town_id=' + encodeURIComponent(town.val() || '') + '; path=/; SameSite=Lax';
                     loadSuburbs(town.val());
+                } else {
+                    var initialProvince = $('select[name=\"state\"], select[name=\"shipping_state\"], select[name=\"billing_state\"], select[id=\"shipping-state\"], select[id=\"billing-state\"]').first().val() || '';
+                    loadTowns(initialProvince);
                 }
             }
 
@@ -853,29 +1052,19 @@ add_action('wp_enqueue_scripts', function () {
             }
 
             hideWooBlocksCityFields();
+            if (window.MutationObserver) {
+                var mdsBlocksCityObserver = new MutationObserver(hideWooBlocksCityFields);
+                mdsBlocksCityObserver.observe(document.body, { childList: true, subtree: true });
+            }
+
             setInterval(function() {
                 initMdsBlocksSuburb();
                 initMdsBlocksTownSuburbSelects();
                 hideWooBlocksCityFields();
             }, 1000);
 
-            function requireMdsBlocksSuburb(e) {
-                var field = $('input[name=\"mds/suburb\"], input[id*=\"mds-suburb\"], input[name*=\"mds/suburb\"]');
-                var wrapper = $('#mds_blocks_suburb_search, #mds_blocks_suburb_select').closest('.mds-blocks-suburb-field');
-                var hasValue = Boolean(field.val() || $('#mds_blocks_suburb_search').val() || $('#mds_blocks_suburb_select').val());
-
-                if (!wrapper.length || hasValue) {
-                    return;
-                }
-
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                wrapper.addClass('has-error');
-                $('html, body').animate({ scrollTop: wrapper.offset().top - 120 }, 250);
-            }
-
-            $(document).on('click', '.wc-block-components-checkout-place-order-button, .wc-block-checkout__actions button[type=\"submit\"]', requireMdsBlocksSuburb);
-            $(document).on('submit', 'form.wc-block-components-form, form.wc-block-checkout__form', requireMdsBlocksSuburb);
+            $(document).on('click', '.wc-block-components-checkout-place-order-button, .wc-block-checkout__actions button[type=\"submit\"]', getMdsBlocksSelectedSuburbValue);
+            $(document).on('submit', 'form.wc-block-components-form, form.wc-block-checkout__form', getMdsBlocksSelectedSuburbValue);
         });
     ");
 });
@@ -890,16 +1079,86 @@ add_action('woocommerce_set_additional_field_value', function ($key, $value, $gr
     }
 
     if ($key === 'mds/town') {
-        $object->update_meta_data($prefix . 'city_int', sanitize_text_field($value));
+        $town_id = sanitize_text_field($value);
+        $town_name = mds_blocks_get_town_name($town_id);
+
+        $object->update_meta_data($prefix . 'city_int', $town_id);
+
+        if ($town_name !== '') {
+            if ($group === 'shipping' && method_exists($object, 'set_shipping_city')) {
+                $object->set_shipping_city($town_name);
+            }
+
+            if ($group === 'billing' && method_exists($object, 'set_billing_city')) {
+                $object->set_billing_city($town_name);
+            }
+        }
     }
 
     if ($key === 'mds/suburb') {
-        $object->update_meta_data($prefix . 'suburb', sanitize_text_field($value));
+        $suburb_id = sanitize_text_field($value);
+        $object->update_meta_data($prefix . 'suburb', $suburb_id);
+
+        if ($suburb_id !== '' && is_numeric($suburb_id)) {
+            $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+            $suburb = $mds->getSuburb($suburb_id);
+
+            if (is_array($suburb) && isset($suburb['town']['id'])) {
+                $town_id = (string) $suburb['town']['id'];
+                $object->update_meta_data($prefix . 'city_int', $town_id);
+            }
+
+            if (is_array($suburb) && isset($suburb['town']['name'])) {
+                $town_name = (string) $suburb['town']['name'];
+
+                if ($group === 'shipping' && method_exists($object, 'set_shipping_city')) {
+                    $object->set_shipping_city($town_name);
+                }
+
+                if ($group === 'billing' && method_exists($object, 'set_billing_city')) {
+                    $object->set_billing_city($town_name);
+                }
+            }
+
+            if (is_array($suburb) && isset($suburb['town']['province'])) {
+                $province = (string) $suburb['town']['province'];
+
+                if ($group === 'shipping' && method_exists($object, 'set_shipping_state')) {
+                    $object->set_shipping_state($province);
+                }
+
+                if ($group === 'billing' && method_exists($object, 'set_billing_state')) {
+                    $object->set_billing_state($province);
+                }
+            }
+        }
     }
 }, 10, 4);
 
 add_action('wp_ajax_mds_blocks_set_town_city_search', 'mds_blocks_set_town_city_search');
 add_action('wp_ajax_nopriv_mds_blocks_set_town_city_search', 'mds_blocks_set_town_city_search');
+add_action('wp_ajax_mds_blocks_clear_town_city_search', 'mds_blocks_clear_town_city_search');
+add_action('wp_ajax_nopriv_mds_blocks_clear_town_city_search', 'mds_blocks_clear_town_city_search');
+
+if (!function_exists('mds_blocks_clear_town_city_search')) {
+    function mds_blocks_clear_town_city_search()
+    {
+        if (function_exists('WC') && WC()->session) {
+            WC()->session->__unset('mds_blocks_town_city_search');
+            WC()->session->__unset('mds_blocks_current_suburb_id');
+        }
+
+        $cookie_path = defined('COOKIEPATH') && COOKIEPATH ? COOKIEPATH : '/';
+        $cookie_domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
+
+        foreach (['mds_blocks_suburb_id', 'mds_blocks_town_city_label', 'mds_blocks_town_id'] as $cookie) {
+            setcookie($cookie, '', time() - YEAR_IN_SECONDS, $cookie_path, $cookie_domain, is_ssl(), false);
+            unset($_COOKIE[$cookie]);
+        }
+
+        wp_send_json_success();
+    }
+}
 
 if (!function_exists('mds_blocks_set_town_city_search')) {
     function mds_blocks_set_town_city_search()
@@ -943,6 +1202,7 @@ if (!function_exists('mds_blocks_set_town_city_search')) {
 	            'town_name' => $town_name,
 	            'province'  => $province,
 	        ]);
+	        WC()->session->set('mds_blocks_current_suburb_id', $suburb_id);
 
 	        wp_send_json_success([
 	            'suburb_id' => $suburb_id,
@@ -955,7 +1215,7 @@ if (!function_exists('mds_blocks_set_town_city_search')) {
 	}
 
 if (!function_exists('mds_blocks_get_town_city_search')) {
-    function mds_blocks_get_town_city_search()
+    function mds_blocks_get_town_city_search($allow_cookie_fallback = true)
     {
         $town_city_search = [];
 
@@ -965,6 +1225,10 @@ if (!function_exists('mds_blocks_get_town_city_search')) {
             if (is_array($session_value)) {
                 $town_city_search = $session_value;
             }
+        }
+
+        if (!$allow_cookie_fallback) {
+            return $town_city_search;
         }
 
         if (empty($town_city_search['suburb_id']) && !empty($_COOKIE['mds_blocks_suburb_id'])) {
@@ -983,10 +1247,221 @@ if (!function_exists('mds_blocks_get_town_city_search')) {
     }
 }
 
+if (!function_exists('mds_checkout_add_error')) {
+    function mds_checkout_add_error($errors, $code, $message)
+    {
+        if ($errors instanceof WP_Error) {
+            $errors->add($code, $message);
+
+            return;
+        }
+
+        if (function_exists('wc_add_notice') && (!function_exists('wc_has_notice') || !wc_has_notice($message, 'error'))) {
+            wc_add_notice($message, 'error');
+        }
+    }
+}
+
+if (!function_exists('mds_blocks_get_town_name')) {
+    function mds_blocks_get_town_name($town_id)
+    {
+        $town_id = trim((string) $town_id);
+
+        if ($town_id === '' || !is_numeric($town_id)) {
+            return '';
+        }
+
+        $towns = MdsColliveryService::getInstance()->returnColliveryClass()->getTowns();
+        if (!is_array($towns)) {
+            return '';
+        }
+
+        foreach ($towns as $town) {
+            if (isset($town['id'], $town['name']) && (string) $town['id'] === $town_id) {
+                return (string) $town['name'];
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('mds_blocks_get_request_suburb_id')) {
+    function mds_blocks_get_request_suburb_id($request)
+    {
+        if (!$request instanceof WP_REST_Request) {
+            return '';
+        }
+
+        foreach (['shipping_address', 'billing_address'] as $address_key) {
+            $address = (array) $request->get_param($address_key);
+
+            foreach (['mds/suburb', 'suburb', 'town_city_search'] as $field_key) {
+                if (!empty($address[$field_key])) {
+                    return sanitize_text_field($address[$field_key]);
+                }
+            }
+        }
+
+        $additional_fields = (array) $request->get_param('additional_fields');
+        foreach (['mds/suburb', 'suburb', 'town_city_search'] as $field_key) {
+            if (!empty($additional_fields[$field_key])) {
+                return sanitize_text_field($additional_fields[$field_key]);
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('mds_blocks_get_request_town_label')) {
+    function mds_blocks_get_request_town_label($request)
+    {
+        if (!$request instanceof WP_REST_Request) {
+            return '';
+        }
+
+        foreach (['shipping_address', 'billing_address'] as $address_key) {
+            $address = (array) $request->get_param($address_key);
+
+            if (!empty($address['mds/town_city_search_label'])) {
+                return sanitize_text_field($address['mds/town_city_search_label']);
+            }
+        }
+
+        $additional_fields = (array) $request->get_param('additional_fields');
+        if (!empty($additional_fields['mds/town_city_search_label'])) {
+            return sanitize_text_field($additional_fields['mds/town_city_search_label']);
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('mds_blocks_track_current_request_selection')) {
+    function mds_blocks_track_current_request_selection($request)
+    {
+        if (!$request instanceof WP_REST_Request || !function_exists('WC') || !WC()->session) {
+            return;
+        }
+
+        if (!in_array($request->get_route(), ['/wc/store/v1/checkout', '/wc/store/v1/cart/update-customer'], true)) {
+            return;
+        }
+
+        $suburb_id = mds_blocks_get_request_suburb_id($request);
+
+        if ($suburb_id === '') {
+            WC()->session->__unset('mds_blocks_town_city_search');
+            WC()->session->__unset('mds_blocks_current_suburb_id');
+
+            return;
+        }
+
+        $town_city_search = WC()->session->get('mds_blocks_town_city_search');
+        if (!is_array($town_city_search) || empty($town_city_search['suburb_id']) || (string) $town_city_search['suburb_id'] !== (string) $suburb_id) {
+            WC()->session->set('mds_blocks_town_city_search', [
+                'suburb_id' => $suburb_id,
+                'label'     => '',
+                'town_id'   => '',
+                'town_name' => '',
+                'province'  => '',
+            ]);
+        }
+
+        WC()->session->set('mds_blocks_current_suburb_id', $suburb_id);
+    }
+}
+
+if (!function_exists('mds_validate_classic_checkout_fields')) {
+    function mds_validate_classic_checkout_fields($data, $errors)
+    {
+        if (!function_exists('WC') || !WC()->cart || !WC()->cart->needs_shipping()) {
+            return;
+        }
+
+        $service = MdsColliveryService::getInstance();
+        $prefix = !empty($data['ship_to_different_address']) ? 'shipping_' : 'billing_';
+        $location_type = isset($data[$prefix . 'location_type']) ? trim((string) $data[$prefix . 'location_type']) : '';
+        $suburb = isset($data[$prefix . 'suburb']) ? trim((string) $data[$prefix . 'suburb']) : '';
+        $city = isset($data[$prefix . 'city']) ? trim((string) $data[$prefix . 'city']) : '';
+        $city_int = isset($data[$prefix . 'city_int']) ? trim((string) $data[$prefix . 'city_int']) : '';
+        $town_city_search = isset($data[$prefix . 'town_city_search']) ? trim((string) $data[$prefix . 'town_city_search']) : '';
+
+        if ($location_type === '') {
+            mds_checkout_add_error($errors, 'mds_missing_location_type', __('Please select a location type.', 'woocommerce-mds-shipping'));
+        }
+
+        if ($service->isTownsSuburbsSearchEnabled()) {
+            if ($town_city_search === '' && $suburb === '') {
+                mds_checkout_add_error($errors, 'mds_missing_town_city_search', __('Please select a town / city search result.', 'woocommerce-mds-shipping'));
+            }
+
+            return;
+        }
+
+        if ($city === '' && $city_int === '') {
+            mds_checkout_add_error($errors, 'mds_missing_town_city', __('Please select a town / city.', 'woocommerce-mds-shipping'));
+        }
+
+        if ($suburb === '') {
+            mds_checkout_add_error($errors, 'mds_missing_suburb', __('Please select a suburb.', 'woocommerce-mds-shipping'));
+        }
+    }
+
+    add_action('woocommerce_after_checkout_validation', 'mds_validate_classic_checkout_fields', 10, 2);
+}
+
+if (!function_exists('mds_validate_blocks_checkout_fields')) {
+    function mds_validate_blocks_checkout_fields($order, $errors)
+    {
+        if (!$order instanceof WC_Order || !$errors instanceof WP_Error) {
+            return;
+        }
+
+        if (!function_exists('WC') || !WC()->cart || !WC()->cart->needs_shipping()) {
+            return;
+        }
+
+        $service = MdsColliveryService::getInstance();
+        mds_blocks_apply_town_city_search_to_order($order);
+
+        $town_city_search = mds_blocks_get_town_city_search(true);
+        $location_type = trim((string) ($order->get_meta('_shipping_location_type') ?: $order->get_meta('_billing_location_type')));
+        $suburb = trim((string) ($order->get_meta('_shipping_suburb') ?: $order->get_meta('_billing_suburb')));
+        $city = trim((string) ($order->get_shipping_city() ?: $order->get_billing_city()));
+        $city_int = trim((string) ($order->get_meta('_shipping_city_int') ?: $order->get_meta('_billing_city_int')));
+
+        if ($location_type === '') {
+            mds_checkout_add_error($errors, 'mds_missing_location_type', __('Please select a location type.', 'woocommerce-mds-shipping'));
+        }
+
+        if ($service->isTownsSuburbsSearchEnabled()) {
+            $current_suburb_id = !empty($town_city_search['suburb_id']) ? trim((string) $town_city_search['suburb_id']) : '';
+
+            if ($current_suburb_id === '') {
+                mds_checkout_add_error($errors, 'mds_missing_town_city_search', __('Please select a town / city search result.', 'woocommerce-mds-shipping'));
+            }
+
+            return;
+        }
+
+        if (($city === '' || is_numeric($city)) && $city_int === '') {
+            mds_checkout_add_error($errors, 'mds_missing_town_city', __('Please select a town / city.', 'woocommerce-mds-shipping'));
+        }
+
+        if ($suburb === '' && empty($town_city_search['suburb_id'])) {
+            mds_checkout_add_error($errors, 'mds_missing_suburb', __('Please select a suburb.', 'woocommerce-mds-shipping'));
+        }
+    }
+
+    add_action('woocommerce_checkout_validate_order_before_payment', 'mds_validate_blocks_checkout_fields', 10, 2);
+}
+
 if (!function_exists('mds_blocks_apply_town_city_search_to_order')) {
     function mds_blocks_apply_town_city_search_to_order($order)
     {
-        $town_city_search = mds_blocks_get_town_city_search();
+        $town_city_search = mds_blocks_get_town_city_search(true);
 
         if (empty($town_city_search['suburb_id'])) {
             return;
@@ -995,7 +1470,8 @@ if (!function_exists('mds_blocks_apply_town_city_search_to_order')) {
         $suburb_id = sanitize_text_field($town_city_search['suburb_id']);
         $label = isset($town_city_search['label']) ? sanitize_text_field($town_city_search['label']) : '';
         $suburb_value = $suburb_id;
-        $town_value = '';
+        $town_id = isset($town_city_search['town_id']) ? sanitize_text_field($town_city_search['town_id']) : '';
+        $town_value = mds_blocks_get_town_name($town_id);
 
         if (is_numeric($suburb_id)) {
             $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
@@ -1003,6 +1479,10 @@ if (!function_exists('mds_blocks_apply_town_city_search_to_order')) {
 
             if (is_array($suburb) && isset($suburb['name'])) {
                 $suburb_value = $suburb['name'];
+            }
+
+            if ($town_id === '' && is_array($suburb) && isset($suburb['town']['id'])) {
+                $town_id = (string) $suburb['town']['id'];
             }
 
             if (is_array($suburb) && isset($suburb['town']['name'])) {
@@ -1013,100 +1493,153 @@ if (!function_exists('mds_blocks_apply_town_city_search_to_order')) {
         $order->update_meta_data('_shipping_suburb', $suburb_value);
         $order->update_meta_data('_billing_suburb', $suburb_value);
 
+        if ($town_id !== '') {
+            $order->update_meta_data('_shipping_city_int', $town_id);
+            $order->update_meta_data('_billing_city_int', $town_id);
+        }
+
         if ($town_value !== '') {
             $order->set_shipping_city($town_value);
             $order->set_billing_city($town_value);
         }
 
-        if ($label !== '') {
-            $order->update_meta_data('_shipping_town_city_search', $label);
-            $order->update_meta_data('_billing_town_city_search', $label);
+        $display_label = $label !== '' ? $label : $town_value;
+
+        if ($display_label !== '') {
+            $order->update_meta_data('_shipping_town_city_search', $display_label);
+            $order->update_meta_data('_billing_town_city_search', $display_label);
+            $order->update_meta_data('_wc_shipping/mds/suburb', $display_label);
+            $order->update_meta_data('_wc_billing/mds/suburb', $display_label);
         }
     }
 }
 
+if (!function_exists('mds_blocks_hydrate_store_api_address_request')) {
+    function mds_blocks_hydrate_store_api_address_request($request)
+    {
+        if (!$request instanceof WP_REST_Request) {
+            return;
+        }
+
+        if (!in_array($request->get_route(), ['/wc/store/v1/checkout', '/wc/store/v1/cart/update-customer'], true)) {
+            return;
+        }
+
+        $town_city_search = mds_blocks_get_town_city_search(true);
+        $suburb_id = '';
+        $label = mds_blocks_get_request_town_label($request);
+        $town_id = !empty($town_city_search['town_id']) ? sanitize_text_field($town_city_search['town_id']) : '';
+        $town_name = '';
+        $province = '';
+
+        if (empty($town_city_search['suburb_id'])) {
+            $request_suburb_id = mds_blocks_get_request_suburb_id($request);
+
+            if ($request_suburb_id !== '') {
+                $town_city_search['suburb_id'] = $request_suburb_id;
+            }
+        }
+
+        if (!empty($town_city_search['suburb_id'])) {
+            $suburb_id = sanitize_text_field($town_city_search['suburb_id']);
+            if ($label === '') {
+                $label = isset($town_city_search['label']) ? sanitize_text_field($town_city_search['label']) : '';
+            }
+
+            if (is_numeric($suburb_id)) {
+                $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+                $suburb = $mds->getSuburb($suburb_id);
+
+                if (is_array($suburb) && isset($suburb['town']['id'])) {
+                    $town_id = (string) $suburb['town']['id'];
+                }
+
+                if (is_array($suburb) && isset($suburb['town']['name'])) {
+                    $town_name = (string) $suburb['town']['name'];
+                }
+
+                if (is_array($suburb) && isset($suburb['town']['province'])) {
+                    $province = (string) $suburb['town']['province'];
+                }
+            }
+        }
+
+        if ($town_name === '' && !empty($town_city_search['town_name'])) {
+            $town_name = sanitize_text_field($town_city_search['town_name']);
+        }
+
+        if ($town_name === '' && $label !== '') {
+            $label_parts = array_map('trim', explode(',', $label));
+            if (!empty($label_parts[1])) {
+                $town_name = sanitize_text_field($label_parts[1]);
+            }
+        }
+
+        $billing_address = (array) $request->get_param('billing_address');
+        $billing_email = !empty($billing_address['email']) ? sanitize_email($billing_address['email']) : '';
+
+        foreach (['shipping_address', 'billing_address'] as $address_key) {
+            $address = (array) $request->get_param($address_key);
+
+            if ($town_id === '' && !empty($address['mds/town'])) {
+                $town_id = sanitize_text_field($address['mds/town']);
+            }
+
+            if ($town_name === '' && $town_id !== '') {
+                $town_name = mds_blocks_get_town_name($town_id);
+            }
+
+            if ($suburb_id !== '' && empty($address['mds/suburb'])) {
+                $address['mds/suburb'] = $suburb_id;
+            }
+
+            if ($suburb_id !== '' && empty($address['suburb'])) {
+                $address['suburb'] = $suburb_id;
+            }
+
+            if ($suburb_id !== '' && empty($address['town_city_search'])) {
+                $address['town_city_search'] = $suburb_id;
+            }
+
+            if ($label !== '' && empty($address['mds/town_city_search_label'])) {
+                $address['mds/town_city_search_label'] = $label;
+            }
+
+            if ($town_id !== '' && empty($address['city_int'])) {
+                $address['city_int'] = $town_id;
+            }
+
+            if ($town_name !== '') {
+                $address['city'] = $town_name;
+            }
+
+            if ($province !== '' && empty($address['state'])) {
+                $address['state'] = $province;
+            }
+
+            if (empty($address['location_type']) && !empty($address['mds/location_type'])) {
+                $address['location_type'] = sanitize_text_field($address['mds/location_type']);
+            }
+
+            if (empty($address['email']) && $billing_email !== '') {
+                $address['email'] = $billing_email;
+            }
+
+            $request->set_param($address_key, $address);
+        }
+    }
+}
+
+add_filter('rest_pre_dispatch', function ($response, $server, $request) {
+    mds_blocks_track_current_request_selection($request);
+    mds_blocks_hydrate_store_api_address_request($request);
+
+    return $response;
+}, 5, 3);
+
 add_filter('rest_request_before_callbacks', function ($response, $handler, $request) {
-    if (!$request instanceof WP_REST_Request || $request->get_route() !== '/wc/store/v1/checkout') {
-        return $response;
-    }
-
-    $town_city_search = mds_blocks_get_town_city_search();
-    $suburb_id = '';
-    $label = '';
-    $town_id = !empty($town_city_search['town_id']) ? sanitize_text_field($town_city_search['town_id']) : '';
-    $town_name = '';
-    $province = '';
-
-    if (!empty($town_city_search['suburb_id'])) {
-        $suburb_id = sanitize_text_field($town_city_search['suburb_id']);
-        $label = isset($town_city_search['label']) ? sanitize_text_field($town_city_search['label']) : '';
-
-        if (is_numeric($suburb_id)) {
-            $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
-            $suburb = $mds->getSuburb($suburb_id);
-
-            if (is_array($suburb) && isset($suburb['town']['id'])) {
-                $town_id = (string) $suburb['town']['id'];
-            }
-
-            if (is_array($suburb) && isset($suburb['town']['name'])) {
-                $town_name = (string) $suburb['town']['name'];
-            }
-
-            if (is_array($suburb) && isset($suburb['town']['province'])) {
-                $province = (string) $suburb['town']['province'];
-            }
-        }
-    }
-
-    $billing_address = (array) $request->get_param('billing_address');
-    $billing_email = !empty($billing_address['email']) ? sanitize_email($billing_address['email']) : '';
-
-    foreach (['shipping_address', 'billing_address'] as $address_key) {
-        $address = (array) $request->get_param($address_key);
-
-        if ($town_id === '' && !empty($address['mds/town'])) {
-            $town_id = sanitize_text_field($address['mds/town']);
-        }
-
-        if ($suburb_id !== '' && empty($address['mds/suburb'])) {
-            $address['mds/suburb'] = $suburb_id;
-        }
-
-        if ($suburb_id !== '' && empty($address['suburb'])) {
-            $address['suburb'] = $suburb_id;
-        }
-
-        if ($suburb_id !== '' && empty($address['town_city_search'])) {
-            $address['town_city_search'] = $suburb_id;
-        }
-
-        if ($label !== '' && empty($address['mds/town_city_search_label'])) {
-            $address['mds/town_city_search_label'] = $label;
-        }
-
-        if ($town_id !== '' && empty($address['city_int'])) {
-            $address['city_int'] = $town_id;
-        }
-
-        if ($town_name !== '') {
-            $address['city'] = $town_name;
-        }
-
-        if ($province !== '' && empty($address['state'])) {
-            $address['state'] = $province;
-        }
-
-        if (empty($address['location_type']) && !empty($address['mds/location_type'])) {
-            $address['location_type'] = sanitize_text_field($address['mds/location_type']);
-        }
-
-        if (empty($address['email']) && $billing_email !== '') {
-            $address['email'] = $billing_email;
-        }
-
-        $request->set_param($address_key, $address);
-    }
+    mds_blocks_track_current_request_selection($request);
+    mds_blocks_hydrate_store_api_address_request($request);
 
     return $response;
 }, 5, 3);

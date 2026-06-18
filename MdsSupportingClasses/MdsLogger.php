@@ -144,6 +144,22 @@ class MdsLogger
     }
 
     /**
+     * Clears notice-driving log files after the related MDS operation succeeds.
+     *
+     * @param array $names
+     */
+    public function clear(array $names = ['error', 'warning'])
+    {
+        foreach ($names as $name) {
+            $file = $this->getLogDirectory() . $name;
+
+            if (is_file($file)) {
+                @unlink($file);
+            }
+        }
+    }
+
+    /**
      * Loads a specific log file else creates the log directory.
      *
      * @param $name
