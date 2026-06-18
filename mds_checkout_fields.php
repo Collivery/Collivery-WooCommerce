@@ -621,9 +621,50 @@ add_action('wp_enqueue_scripts', function () {
 
     $search_enabled_js = $search_enabled ? 'true' : 'false';
 
-    wp_add_inline_script('selectWoo', "
-        jQuery(function($) {
-            var mdsTownSuburbSearchEnabled = {$search_enabled_js};
+	    wp_add_inline_script('selectWoo', "
+	        jQuery(function($) {
+	            var mdsTownSuburbSearchEnabled = {$search_enabled_js};
+
+	            function setMdsBlocksAddressValue(selector, value) {
+	                var fields = $(selector);
+
+	                fields.each(function() {
+	                    var input = this;
+	                    var field = $(input);
+
+	                    field.val(value).attr('value', value);
+
+	                    var valueDescriptor = Object.getOwnPropertyDescriptor(input, 'value');
+	                    var prototype = Object.getPrototypeOf(input);
+	                    var prototypeValueDescriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
+	                    var valueSetter = valueDescriptor && valueDescriptor.set;
+	                    var prototypeValueSetter = prototypeValueDescriptor && prototypeValueDescriptor.set;
+
+	                    if (valueSetter && prototypeValueSetter && valueSetter !== prototypeValueSetter) {
+	                        prototypeValueSetter.call(input, value);
+	                    } else if (valueSetter) {
+	                        valueSetter.call(input, value);
+	                    } else if (prototypeValueSetter) {
+	                        prototypeValueSetter.call(input, value);
+	                    }
+
+	                    input.dispatchEvent(new Event('input', { bubbles: true }));
+	                    input.dispatchEvent(new Event('change', { bubbles: true }));
+	                    input.dispatchEvent(new Event('blur', { bubbles: true }));
+	                });
+	            }
+
+	            function applyMdsBlocksTownData(data) {
+	                if (!data || !data.success || !data.data) return;
+
+	                if (data.data.town_name) {
+	                    setMdsBlocksAddressValue('input[name=\"city\"], input[name=\"shipping_city\"], input[name=\"billing_city\"], input[id=\"shipping-city\"], input[id=\"billing-city\"], input[autocomplete=\"address-level2\"]', data.data.town_name);
+	                }
+
+	                if (data.data.province) {
+	                    setMdsBlocksAddressValue('select[name=\"state\"], select[name=\"shipping_state\"], select[name=\"billing_state\"], select[id=\"shipping-state\"], select[id=\"billing-state\"]', data.data.province);
+	                }
+	            }
 
             function initMdsBlocksSuburb() {
                 var field = $('input[name=\"mds/suburb\"], input[id*=\"mds-suburb\"], input[name*=\"mds/suburb\"]');
@@ -671,33 +712,15 @@ add_action('wp_enqueue_scripts', function () {
                     var label = selected.text || selected.id || '';
                     var input = field.get(0);
 
-                    field.val(value).attr('value', value);
+	                    if (input) {
+	                        setMdsBlocksAddressValue(field, value);
+	                    }
 
-                    if (input) {
-                        var valueDescriptor = Object.getOwnPropertyDescriptor(input, 'value');
-                        var prototype = Object.getPrototypeOf(input);
-                        var prototypeValueDescriptor = Object.getOwnPropertyDescriptor(prototype, 'value');
-                        var valueSetter = valueDescriptor && valueDescriptor.set;
-                        var prototypeValueSetter = prototypeValueDescriptor && prototypeValueDescriptor.set;
-
-                        if (valueSetter && prototypeValueSetter && valueSetter !== prototypeValueSetter) {
-                            prototypeValueSetter.call(input, value);
-                        } else if (valueSetter) {
-                            valueSetter.call(input, value);
-                        } else if (prototypeValueSetter) {
-                            prototypeValueSetter.call(input, value);
-                        }
-
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                        input.dispatchEvent(new Event('change', { bubbles: true }));
-                        input.dispatchEvent(new Event('blur', { bubbles: true }));
-                    }
-
-                    $.post('" . admin_url('admin-ajax.php') . "', {
-                        action: 'mds_blocks_set_town_city_search',
-                        suburb_id: value,
-                        label: label
-                    });
+	                    $.post('" . admin_url('admin-ajax.php') . "', {
+	                        action: 'mds_blocks_set_town_city_search',
+	                        suburb_id: value,
+	                        label: label
+	                    }, applyMdsBlocksTownData);
 
                     document.cookie = 'mds_blocks_suburb_id=' + encodeURIComponent(value) + '; path=/; SameSite=Lax';
                     document.cookie = 'mds_blocks_town_city_label=' + encodeURIComponent(label) + '; path=/; SameSite=Lax';
@@ -742,13 +765,12 @@ add_action('wp_enqueue_scripts', function () {
                     minimumResultsForSearch: 8
                 });
 
-                function setSuburbValue(value) {
-                    suburbField.val(value).attr('value', value);
-                    suburbField.trigger('input').trigger('change').trigger('blur');
-                    wrapper.removeClass('has-error');
-                    document.cookie = 'mds_blocks_suburb_id=' + encodeURIComponent(value) + '; path=/; SameSite=Lax';
-                    document.cookie = 'mds_blocks_town_city_label=; Max-Age=0; path=/; SameSite=Lax';
-                }
+	                function setSuburbValue(value) {
+	                    setMdsBlocksAddressValue(suburbField, value);
+	                    wrapper.removeClass('has-error');
+	                    document.cookie = 'mds_blocks_suburb_id=' + encodeURIComponent(value) + '; path=/; SameSite=Lax';
+	                    document.cookie = 'mds_blocks_town_city_label=; Max-Age=0; path=/; SameSite=Lax';
+	                }
 
                 function loadSuburbs(townId) {
                     setSuburbValue('');
@@ -777,10 +799,14 @@ add_action('wp_enqueue_scripts', function () {
                     });
                 }
 
-                town.on('change', function() {
-                    loadSuburbs($(this).val());
-                    document.cookie = 'mds_blocks_town_id=' + encodeURIComponent($(this).val() || '') + '; path=/; SameSite=Lax';
-                });
+	                town.on('change', function() {
+	                    loadSuburbs($(this).val());
+	                    var selectedTownName = $(this).find('option:selected').text() || '';
+	                    if (selectedTownName && $(this).val()) {
+	                        setMdsBlocksAddressValue('input[name=\"city\"], input[name=\"shipping_city\"], input[name=\"billing_city\"], input[id=\"shipping-city\"], input[id=\"billing-city\"], input[autocomplete=\"address-level2\"]', selectedTownName);
+	                    }
+	                    document.cookie = 'mds_blocks_town_id=' + encodeURIComponent($(this).val() || '') + '; path=/; SameSite=Lax';
+	                });
 
                 suburbSelect.on('change', function() {
                     setSuburbValue($(this).val() || '');
@@ -882,22 +908,51 @@ if (!function_exists('mds_blocks_set_town_city_search')) {
             wp_send_json_error();
         }
 
-        $suburb_id = isset($_POST['suburb_id']) ? sanitize_text_field(wp_unslash($_POST['suburb_id'])) : '';
-        $label = isset($_POST['label']) ? sanitize_text_field(wp_unslash($_POST['label'])) : '';
+	        $suburb_id = isset($_POST['suburb_id']) ? sanitize_text_field(wp_unslash($_POST['suburb_id'])) : '';
+	        $label = isset($_POST['label']) ? sanitize_text_field(wp_unslash($_POST['label'])) : '';
+	        $town_id = '';
+	        $town_name = '';
+	        $province = '';
 
-        if ($suburb_id === '') {
-            WC()->session->__unset('mds_blocks_town_city_search');
-            wp_send_json_error();
-        }
+	        if ($suburb_id === '') {
+	            WC()->session->__unset('mds_blocks_town_city_search');
+	            wp_send_json_error();
+	        }
 
-        WC()->session->set('mds_blocks_town_city_search', [
-            'suburb_id' => $suburb_id,
-            'label'     => $label,
-        ]);
+	        if (is_numeric($suburb_id)) {
+	            $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
+	            $suburb = $mds->getSuburb($suburb_id);
 
-        wp_send_json_success();
-    }
-}
+	            if (is_array($suburb) && isset($suburb['town']['id'])) {
+	                $town_id = (string) $suburb['town']['id'];
+	            }
+
+	            if (is_array($suburb) && isset($suburb['town']['name'])) {
+	                $town_name = (string) $suburb['town']['name'];
+	            }
+
+	            if (is_array($suburb) && isset($suburb['town']['province'])) {
+	                $province = (string) $suburb['town']['province'];
+	            }
+	        }
+
+	        WC()->session->set('mds_blocks_town_city_search', [
+	            'suburb_id' => $suburb_id,
+	            'label'     => $label,
+	            'town_id'   => $town_id,
+	            'town_name' => $town_name,
+	            'province'  => $province,
+	        ]);
+
+	        wp_send_json_success([
+	            'suburb_id' => $suburb_id,
+	            'label'     => $label,
+	            'town_id'   => $town_id,
+	            'town_name' => $town_name,
+	            'province'  => $province,
+	        ]);
+	    }
+	}
 
 if (!function_exists('mds_blocks_get_town_city_search')) {
     function mds_blocks_get_town_city_search()

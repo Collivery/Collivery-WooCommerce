@@ -301,6 +301,11 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
 
         if (!filter_var($userName, FILTER_VALIDATE_EMAIL)) {
             $error = 'Your MDS Username is not a valid email address, unable to save your Your MDS Username or Password';
+            (new MdsLogger())->error(
+                'WC_Mds_Shipping_Method::validate_settings_fields',
+                $error,
+                $this->collivery_service->loggerSettingsArray()
+            );
         } else {
             $authentication = $this->collivery->makeAuthenticationRequest([
                 'email' => $userName,
