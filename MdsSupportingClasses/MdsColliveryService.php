@@ -151,14 +151,13 @@ class MdsColliveryService
         ];
 
         if ($isDemo) {
-        // Make demo credentials + dev API
-            $colliveryInitData['user_email']    = 'api@collivery.co.za';
-            $colliveryInitData['user_password'] = 'api123';
-            $colliveryInitData['base_url']      = 'https://dev.api.collivery.co.za/v3';
-    }
+            $colliveryInitData['user_email']    = Collivery::DEMO_USER_EMAIL;
+            $colliveryInitData['user_password'] = Collivery::DEMO_USER_PASSWORD;
+            $colliveryInitData['base_url']      = Collivery::BASE_URL;
+        }
 
         $this->collivery = new Collivery($colliveryInitData, $this->cache);
-}
+    }
 
  
 

@@ -8,6 +8,8 @@ use MdsLogger;
 class Collivery
 {
     const BASE_URL = 'https://api.collivery.co.za/v3/';
+    const DEMO_USER_EMAIL = 'demo@collivery.co.za';
+    const DEMO_USER_PASSWORD = 'demo';
     const SDX = 1;
     const ONX = 2;
     const FRT = 3;
@@ -20,6 +22,7 @@ class Collivery
     ];
 
     protected $token;
+    protected $cache;
     protected $client;
     protected $config;
     protected $errors = [];
@@ -50,8 +53,8 @@ class Collivery
             'app_host' => '', // Framework/CMS name and version, eg 'Wordpress 3.8.1 WooCommerce 2.0.20' / 'Joomla! 2.5.17 VirtueMart 2.0.26d'
             'app_url' => '', // URL your site is hosted on
             'base_url'      => self::BASE_URL,
-            'user_email' => 'api@collivery.co.za',
-            'user_password' => 'api123',
+            'user_email' => self::DEMO_USER_EMAIL,
+            'user_password' => self::DEMO_USER_PASSWORD,
             'demo' => false,
         ];
 
@@ -60,14 +63,11 @@ class Collivery
         }
 
         if ($this->config->demo) {
-            $this->config->user_email = 'api@collivery.co.za';
-            $this->config->user_password = 'api123';
-
-        if (!isset($this->config->base_url) || empty($this->config->base_url) || $this->config->base_url === self::BASE_URL) {
-            $this->config->base_url = 'https://dev.api.collivery.co.za/v3/';
+            $this->config->user_email = self::DEMO_USER_EMAIL;
+            $this->config->user_password = self::DEMO_USER_PASSWORD;
+            $this->config->base_url = self::BASE_URL;
         }
     }
-}
 
     /**
      * Authenticate and set the token.
@@ -151,12 +151,14 @@ class Collivery
             'X-App-Host:'.$this->config->app_host,
             'X-App-Lang:'.'PHP '.phpversion(),
             'X-App-Url:'.$this->config->app_url,
+            'Accept: application/json',
             'Content-Type: application/json'
         ];
 
         curl_setopt($client, CURLOPT_HTTPHEADER, $headerArray);
 
         $result = curl_exec($client);
+        $httpCode = curl_getinfo($client, CURLINFO_HTTP_CODE);
 
         if (curl_errno($client)) {
             $errno = curl_errno($client);
@@ -171,24 +173,45 @@ class Collivery
             ]);
         }
 
-        if (isset($result['error'])) {
-            $error = $result['error'];
-            throw new CurlConnectionException('Error executing request', 'ConsumeAPI()', [
-                'Code'    => $error['http_code'],
-                'Message' => $error['message'],
+        curl_close($client);
+
+        if (is_array($result)) {
+            $decodedResult = $result;
+        } else {
+            $decodedResult = json_decode($result, true);
+        }
+
+        if (!is_array($decodedResult)) {
+            throw new CurlConnectionException('Invalid API response', 'ConsumeAPI()', [
+                'Code'    => $httpCode,
+                'Message' => json_last_error_msg(),
                 'URL'     => $url,
-                'Result' => $result
+                'Result'  => $result
             ]);
         }
 
-        curl_close($client);
-
-        // If $result is already an array.
-        if (is_array($result)) {
-            return $result;
+        if ($httpCode >= 400) {
+            $message = $decodedResult['error']['message'] ?? $decodedResult['message'] ?? 'HTTP '.$httpCode.' returned by Collivery API.';
+            throw new CurlConnectionException('Error executing request: '.$message, 'ConsumeAPI()', [
+                'Code'    => $httpCode,
+                'Message' => $message,
+                'URL'     => $url,
+                'Result'  => $decodedResult
+            ]);
         }
 
-        return json_decode($result, true);
+        if (isset($decodedResult['error'])) {
+            $error = $decodedResult['error'];
+            $message = $error['message'] ?? 'Collivery API returned an error.';
+            throw new CurlConnectionException('Error executing request: '.$message, 'ConsumeAPI()', [
+                'Code'    => $error['http_code'] ?? $httpCode,
+                'Message' => $message,
+                'URL'     => $url,
+                'Result' => $decodedResult
+            ]);
+        }
+
+        return $decodedResult;
     }
 
     /**
@@ -214,12 +237,12 @@ class Collivery
 
         try {
 
-            $authenticate = $this->consumeAPI('login', [
+            $response = $this->consumeAPI('login', [
                 "email" => $user_email,
                 "password" => $user_password
             ], 'POST', true);
 
-            $authenticate = $authenticate['data'];
+            $authenticate = $response['data'] ?? null;
 
             if (is_array($authenticate) && isset($authenticate['api_token'])) {
                 if ($this->check_cache) {
@@ -237,8 +260,10 @@ class Collivery
 
                 return $authenticate;
             } else {
-                if (isset($authenticate['error'])) {
-                    $this->setError($authenticate['error']['http_code'], $authenticate['error']['message']);
+                if (isset($response['error'])) {
+                    $this->setError($response['error']['http_code'], $response['error']['message']);
+                } elseif (isset($response['message'])) {
+                    $this->setError('result_unexpected', $response['message']);
                 } else {
                     $this->setError('result_unexpected', 'No result returned.');
                 }

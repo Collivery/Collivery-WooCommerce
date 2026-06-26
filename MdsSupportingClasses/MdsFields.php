@@ -322,8 +322,14 @@ class MdsFields
             foreach (['towns', 'location_types', 'services'] as $resource) {
                 $result = $collivery->{'get'.str_replace('_', '', ucwords($resource))}();
                 if (!is_array($result)) {
+                    $errors = $collivery->getErrors();
+                    $message = 'Unable to retrieve '.$resource.' from the API';
+                    if (!empty($errors)) {
+                        $message .= ': '.implode(', ', array_unique($errors));
+                    }
+
                     throw new InvalidResourceDataException(
-                        'Unable to retrieve fields from the API',
+                        $message,
                         $service->loggerSettingsArray()
                     );
                 }
@@ -331,6 +337,7 @@ class MdsFields
             }
 
             $cache->put('resources', $resources);
+            (new MdsLogger())->clear();
 
             return $resources;
         } catch (CurlConnectionException $e) {
