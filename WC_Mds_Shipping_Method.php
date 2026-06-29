@@ -298,10 +298,12 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         $postData = $this->get_post_data();
         $userNameKey = $this->plugin_id.$this->id.'_';
         $passwordKey = $this->plugin_id.$this->id.'_';
-        $userName = trim($postData[$userNameKey.'mds_user']);
-        $password = trim($postData[$passwordKey.'mds_pass']);
+        $demoModeKey = $this->plugin_id.$this->id.'_demo_mode';
+        $demoMode = isset($postData[$demoModeKey]) && $postData[$demoModeKey] !== 'no';
+        $userName = isset($postData[$userNameKey.'mds_user']) ? trim(wp_specialchars_decode($postData[$userNameKey.'mds_user'])) : '';
+        $password = isset($postData[$passwordKey.'mds_pass']) ? trim(wp_specialchars_decode($postData[$passwordKey.'mds_pass'])) : '';
 
-        if (!filter_var($userName, FILTER_VALIDATE_EMAIL)) {
+        if (!$demoMode && !filter_var($userName, FILTER_VALIDATE_EMAIL)) {
             $error = 'Your MDS Username is not a valid email address, unable to save your Your MDS Username or Password';
             (new MdsLogger())->error(
                 'WC_Mds_Shipping_Method::validate_settings_fields',
@@ -309,15 +311,31 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
                 $this->collivery_service->loggerSettingsArray()
             );
         } else {
-            $authentication = $this->collivery->makeAuthenticationRequest([
-                'email' => $userName,
-                'password' => $password,
-            ]);
+            $authentication = $this->collivery->makeAuthenticationRequest(
+                $demoMode
+                    ? [
+                        'email' => Collivery::DEMO_USER_EMAIL,
+                        'password' => Collivery::DEMO_USER_PASSWORD,
+                    ]
+                    : [
+                        'email' => $userName,
+                        'password' => $password,
+                    ]
+            );
     
             try {
-                if (!$authentication) {
+                if (!$authentication || !isset($authentication['api_token'])) {
+                    $colliveryErrors = $this->collivery->getErrors();
+                    $authenticationError = $demoMode
+                        ? 'Unable to authenticate with the MDS demo account'
+                        : 'Incorrect MDS account details, username and password discarded';
+
+                    if (!empty($colliveryErrors)) {
+                        $authenticationError .= ': '.implode(', ', array_unique($colliveryErrors));
+                    }
+
                     throw new InvalidColliveryDataException(
-                        'Incorrect MDS account details, username and password discarded',
+                        $authenticationError,
                         'WC_Mds_Shipping_Method::validate_settings_fields',
                         $this->collivery_service->loggerSettingsArray(),
                         $postData
@@ -329,8 +347,10 @@ class WC_Mds_Shipping_Method extends WC_Shipping_Method
         }
 
         if ($error) {
-            unset($postData[$userNameKey.'mds_user']);
-            unset($postData[$passwordKey.'mds_pass']);
+            if (!$demoMode) {
+                unset($postData[$userNameKey.'mds_user']);
+                unset($postData[$passwordKey.'mds_pass']);
+            }
             $this->set_post_data($postData);
             $this->add_error($error);
         }

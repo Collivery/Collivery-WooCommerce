@@ -1,6 +1,7 @@
 <?php
 
 use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\MdsLogger;
 use MdsSupportingClasses\ShippingPackageData;
 
 define('_MDS_DIR_', __DIR__);
@@ -211,6 +212,8 @@ if( is_plugin_active('woocommerce/woocommerce.php')) {
          */
         function activate_mds()
         {
+            (new MdsLogger())->clear();
+
             if (!version_compare(phpversion(), '7.0.0', '>=')) {
                 deactivate_plugins(basename(__FILE__));
                 wp_die('Sorry, but you cannot run this plugin, it requires PHP version 7.0.0 or higher');

@@ -2,6 +2,7 @@
 
 use MdsExceptions\InvalidColliveryDataException;
 use MdsSupportingClasses\MdsColliveryService;
+use MdsSupportingClasses\MdsLogger;
 use MdsSupportingClasses\View;
 
 /*******************************************************************************
@@ -63,6 +64,7 @@ function mds_clear_cache_files()
     $mds = MdsColliveryService::getInstance();
     $cache = $mds->returnCacheClass();
     $cache->delete();
+    (new MdsLogger())->clear();
 
     wp_redirect(get_admin_url().'admin.php?page=wc-settings&tab=shipping&section=mds_collivery');
     exit;
@@ -687,4 +689,3 @@ add_action('admin_footer', function () {
     </script>
     <?php
 });
-
