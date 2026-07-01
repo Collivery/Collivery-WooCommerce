@@ -475,7 +475,20 @@ add_action('woocommerce_init', function () {
     if (!function_exists('woocommerce_register_additional_checkout_field')) return;
 
     $mds = \MdsSupportingClasses\MdsColliveryService::getInstance();
-    $resources = \MdsSupportingClasses\MdsFields::getResources($mds);
+    if (!$mds->isEnabled()) return;
+
+    $settings = $mds->returnPluginSettings();
+    $demo_mode = strtolower((string) $settings->getValue('demo_mode')) === 'yes';
+    $has_credentials = trim((string) $settings->getValue('mds_user')) !== ''
+        && trim((string) $settings->getValue('mds_pass')) !== '';
+
+    if (!$demo_mode && !$has_credentials) return;
+
+    try {
+        $resources = \MdsSupportingClasses\MdsFields::getResources($mds);
+    } catch (\MdsExceptions\InvalidResourceDataException $e) {
+        return;
+    }
 
     $location_types = [];
     $towns = [
@@ -498,6 +511,8 @@ add_action('woocommerce_init', function () {
             'value' => (string) $town['id'],
         ];
     }
+
+    if (empty($location_types)) return;
 
     woocommerce_register_additional_checkout_field([
         'id'       => 'mds/location_type',
