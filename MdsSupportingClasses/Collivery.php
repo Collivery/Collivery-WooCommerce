@@ -403,7 +403,7 @@ class Collivery
 
             if (isset($result['data'])) {
                 if ($this->check_cache) {
-                    $this->cache->put('collivery.`town_suburb_search`.'.$searchText, $result['data'], 60 * 24);
+                    $this->cache->put('collivery.town_suburb_search.'.$searchText, $result['data'], 60 * 24);
                 }
 
                 return $result['data'];
