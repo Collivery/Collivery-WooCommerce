@@ -851,7 +851,6 @@ add_action('wp_enqueue_scripts', function () {
                 clearMdsBlocksTownCitySearch();
 
                 select.selectWoo({
-                    minimumInputLength: 3,
                     placeholder: 'Search town / city',
                     allowClear: true,
                     ajax: {

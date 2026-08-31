@@ -377,7 +377,6 @@ class Collivery
 
     /**
      * Allows you to search for town and suburb names starting with the given string.
-     * The minimum string length to search is three characters.
      * Returns a list of suburbs and the towns the suburbs belong to with their ID's for creating new addresses.
      *
      * @param string $searchText Start of town/suburb name
@@ -387,11 +386,6 @@ class Collivery
      */
     public function searchTownSuburbs($searchText)
     {
-        if (strlen($searchText) < 3) {
-            $this->setError('invalid_search_text', 'The search text has to have a minimum of 3 characters.');
-            return [];
-        }
-
         $suburbs = $this->getAllSuburbs();
         if (!empty($suburbs)) {
             $needle = function_exists('mb_strtolower') ? mb_strtolower(trim($searchText), 'UTF-8') : strtolower(trim($searchText));
