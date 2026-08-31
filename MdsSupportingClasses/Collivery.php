@@ -390,27 +390,65 @@ class Collivery
         if (strlen($searchText) < 3) {
             $this->setError('invalid_search_text', 'The search text has to have a minimum of 3 characters.');
             return [];
-        } elseif (($this->check_cache) && $this->cache->has('collivery.town_suburb_search.'.$searchText)) {
-            return $this->cache->get('collivery.town_suburb_search.'.$searchText);
-        } else {
-            try {
-                $result = $this->consumeAPI('town_suburb_search', ["search_text" => $searchText], 'GET');
-            } catch (CurlConnectionException $e) {
-                $this->catchException($e);
-
-                return [];
-            }
-
-            if (isset($result['data'])) {
-                if ($this->check_cache) {
-                    $this->cache->put('collivery.`town_suburb_search`.'.$searchText, $result['data'], 60 * 24);
-                }
-
-                return $result['data'];
-            } else {
-                return $this->checkError($result);
-            }
         }
+
+        $suburbs = $this->getAllSuburbs();
+        if (!empty($suburbs)) {
+            $needle = function_exists('mb_strtolower') ? mb_strtolower(trim($searchText), 'UTF-8') : strtolower(trim($searchText));
+            $matches = [];
+            foreach ($suburbs as $suburb) {
+                if (!is_array($suburb) || empty($suburb['id']) || empty($suburb['name'])) {
+                    continue;
+                }
+                $town = isset($suburb['town']) && is_array($suburb['town']) ? $suburb['town'] : [];
+                $label = implode(', ', array_filter([$suburb['name'], isset($town['name']) ? $town['name'] : '', isset($town['province']) ? $town['province'] : ''], function ($value) { return $value !== '' && $value !== null; }));
+                $haystack = function_exists('mb_strtolower') ? mb_strtolower($label, 'UTF-8') : strtolower($label);
+                if (strpos($haystack, $needle) !== false) {
+                    $matches[] = ['formatted_result' => $label, 'suburb' => $suburb];
+                }
+                if (count($matches) >= 50) {
+                    break;
+                }
+            }
+            return $matches;
+        }
+
+        // Keep checkout usable if the initial bulk download fails.
+        try {
+            $result = $this->consumeAPI('town_suburb_search', ["search_text" => $searchText], 'GET');
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
+            return [];
+        }
+        return isset($result['data']) ? $result['data'] : $this->checkError($result);
+    }
+
+    /** Return the complete locally cached South African suburb index. */
+    public function getAllSuburbs($forceRefresh = false)
+    {
+        $cacheName = 'collivery.suburbs.all.ZAF';
+        if (!$forceRefresh && $this->check_cache && $this->cache->has($cacheName)) {
+            return $this->cache->get($cacheName);
+        }
+        try {
+            $result = $this->consumeAPI('suburbs', ['country' => 'ZAF', 'per_page' => '0'], 'GET');
+        } catch (CurlConnectionException $e) {
+            $this->catchException($e);
+            return [];
+        }
+        if (isset($result['data']) && is_array($result['data'])) {
+            if ($this->check_cache) {
+                $this->cache->put($cacheName, $result['data'], 60 * 24 * 8);
+            }
+            return $result['data'];
+        }
+        return $this->checkError($result);
+    }
+
+    /** Refresh the suburb index during the scheduled background update. */
+    public function refreshAllSuburbs()
+    {
+        return $this->getAllSuburbs(true);
     }
 
     /**

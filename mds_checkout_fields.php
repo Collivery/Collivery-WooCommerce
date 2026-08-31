@@ -338,6 +338,17 @@ if ($mds->isEnabled()) {
     }
 
     if($mds->isTownsSuburbsSearchEnabled()) {
+        if (!function_exists('mds_collivery_refresh_suburb_index')) {
+            function mds_collivery_refresh_suburb_index()
+            {
+                MdsColliveryService::getInstance()->returnColliveryClass()->refreshAllSuburbs();
+            }
+        }
+        add_action('mds_collivery_daily_suburb_refresh', 'mds_collivery_refresh_suburb_index');
+        if (!wp_next_scheduled('mds_collivery_daily_suburb_refresh')) {
+            wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'mds_collivery_daily_suburb_refresh');
+        }
+
         if (!function_exists('generate_town_city_search')) {
             /**
              * Get the results on Town Suburb search
