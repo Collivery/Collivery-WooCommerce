@@ -857,7 +857,6 @@ add_action('wp_enqueue_scripts', function () {
                         url: '" . admin_url('admin-ajax.php') . "',
                         type: 'POST',
                         dataType: 'json',
-                        delay: 300,
                         data: function(params) {
                             return {
                                 action: 'mds_collivery_generate_town_city_search',
