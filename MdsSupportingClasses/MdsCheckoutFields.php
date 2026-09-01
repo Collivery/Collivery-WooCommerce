@@ -199,7 +199,7 @@ class MdsCheckoutFields
                     $prefix . 'town_city_search' => [
                         'priority' => 4,
                         'type' => 'select',
-                        'label' => 'Town / City Search',
+                        'label' => 'Suburb / Town Search',
                         'required' => true,
                         'placeholder' => 'Please select',
                         'options' => $towns,
