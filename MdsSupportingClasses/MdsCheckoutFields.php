@@ -106,7 +106,7 @@ class MdsCheckoutFields
                     'class' => ['form-row-wide', 'address-field', 'update_totals_on_change'],
                 ],
                 $prefix . 'location_type' => [
-                    'priority' => 110,
+                    'priority' => 120,
                     'type' => 'select',
                     'label' => 'Location Type',
                     'required' => true,
@@ -167,7 +167,7 @@ class MdsCheckoutFields
                     'class' => ['form-row-wide'],
                 ],
                 $prefix . 'email' => [
-                    'priority' => 120,
+                    'priority' => 110,
                     'validate' => ['email'],
                     'label' => 'Email Address',
                     'placeholder' => 'you@yourdomain.co.za',
