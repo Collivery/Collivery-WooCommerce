@@ -19,7 +19,6 @@ jQuery(document)
             };
             var el = jQuery('#billing_town_city_search,#shipping_town_city_search');
             el.select2({
-                minimumInputLength: 3,
                 ajax: {
                     url: woocommerce_params.ajax_url,
                     type: "POST",

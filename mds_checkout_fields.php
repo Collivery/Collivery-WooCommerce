@@ -338,6 +338,17 @@ if ($mds->isEnabled()) {
     }
 
     if($mds->isTownsSuburbsSearchEnabled()) {
+        if (!function_exists('mds_collivery_refresh_suburb_index')) {
+            function mds_collivery_refresh_suburb_index()
+            {
+                MdsColliveryService::getInstance()->returnColliveryClass()->refreshAllSuburbs();
+            }
+        }
+        add_action('mds_collivery_daily_suburb_refresh', 'mds_collivery_refresh_suburb_index');
+        if (!wp_next_scheduled('mds_collivery_daily_suburb_refresh')) {
+            wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', 'mds_collivery_daily_suburb_refresh');
+        }
+
         if (!function_exists('generate_town_city_search')) {
             /**
              * Get the results on Town Suburb search
@@ -526,7 +537,7 @@ add_action('woocommerce_init', function () {
     if ($mds->isTownsSuburbsSearchEnabled()) {
         woocommerce_register_additional_checkout_field([
             'id'       => 'mds/suburb',
-            'label'    => 'Town / City Search',
+            'label'    => 'Suburb / Town Search',
             'location' => 'address',
             'type'     => 'text',
             'required' => false,
@@ -563,6 +574,7 @@ add_action('wp_enqueue_scripts', function () {
     wp_add_inline_style('mds-blocks-checkout-fields', '
         .mds-blocks-suburb-field {
             display: block;
+            margin-top: 16px;
             width: 100%;
         }
 
@@ -614,14 +626,20 @@ add_action('wp_enqueue_scripts', function () {
             color: #6b6f76;
             display: block;
             font-family: inherit;
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 400;
             left: 16px;
             line-height: 1;
             pointer-events: none;
             position: absolute;
-            top: 9px;
+            top: 17px;
+            transition: font-size 120ms ease, top 120ms ease;
             z-index: 1;
+        }
+
+        .mds-blocks-suburb-field.has-value .mds-blocks-suburb-field-label {
+            font-size: 13px;
+            top: 9px;
         }
 
         .mds-blocks-suburb-field-wrap {
@@ -831,23 +849,28 @@ add_action('wp_enqueue_scripts', function () {
                 }
 
                 var wrapper = $('<div class=\"mds-blocks-suburb-field mds-blocks-suburb-field-wrap\"></div>');
-                var label = $('<span class=\"mds-blocks-suburb-field-label\">Town / City Search</span>');
+                var label = $('<span class=\"mds-blocks-suburb-field-label\">Suburb / Town Search</span>');
                 var select = $('<select id=\"mds_blocks_suburb_search\" style=\"width:100%\"></select>');
                 var error = $('<div class=\"mds-blocks-suburb-field-error\" role=\"alert\">Please select a town / city search result</div>');
 
-                field.before(wrapper);
+                var addressInput = $('input[name=\"address_1\"], input[name=\"shipping_address_1\"], input[name=\"billing_address_1\"], input[id=\"shipping-address_1\"], input[id=\"billing-address_1\"], input[autocomplete=\"address-line1\"]').filter(':visible').first();
+                var addressContainer = addressInput.closest('.wc-block-components-text-input, .wc-block-components-address-form__address_1, .wc-block-components-form-row');
+
+                if (addressContainer.length) {
+                    addressContainer.after(wrapper);
+                } else {
+                    field.before(wrapper);
+                }
                 wrapper.append(label).append(select).append(error);
                 clearMdsBlocksTownCitySearch();
 
                 select.selectWoo({
-                    minimumInputLength: 3,
-                    placeholder: 'Search town / city',
+                    placeholder: '',
                     allowClear: true,
                     ajax: {
                         url: '" . admin_url('admin-ajax.php') . "',
                         type: 'POST',
                         dataType: 'json',
-                        delay: 300,
                         data: function(params) {
                             return {
                                 action: 'mds_collivery_generate_town_city_search',
@@ -885,12 +908,14 @@ add_action('wp_enqueue_scripts', function () {
 
                     document.cookie = 'mds_blocks_suburb_id=' + encodeURIComponent(value) + '; path=/; SameSite=Lax';
                     document.cookie = 'mds_blocks_town_city_label=' + encodeURIComponent(label) + '; path=/; SameSite=Lax';
+                    wrapper.addClass('has-value');
                     wrapper.removeClass('has-error');
 
                     clearMdsBlocksValidation(['mds/suburb', 'shipping_address_mds/suburb', 'billing_address_mds/suburb']);
                 });
 
                 select.on('select2:clear change', function() {
+                    wrapper.toggleClass('has-value', !!select.val());
                     if (!select.val()) {
                         clearMdsBlocksTownCitySearch();
                     }

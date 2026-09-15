@@ -202,13 +202,6 @@ class MdsFields
                 ),
                 'default' => 'yes',
             ],
-			'enable_town_suburb_search'=> [
-				'title' => __('Enable Town Suburb Search'),
-				'type' => 'checkbox',
-				'default' => 'no',
-				'description' => __('Allow searching for suburb on checkout.'),
-
-			],
 			'fall_back_service'=> [
 				'title' => __('Fall Back Service'),
 				'type' => 'select',
